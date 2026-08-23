@@ -1,5 +1,5 @@
 # Bước 1: Build mã nguồn React Vite
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 
 # Copy cấu hình package và cài đặt thư viện
