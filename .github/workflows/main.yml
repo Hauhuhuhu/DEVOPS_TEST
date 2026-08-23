@@ -22,14 +22,14 @@ jobs:
       - name: Build and Push Backend Image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
+          context: ./billingsoftware
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/spring-backend:latest
 
       - name: Build and Push Frontend Image
         uses: docker/build-push-action@v5
         with:
-          context: ./frontEnd
+          context: ./Front-end
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/react-frontend:latest
 
