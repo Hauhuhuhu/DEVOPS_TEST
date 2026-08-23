@@ -1,5 +1,5 @@
 # Bước 1: Build ứng dụng với Maven 4 và Java 25
-FROM maven:4.0.0-eclipse-temurin-25-alpine AS build
+FROM maven:3.9-eclipse-temurin-25-alpine AS build
 WORKDIR /app
 
 # Copy file cấu hình thư viện và tải về trước (tận dụng Docker cache)
