@@ -1,0 +1,59 @@
+name: CI/CD Deploy to AWS Ubuntu
+
+on:
+  push:
+    branches:
+      - main # Workflow sẽ chạy khi có code mới đẩy lên nhánh main
+
+jobs:
+  build-and-push-docker-images:
+    name: Build & Push Images to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/spring-backend:latest
+
+      - name: Build and Push Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontEnd
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/react-frontend:latest
+
+  deploy-to-aws:
+    name: Deploy to AWS Ubuntu Server
+    needs: build-and-push-docker-images # Chỉ chạy khi quá trình Build thành công
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute SSH Commands to Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USERNAME }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            # Chuyển đến thư mục chứa file docker-compose.yml trên server AWS
+            # (Bạn cần tạo thư mục này và file cấu hình trước trên server)
+            cd /home/${{ secrets.AWS_USERNAME }}/my-project
+            
+            # Kéo (pull) image phiên bản mới nhất vừa build về server
+            docker compose pull
+            
+            # Khởi động lại các container. Cờ -d để chạy ngầm
+            docker compose up -d
+            
+            # (Tùy chọn) Xóa các Docker Image cũ, không còn sử dụng để tránh đầy ổ cứng
+            docker image prune -f
