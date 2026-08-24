@@ -35,7 +35,7 @@ public class CategoryServiceImpl implements CategoryService {
         Files.createDirectories(uploadPath);
         Path targetLocation = uploadPath.resolve(fileName);
         Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-        String imgUrl = "http://localhost:8080/api/v1.0/uploads/"+fileName;
+        String imgUrl = "http://54.254.162.86:8080/api/v1.0/uploads/"+fileName;
 
         CategoryEntity newCategory = convertToEntity(request);
         newCategory.setImgUrl(imgUrl);
