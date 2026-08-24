@@ -39,10 +39,10 @@ public class SecurityConfig {
         httpSecurity.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/encode", "/payos/**", "/uploads/**").permitAll()
+                        .requestMatchers("/login", "/encode", "/payos/**", "/uploads/**", "/admin/register").permitAll()
                         .requestMatchers("/payos/webhook").permitAll()
                         .requestMatchers("/categories", "/items", "/orders", "/dashboard").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
