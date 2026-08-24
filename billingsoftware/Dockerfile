@@ -9,6 +9,7 @@ RUN mvn dependency:go-offline
 # Copy toàn bộ source code và build ra file .jar
 COPY src ./src
 RUN mvn clean package -DskipTests
+RUN rm -f target/*-plain.jar
 
 # Bước 2: Chạy ứng dụng (Chỉ sử dụng môi trường JRE Java 25)
 FROM eclipse-temurin:25-jre-alpine
