@@ -2,7 +2,7 @@ import axios from "axios";
 import { queryClient } from "./queryClient"; // Import queryClient gốc của bạn
 
 const api = axios.create({
-  baseURL: "http://54.254.162.86:8080/api/v1.0", // Thay bằng URL thật của bạn
+  baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
 // Thêm token vào mỗi request
