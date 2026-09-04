@@ -8,9 +8,11 @@ import learn.java.billingsoftware.repository.ItemRepository;
 import learn.java.billingsoftware.service.CategoryService;
 import learn.java.billingsoftware.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,13 +31,13 @@ public class CategoryServiceImpl implements CategoryService {
     private final ItemRepository itemRepository;
     @Override
     public CategoryResponse add(CategoryRequest request, MultipartFile file) throws IOException {
-        //String imgUrl = fileUploadService.uploadFile(file);
-        String fileName = UUID.randomUUID().toString()+"."+ StringUtils.getFilenameExtension(file.getOriginalFilename());
-        Path uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
-        Files.createDirectories(uploadPath);
-        Path targetLocation = uploadPath.resolve(fileName);
-        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-        String imgUrl = "http://54.254.162.86:8080/api/v1.0/uploads/"+fileName;
+        String imgUrl = fileUploadService.uploadFile(file);
+        // String fileName = UUID.randomUUID().toString()+"."+ StringUtils.getFilenameExtension(file.getOriginalFilename());
+        // Path uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
+        // Files.createDirectories(uploadPath);
+        // Path targetLocation = uploadPath.resolve(fileName);
+        // Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+        // String imgUrl = "http://54.254.162.86:8080/api/v1.0/uploads/"+fileName;
 
         CategoryEntity newCategory = convertToEntity(request);
         newCategory.setImgUrl(imgUrl);
@@ -55,18 +57,21 @@ public class CategoryServiceImpl implements CategoryService {
     public void delete(String categoryId) {
         CategoryEntity existingCategory = categoryRepository.findByCategoryId(categoryId)
                 .orElseThrow(()->new RuntimeException("Category not found: "+ categoryId));
-//        fileUploadService.deleteFile(existingCategory.getImgUrl());
-        String imgUrl = existingCategory.getImgUrl();
-        String filename = imgUrl.substring(imgUrl.lastIndexOf("/")+1);
-        Path uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
-        Path filePath = uploadPath.resolve(filename);
-        try {
-            Files.deleteIfExists(filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
+       boolean isFileDelete =fileUploadService.deleteFile(existingCategory.getImgUrl());
+        // String imgUrl = existingCategory.getImgUrl();
+        // String filename = imgUrl.substring(imgUrl.lastIndexOf("/")+1);
+        // Path uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
+        // Path filePath = uploadPath.resolve(filename);
+        // try {
+        //     Files.deleteIfExists(filePath);
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
+        if(isFileDelete){
+            categoryRepository.delete(existingCategory);
+        } else {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to delete image item");
         }
-
-        categoryRepository.delete(existingCategory);
     }
 
     private CategoryResponse convertToResponse(CategoryEntity newCategory) {
