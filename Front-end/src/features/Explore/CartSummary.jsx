@@ -11,6 +11,8 @@ function CartSummary({
   setCustomerName,
   mobileNumber,
   setMobileNumber,
+  customerId,
+  setCustomerId,
   cartItems,
   clearCart,
 }) {
@@ -142,6 +144,7 @@ function CartSummary({
     }));
 
     const dataForm = {
+      customerId: customerId || null,
       customerName: customerName.trim() || "Người dùng mặc định",
       phoneNumber: mobileNumber.trim() || "0000000000",
       cartItems: formattedCartItems,
@@ -158,6 +161,9 @@ function CartSummary({
       onSuccess: (dt) => {
         queryClient.invalidateQueries({ queryKey: ["items"] });
         queryClient.invalidateQueries({ queryKey: ["inventory-transactions"] });
+        queryClient.invalidateQueries({ queryKey: ["customers"] });
+        queryClient.invalidateQueries({ queryKey: ["promotions"] });
+        queryClient.invalidateQueries({ queryKey: ["orders"] });
 
         if (paymentMode === "PAYOS") {
           setShowModal(true);
@@ -175,6 +181,7 @@ function CartSummary({
   function handleClearCart() {
     setCustomerName("");
     setMobileNumber("");
+    if (setCustomerId) setCustomerId(null);
     setCouponInput("");
     setAppliedCoupon("");
     setEvaluation(null);

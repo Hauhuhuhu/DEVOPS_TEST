@@ -24,17 +24,19 @@ public class OrderEntity {
     private Long id;
     @Column(name = "order_code", unique = true, nullable = false)
     private String orderId;
+    private String customerId;
     private String customerName;
     private String phoneNumber;
     private Double subtotal;
+    @Builder.Default
+    private Double discountAmount = 0.0;
     private Double tax;
     private Double grandTotal;
+    private String promotionId;
+    private String promotionName;
     private LocalDateTime createdAt;
 
-//    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JoinColumn(name = "order_id")
-//    private List<OrderItemEntity> items = new ArrayList<>();
-
+    @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> items = new ArrayList<>();
 

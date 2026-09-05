@@ -13,10 +13,14 @@ import java.util.List;
 @Builder
 public class OrderRequest {
 
+    private String customerId;
     private String customerName;
     private String phoneNumber;
     private List<OrderItemRequest> cartItems;
+    private String couponCode;
+    private String appliedPromotionId;
     private Double subtotal;
+    private Double discountAmount;
     private Double tax;
     private Double grandTotal;
     private String paymentMethod;

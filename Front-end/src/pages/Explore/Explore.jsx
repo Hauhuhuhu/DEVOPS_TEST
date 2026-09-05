@@ -15,6 +15,7 @@ function Explore() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
+  const [customerId, setCustomerId] = useState(null);
   const { categories, isLoading } = useCategories();
   const { activePromotions } = useActivePromotions();
   const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart } =
@@ -75,6 +76,7 @@ function Explore() {
             setCustomerName={setCustomerName}
             mobileNumber={mobileNumber}
             setMobileNumber={setMobileNumber}
+            setCustomerId={setCustomerId}
           />
         </div>
         <hr className="my-2 text-light" />
@@ -94,6 +96,8 @@ function Explore() {
             setCustomerName={setCustomerName}
             mobileNumber={mobileNumber}
             setMobileNumber={setMobileNumber}
+            customerId={customerId}
+            setCustomerId={setCustomerId}
             cartItems={cartItems}
             clearCart={clearCart}
           />

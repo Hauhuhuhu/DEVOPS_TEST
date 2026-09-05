@@ -5,12 +5,13 @@ A complete order checkout flow where cashiers finalize orders with applied promo
 
 **Blocked by:** 01: Customer Management (CRM & POS Phone Lookup), 02: Promotion Management (Admin Campaign Configuration), 03: Promotion Evaluation Engine & Realtime POS Cart Discount (ADR-0003).
 
-**Status:** ready-for-agent
+**Status:** closed
+**Completed:** true
 
-- [ ] Cashier can submit an order with a linked customer and an applied promotion code.
-- [ ] Backend transaction locks and saves the order with applied promotion ID, promotion name snapshot, and calculated discount amount.
-- [ ] Coupon usage counter (`timesUsed`) increments atomically upon successful order completion and blocks checkout if the limit is exceeded.
-- [ ] Customer's lifetime spend and total order count are automatically updated upon order completion.
-- [ ] Existing ledger inventory deduction (`OUT` transaction) correctly executes for sold variants.
-- [ ] Checkout supports both Cash payment and PayOS QR payment for the discounted grand total.
-- [ ] API integration tests verify full order checkout, discount persistence, atomic coupon counter increment, and customer spend synchronization.
+- [x] Cashier can submit an order with a linked customer and an applied promotion code.
+- [x] Backend transaction locks and saves the order with applied promotion ID, promotion name snapshot, and calculated discount amount.
+- [x] Coupon usage counter (`timesUsed`) increments atomically upon successful order completion and blocks checkout if the limit is exceeded.
+- [x] Customer's lifetime spend and total order count are automatically updated upon order completion.
+- [x] Existing ledger inventory deduction (`OUT` transaction) correctly executes for sold variants.
+- [x] Checkout supports both Cash payment and PayOS QR payment for the discounted grand total.
+- [x] API integration tests verify full order checkout, discount persistence, atomic coupon counter increment, and customer spend synchronization.

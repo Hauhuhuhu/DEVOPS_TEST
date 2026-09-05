@@ -14,12 +14,16 @@ import java.util.List;
 @Builder
 public class OrderResponse {
     private String orderId;
+    private String customerId;
     private String customerName;
     private String phoneNumber;
     private List<OrderResponse.OrderItemResponse> items;
     private Double subtotal;
+    private Double discountAmount;
     private Double tax;
     private Double grandTotal;
+    private String promotionId;
+    private String promotionName;
     private PaymentMethod paymentMethod;
     private LocalDateTime createdAt;
     private PaymentDetails paymentDetails;
