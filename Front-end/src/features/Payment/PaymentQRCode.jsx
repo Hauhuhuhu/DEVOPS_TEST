@@ -30,7 +30,7 @@ function PaymentQRCode({ orderData }) {
   }
 
   if (isFinalCompleted) {
-    return <CompletedPayment orderId={currentData.orderId} />;
+    return <CompletedPayment orderId={currentData.orderId} order={currentData} />;
   }
   return <QRCode currentData={currentData} />;
 }

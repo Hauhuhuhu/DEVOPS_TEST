@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCreateOrder } from "../Orders/useCreateOrder";
 import PaymentQRCode from "../Payment/PaymentQRCode";
+import ReceiptPopup from "./ReceiptPopup";
 import toast from "react-hot-toast";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { evaluatePromotion } from "../../services/PromotionService";
@@ -20,6 +21,7 @@ function CartSummary({
   const { isCreating, createOrder, orderData } = useCreateOrder();
 
   const [showModal, setShowModal] = useState(false);
+  const [completedCashOrder, setCompletedCashOrder] = useState(null);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState("");
   const [isEvaluating, setIsEvaluating] = useState(false);
@@ -172,7 +174,7 @@ function CartSummary({
           dt.data?.paymentDetails?.status === "COMPLETED"
         ) {
           toast.success("Thanh toán thành công");
-          handleClearCart();
+          setCompletedCashOrder(dt.data);
         }
       },
     });
@@ -299,6 +301,18 @@ function CartSummary({
         </button>
       </div>
 
+      {/* Cash Order Receipt Modal */}
+      {completedCashOrder && (
+        <ReceiptPopup
+          order={completedCashOrder}
+          isOpen={Boolean(completedCashOrder)}
+          onClose={() => {
+            setCompletedCashOrder(null);
+            handleClearCart();
+          }}
+        />
+      )}
+
       {/* Modal PayOS */}
       {showModal && (
         <div
@@ -312,7 +326,19 @@ function CartSummary({
                 <button
                   type="button"
                   className="btn-close"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    const cachedData = queryClient.getQueryData([
+                      "order",
+                      orderData?.data?.orderId,
+                    ]);
+                    if (
+                      cachedData?.data?.paymentDetails?.status === "COMPLETED" ||
+                      orderData?.data?.paymentDetails?.status === "COMPLETED"
+                    ) {
+                      handleClearCart();
+                    }
+                  }}
                   aria-label="Close"
                 ></button>
               </div>
