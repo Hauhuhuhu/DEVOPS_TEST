@@ -19,6 +19,9 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy thư mục 'dist' từ bước build sang thư mục chạy web của Nginx
 COPY --from=build /app/dist /usr/share/nginx/html
 
+# Copy file config vào thư mục templates thay vì conf.d
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+
 # Mở port 80
 EXPOSE 5173
 

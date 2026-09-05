@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: completed
 
 # Spec: Phase 2 - Promotions Engine, CRM, and POS UI Modernization
 
@@ -15,6 +15,7 @@ Finally, the POS checkout interface lacks promotional discount workflows: there 
 We will introduce a complete Promotions Engine coupled with a Customer Relationship Management (CRM) directory and modernized POS/Admin user interfaces.
 
 The Promotion Engine will support three primary promotion strategies:
+
 1. **Coupon Codes**: Configurable voucher codes offering percentage or fixed cash discounts, governed by minimum spend thresholds, usage quotas, and validity periods.
 2. **Happy Hour**: Automated time-window promotions that automatically apply discounts during configured hours and days of the week.
 3. **BOGO (Buy-One-Get-One)**: Targeted product promotions where purchasing a specific variant unlocks another variant for free or at a discounted rate.
