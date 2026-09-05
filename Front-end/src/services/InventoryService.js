@@ -14,3 +14,8 @@ export const fetchRecentTransactions = async () => {
   const response = await api.get("/admin/inventory/transactions");
   return response.data;
 };
+
+export const performStockCheck = async (data) => {
+  const response = await api.post("/admin/inventory/stock-check", data);
+  return response.data;
+};

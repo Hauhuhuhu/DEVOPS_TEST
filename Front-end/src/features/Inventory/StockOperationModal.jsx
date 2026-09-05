@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { useRecordTransaction } from "./useRecordTransaction";
+import { useRecordTransaction, useStockCheck } from "./useRecordTransaction";
 import { useVariantTransactions } from "./useVariantTransactions";
 import Spinner from "../../ui/Spinner";
 
 function StockOperationModal({ variant, itemName, isOpen, onClose }) {
-  const [activeTab, setActiveTab] = useState("form");
+  const [activeTab, setActiveTab] = useState("quick");
   const { recordTransaction, isRecording } = useRecordTransaction();
+  const { executeStockCheck, isChecking } = useStockCheck();
   const { transactions, isLoading: isTxLoading } = useVariantTransactions(
     variant?.variantId
   );
 
+  // Form for Stock IN / OUT
   const {
     register,
     handleSubmit,
@@ -28,9 +30,47 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
 
   const transactionType = useWatch({ control, name: "transactionType" });
 
+  // Form for Stock Check (Kiểm kê)
+  const {
+    register: registerCheck,
+    handleSubmit: handleSubmitCheck,
+    reset: resetCheck,
+    control: controlCheck,
+    formState: { errors: errorsCheck },
+  } = useForm({
+    defaultValues: {
+      actualCount: variant?.cachedStockQuantity ?? 0,
+      referenceId: "",
+      note: "",
+    },
+  });
+
+  useEffect(() => {
+    if (variant) {
+      resetCheck({
+        actualCount: variant.cachedStockQuantity ?? 0,
+        referenceId: "",
+        note: "",
+      });
+    }
+  }, [variant, resetCheck]);
+
+  const countedValue = useWatch({
+    control: controlCheck,
+    name: "actualCount",
+  });
+  const currentStock = variant?.cachedStockQuantity ?? 0;
+  const countedNum =
+    countedValue !== "" && countedValue != null && !isNaN(Number(countedValue))
+      ? Number(countedValue)
+      : null;
+  const discrepancy = countedNum != null ? countedNum - currentStock : null;
+
   if (!isOpen || !variant) return null;
 
-  const onSubmit = (data) => {
+  const isSubmitting = isRecording || isChecking;
+
+  const onSubmitQuick = (data) => {
     recordTransaction(
       {
         variantId: variant.variantId,
@@ -44,6 +84,27 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
           reset({
             transactionType: "IN",
             quantity: 1,
+            referenceId: "",
+            note: "",
+          });
+          setActiveTab("history");
+        },
+      }
+    );
+  };
+
+  const onSubmitCheck = (data) => {
+    executeStockCheck(
+      {
+        variantId: variant.variantId,
+        actualCount: Number(data.actualCount),
+        referenceId: data.referenceId?.trim() || null,
+        note: data.note?.trim() || null,
+      },
+      {
+        onSuccess: () => {
+          resetCheck({
+            actualCount: Number(data.actualCount),
             referenceId: "",
             note: "",
           });
@@ -86,7 +147,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
               type="button"
               className="btn-close btn-close-white"
               onClick={onClose}
-              disabled={isRecording}
+              disabled={isSubmitting}
             ></button>
           </div>
 
@@ -96,14 +157,27 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
               <li className="nav-item">
                 <button
                   className={`nav-link ${
-                    activeTab === "form"
+                    activeTab === "quick"
                       ? "active bg-secondary text-light fw-bold border-secondary"
                       : "text-muted"
                   }`}
-                  onClick={() => setActiveTab("form")}
+                  onClick={() => setActiveTab("quick")}
                   type="button"
                 >
-                  <i className="bi bi-plus-slash-minus me-1"></i> New Transaction
+                  <i className="bi bi-arrow-left-right me-1"></i> Stock IN / OUT
+                </button>
+              </li>
+              <li className="nav-item">
+                <button
+                  className={`nav-link ${
+                    activeTab === "check"
+                      ? "active bg-secondary text-light fw-bold border-secondary"
+                      : "text-muted"
+                  }`}
+                  onClick={() => setActiveTab("check")}
+                  type="button"
+                >
+                  <i className="bi bi-clipboard-check me-1"></i> Stock Check (Kiểm kê)
                 </button>
               </li>
               <li className="nav-item">
@@ -125,8 +199,8 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
 
           {/* Modal Content */}
           <div className="modal-body">
-            {activeTab === "form" ? (
-              <form onSubmit={handleSubmit(onSubmit)}>
+            {activeTab === "quick" && (
+              <form onSubmit={handleSubmit(onSubmitQuick)}>
                 {/* Transaction Type */}
                 <div className="mb-3">
                   <label className="form-label text-warning small fw-bold">
@@ -232,7 +306,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                     type="button"
                     className="btn btn-outline-secondary"
                     onClick={onClose}
-                    disabled={isRecording}
+                    disabled={isSubmitting}
                   >
                     Cancel
                   </button>
@@ -241,7 +315,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                     className={`btn ${
                       transactionType === "IN" ? "btn-success" : "btn-danger"
                     }`}
-                    disabled={isRecording}
+                    disabled={isSubmitting}
                   >
                     {isRecording ? (
                       <>
@@ -266,8 +340,143 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                   </button>
                 </div>
               </form>
-            ) : (
-              /* Ledger History Tab */
+            )}
+
+            {/* Stock Check (Kiểm kê) Tab */}
+            {activeTab === "check" && (
+              <form onSubmit={handleSubmitCheck(onSubmitCheck)}>
+                {/* Comparison Card */}
+                <div className="card bg-black bg-opacity-50 border-secondary mb-3 p-3 shadow-sm">
+                  <div className="row text-center align-items-center">
+                    <div className="col-4">
+                      <div className="text-muted small mb-1">
+                        <i className="bi bi-hdd-network me-1"></i> System Stock
+                      </div>
+                      <div className="fs-5 fw-bold text-light">
+                        {currentStock}
+                      </div>
+                    </div>
+                    <div className="col-4 border-start border-end border-secondary">
+                      <div className="text-muted small mb-1">
+                        <i className="bi bi-clipboard-data me-1"></i> Physical Count
+                      </div>
+                      <div className="fs-5 fw-bold text-warning">
+                        {countedNum != null ? countedNum : "—"}
+                      </div>
+                    </div>
+                    <div className="col-4">
+                      <div className="text-muted small mb-1">
+                        <i className="bi bi-calculator me-1"></i> Discrepancy (Adj)
+                      </div>
+                      <div className="fs-5 fw-bold">
+                        {discrepancy == null ? (
+                          "—"
+                        ) : discrepancy > 0 ? (
+                          <span className="text-success">
+                            +{discrepancy} (Surplus)
+                          </span>
+                        ) : discrepancy < 0 ? (
+                          <span className="text-danger">
+                            {discrepancy} (Shortage)
+                          </span>
+                        ) : (
+                          <span className="text-info">
+                            0 (Exact Match)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actual Physical Count Input */}
+                <div className="mb-3">
+                  <label className="form-label text-warning small fw-bold">
+                    Actual Physical Count (Số lượng thực tế kiểm đếm):
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    className={`form-control bg-dark text-light border-secondary ${
+                      errorsCheck.actualCount ? "is-invalid" : ""
+                    }`}
+                    placeholder="Enter actual counted stock..."
+                    {...registerCheck("actualCount", {
+                      required: "Physical count is required",
+                      min: { value: 0, message: "Count cannot be negative" },
+                      valueAsNumber: true,
+                    })}
+                  />
+                  {errorsCheck.actualCount && (
+                    <div className="text-danger small mt-1">
+                      {errorsCheck.actualCount.message}
+                    </div>
+                  )}
+                  <div className="form-text text-muted" style={{ fontSize: "0.75rem" }}>
+                    The ledger will automatically record an ADJUSTMENT transaction for the discrepancy.
+                  </div>
+                </div>
+
+                {/* Reference ID */}
+                <div className="mb-3">
+                  <label className="form-label text-warning small fw-bold">
+                    Audit Reference (Mã đợt kiểm kê / Biên bản - Optional):
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control bg-dark text-light border-secondary"
+                    placeholder="e.g. AUDIT-2026-03, KIEM-KE-T3"
+                    {...registerCheck("referenceId")}
+                  />
+                </div>
+
+                {/* Note */}
+                <div className="mb-3">
+                  <label className="form-label text-warning small fw-bold">
+                    Audit Reason / Note (Ghi chú lý do chênh lệch - Optional):
+                  </label>
+                  <textarea
+                    rows="2"
+                    className="form-control bg-dark text-light border-secondary"
+                    placeholder="e.g. Định kỳ kiểm kê cuối tháng, phát hiện hao hụt do vỡ..."
+                    {...registerCheck("note")}
+                  ></textarea>
+                </div>
+
+                <div className="d-flex justify-content-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={onClose}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-warning fw-semibold"
+                    disabled={isSubmitting}
+                  >
+                    {isChecking ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        ></span>
+                        Adjusting Stock...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-check-circle me-1"></i> Confirm Stock Check & Adjust
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Ledger History Tab */}
+            {activeTab === "history" && (
               <div>
                 {isTxLoading ? (
                   <Spinner />
@@ -300,17 +509,23 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                                 className={`badge ${
                                   tx.transactionType === "IN"
                                     ? "bg-success"
-                                    : "bg-danger"
+                                    : tx.transactionType === "OUT"
+                                    ? "bg-danger"
+                                    : "bg-info text-dark"
                                 }`}
                               >
-                                {tx.transactionType}
+                                {tx.transactionType === "ADJUSTMENT"
+                                  ? "ADJUSTMENT (Audit)"
+                                  : tx.transactionType}
                               </span>
                             </td>
                             <td
                               className={
                                 tx.quantity > 0
                                   ? "text-success fw-bold"
-                                  : "text-danger fw-bold"
+                                  : tx.quantity < 0
+                                  ? "text-danger fw-bold"
+                                  : "text-muted fw-bold"
                               }
                             >
                               {tx.quantity > 0 ? `+${tx.quantity}` : tx.quantity}

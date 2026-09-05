@@ -125,9 +125,9 @@ function Item({ item }) {
                             className="btn btn-outline-warning btn-sm py-0 px-2"
                             style={{ fontSize: "0.75rem" }}
                             onClick={() => setSelectedVariantForStock(v)}
-                            title="Stock Operations (Nhập kho / Xuất huỷ)"
+                            title="Inventory Operations (Nhập kho / Xuất huỷ / Kiểm kê)"
                           >
-                            <i className="bi bi-box-seam me-1"></i> Stock Op
+                            <i className="bi bi-box-seam me-1"></i> Inventory
                           </button>
                         </div>
                       </div>

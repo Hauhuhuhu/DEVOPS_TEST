@@ -5,10 +5,10 @@ A store manager can perform a physical stock check by entering the actual counte
 
 **Blocked by:** 03: Inventory Ledger & Stock Operations.
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] Manager can input a physical count for a Variant on the UI.
-- [ ] Backend compares the physical count with `cached_stock_quantity`.
-- [ ] Backend generates an `ADJUSTMENT` transaction in the ledger for the difference (+ or -).
-- [ ] Variant's cached stock is updated to match the physical count exactly.
-- [ ] API integration tests verify that submitting a stock check correctly adjusts the ledger and cached stock.
+- [x] Manager can input a physical count for a Variant on the UI.
+- [x] Backend compares the physical count with `cached_stock_quantity`.
+- [x] Backend generates an `ADJUSTMENT` transaction in the ledger for the difference (+ or -).
+- [x] Variant's cached stock is updated to match the physical count exactly.
+- [x] API integration tests verify that submitting a stock check correctly adjusts the ledger and cached stock.

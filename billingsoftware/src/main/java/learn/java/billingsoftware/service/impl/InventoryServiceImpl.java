@@ -5,6 +5,7 @@ import learn.java.billingsoftware.entity.TransactionType;
 import learn.java.billingsoftware.entity.VariantEntity;
 import learn.java.billingsoftware.io.InventoryTransactionRequest;
 import learn.java.billingsoftware.io.InventoryTransactionResponse;
+import learn.java.billingsoftware.io.StockCheckRequest;
 import learn.java.billingsoftware.repository.InventoryTransactionRepository;
 import learn.java.billingsoftware.repository.VariantRepository;
 import learn.java.billingsoftware.service.InventoryService;
@@ -67,6 +68,51 @@ public class InventoryServiceImpl implements InventoryService {
         // Recalculate cached stock from the sum of ledger transactions
         Integer calculatedStock = inventoryTransactionRepository.calculateStockByVariantId(variant.getVariantId());
         variant.setCachedStockQuantity(calculatedStock != null ? calculatedStock : 0);
+        variantRepository.save(variant);
+
+        return convertToResponse(savedTx, variant.getCachedStockQuantity());
+    }
+
+    @Override
+    @Transactional
+    public InventoryTransactionResponse performStockCheck(StockCheckRequest request) {
+        if (request.getVariantId() == null || request.getVariantId().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Variant ID is required");
+        }
+
+        if (request.getActualCount() == null || request.getActualCount() < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Actual count must be greater than or equal to 0");
+        }
+
+        VariantEntity variant = variantRepository.findByVariantId(request.getVariantId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Variant not found with ID: " + request.getVariantId()));
+
+        int currentStock = variant.getCachedStockQuantity() != null ? variant.getCachedStockQuantity() : 0;
+        int discrepancy = request.getActualCount() - currentStock;
+
+        String refId = (request.getReferenceId() != null && !request.getReferenceId().trim().isEmpty())
+                ? request.getReferenceId().trim()
+                : "CHECK-" + System.currentTimeMillis();
+
+        String note = (request.getNote() != null && !request.getNote().trim().isEmpty())
+                ? request.getNote().trim()
+                : (discrepancy == 0 ? "Periodic stock check (Exact Match)" : "Periodic stock check adjustment");
+
+        InventoryTransactionEntity transaction = InventoryTransactionEntity.builder()
+                .transactionId(UUID.randomUUID().toString())
+                .variant(variant)
+                .transactionType(TransactionType.ADJUSTMENT)
+                .quantity(discrepancy)
+                .referenceId(refId)
+                .note(note)
+                .build();
+
+        InventoryTransactionEntity savedTx = inventoryTransactionRepository.saveAndFlush(transaction);
+
+        // Recalculate cached stock from the sum of ledger transactions
+        Integer calculatedStock = inventoryTransactionRepository.calculateStockByVariantId(variant.getVariantId());
+        variant.setCachedStockQuantity(calculatedStock != null ? calculatedStock : request.getActualCount());
         variantRepository.save(variant);
 
         return convertToResponse(savedTx, variant.getCachedStockQuantity());
