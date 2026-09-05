@@ -1,0 +1,14 @@
+# Environment
+.env
+.env.*
+
+# Build & Dependency Directories
+node_modules/
+target/
+dist/
+
+# IDE & Editor
+.idea/
+.vscode/
+*.swp
+*.log

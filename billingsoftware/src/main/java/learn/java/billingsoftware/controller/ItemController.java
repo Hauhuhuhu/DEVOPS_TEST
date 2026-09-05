@@ -22,7 +22,7 @@ public class ItemController {
     @PostMapping("/admin/items")
     @ResponseStatus(HttpStatus.CREATED)
     public ItemResponse addItem(@RequestPart("item") String itemString,
-                                @RequestPart("file")MultipartFile file) {
+                                @RequestPart(value = "file", required = false) MultipartFile file) {
         ObjectMapper objectMapper = new ObjectMapper();
         ItemRequest itemRequest = null;
         try {
@@ -31,13 +31,18 @@ public class ItemController {
         } catch (JsonProcessingException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
     @GetMapping("/items")
     public List<ItemResponse> readItems() {
         return itemService.fetchItems();
+    }
+
+    @GetMapping("/items/{itemId}")
+    public ItemResponse readItem(@PathVariable("itemId") String itemId) {
+        return itemService.fetchItem(itemId);
     }
 
     @DeleteMapping("/admin/items/{itemId}")

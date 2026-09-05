@@ -38,4 +38,17 @@ public class ItemEntity {
     @JoinColumn(name = "category_id", nullable = false)
     @OnDelete(action = OnDeleteAction.RESTRICT)
     private CategoryEntity category;
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<VariantEntity> variants = new java.util.ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "tbl_item_modifier_groups",
+        joinColumns = @JoinColumn(name = "item_id", referencedColumnName = "id"),
+        inverseJoinColumns = @JoinColumn(name = "modifier_group_id", referencedColumnName = "id")
+    )
+    @Builder.Default
+    private java.util.List<ModifierGroupEntity> modifierGroups = new java.util.ArrayList<>();
 }

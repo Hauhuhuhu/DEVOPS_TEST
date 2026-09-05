@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Explore from "./pages/Explore/Explore";
 import ManageItems from "./pages/ManageItems";
 import ManageCategory from "./pages/ManageCategory";
+import ManageModifiers from "./pages/ManageModifiers";
 import ManageUsers from "./pages/ManageUsers";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
@@ -31,6 +32,7 @@ function App() {
               <Route element={<AdminRoute />}>
                 <Route path="/items" element={<ManageItems />} />
                 <Route path="/categories" element={<ManageCategory />} />
+                <Route path="/modifiers" element={<ManageModifiers />} />
                 <Route path="/users" element={<ManageUsers />} />
               </Route>
                 <Route path="/orders" element={<OrderHistory />} />

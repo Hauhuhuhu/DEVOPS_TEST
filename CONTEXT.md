@@ -1,0 +1,74 @@
+# CONTEXT.md - Project System Overview
+
+## 1. High-Level Architecture & Tech Stack
+- **Monorepo / Multi-folder Structure:**
+  - `/Front-end`: Chứa source code giao diện người dùng, cấu trúc dựa trên ReactJS và Vite.
+  - `/billingsoftware`: Chứa source code API server, cấu trúc dựa trên Java Spring Boot.
+- **Backend Stack:** 
+  - **Ngôn ngữ:** Java 25
+  - **Framework:** Spring Boot 4.1.0
+  - **ORM/Database Driver:** Spring Data JPA / MySQL Connector (mysql-connector-j)
+  - **Cổng mặc định:** 8080 (context path: `/api/v1.0`)
+  - **Các thư viện khác:** AWS S3 SDK (lưu trữ file), PayOS Java (xử lý thanh toán), JJWT 0.9.1 (cho xác thực).
+- **Frontend Stack:** 
+  - **Framework/Library:** React 19, Vite
+  - **State Management / Data Fetching:** TanStack React Query v5
+  - **Styling solution:** Bootstrap 5, Bootstrap Icons
+  - **HTTP Client:** Axios
+  - **Forms:** React Hook Form
+  - **Cổng dev server:** Mặc định của Vite (thường là 5173).
+- **Shared / Contract Model:** 
+  - Giao tiếp qua **RESTful API** với định dạng JSON.
+  - **DTO Sharing:** Không có thư viện chia sẻ type tự động, backend trả về các object DTO (như `ItemResponse`, `OrderResponse`), frontend tự động ánh xạ thông qua các request Axios.
+  - **Base URL Frontend:** Trỏ trực tiếp tới backend thông qua biến môi trường `VITE_API_BASE_URL`.
+
+## 2. Developer Workflows & Commands
+- **Frontend (`/Front-end`):**
+  - Dev mode: `npm run dev`
+  - Build code: `npm run build`
+  - Lint code: `npm run lint`
+- **Backend (`/billingsoftware`):**
+  - Dev mode: `./mvnw spring-boot:run`
+  - Test suite: `./mvnw test`
+  - Build code: `./mvnw clean install` hoặc `./mvnw clean package`
+  - Migrate database: Hiện tại hệ thống không dùng tool migration như Flyway/Liquibase, thay vào đó dùng cấu hình JPA auto DDL update (`spring.jpa.hibernate.ddl-auto=update`).
+
+## 3. Core Domain Concepts & Data Models
+- **Entities / Aggregates trung tâm:**
+  - **User:** Quản lý thông tin đăng nhập, xác thực của nhân viên/quản trị viên hệ thống.
+  - **Category:** Danh mục chứa các mặt hàng (ví dụ: Nước uống, Thức ăn).
+  - **Item:** Mặt hàng cụ thể trong danh mục, có thông tin giá, hình ảnh (lưu trên AWS S3).
+  - **Order:** Hóa đơn/Đơn hàng tổng của khách hàng, liên kết với cổng thanh toán PayOS.
+  - **OrderItem:** Chi tiết từng mặt hàng trong một đơn hàng, ánh xạ giữa `Order` và `Item`.
+- **Mối quan hệ cốt lõi:**
+  - `Category` 1-N `Item`
+  - `Order` 1-N `OrderItem`
+  - `OrderItem` N-1 `Item`
+
+## 4. System Invariants & Strict Rules (RẤT QUAN TRỌNG)
+- **Auth & Security:** 
+  - Dùng **JWT Token**. Token được Spring Security sinh ra, Frontend lưu vào `localStorage` (key: `"token"` hoặc `"user"`).
+  - Mọi request từ Frontend được đính kèm header `Authorization: Bearer <token>` thông qua Axios Interceptor (`src/utils/axiosConfig.js`).
+- **Error Handling Pattern:** 
+  - Backend sử dụng `ResponseStatusException` của Spring Boot để ném lỗi (trả về HTTP Status code 4xx/5xx).
+  - Frontend tự động bắt lỗi toàn cục 401 qua Axios Interceptor: xóa dữ liệu `localStorage`, clear cache của TanStack Query và tự động redirect về trang `/login`.
+- **API Response Wrapping:** 
+  - Trả về dữ liệu thô (**Raw DTO/List**), **KHÔNG** dùng wrapper class chung (ví dụ: không có cấu trúc `{ data, status, message }` cố định ở mức global). 
+  - Agent cần gọi thẳng `response.data` và lấy array/object JSON trả về từ backend.
+- **State Management Pattern (Frontend):** 
+  - Fetching, Caching và Server State Sync BẮT BUỘC dùng **TanStack React Query** (`queryClient`). 
+  - API call logic được tách riêng ra các file `Service` trong thư mục `src/services/` (VD: `ItemService.js`), sau đó sử dụng trong React Component bằng các custom hooks của React Query (`useQuery`, `useMutation`).
+
+## 5. Known Technical Debt & Fragile Areas
+1. **Database Migration Strategy:** Sử dụng `ddl-auto=update` trên production rất nguy hiểm, dễ gây lỗi mất schema/dữ liệu khi refactor cấu trúc DB. (Cần triển khai Flyway hoặc Liquibase).
+2. **Lưu trữ JWT trong LocalStorage:** Có rủi ro bị tấn công XSS. Một hướng đi an toàn hơn về lâu dài là chuyển sang dùng HttpOnly Cookie cho Token.
+3. **API Response Standardization:** Việc trả về trực tiếp DTO không qua wrapper có thể gây khó khăn trong tương lai khi cần metadata (như pagination, status messages). Cần chú ý khi mở rộng API mới không làm vỡ logic parse data hiện tại trên FE.
+4. **Environment Variables Security:** Config như `AWS_ACCESS`, `PAYOS_API` đang được inject từ `.env`. Cần đảm bảo các file này luôn nằm trong `.gitignore` và không bị vô tình hardcode lên source code trong quá trình thêm tính năng.
+
+## 6. Glossary (Domain Model)
+- **Item**: Sản phẩm cha (VD: Áo thun, Trà sữa). Không trực tiếp chứa tồn kho nếu có nhiều biến thể.
+- **Variant (SKU)**: Biến thể vật lý của một Item (VD: Áo màu Đỏ size L). Có mã SKU riêng và là đơn vị quản lý tồn kho. Các thuộc tính biến thể (Màu, Size, v.v.) được lưu linh hoạt dưới dạng **Dynamic Attributes (JSON)**.
+- **Modifier / ModifierGroup**: Tuỳ chọn thêm (VD: Topping trân châu, Lượng đường). Không có tồn kho, chỉ làm thay đổi giá bán hoặc ghi chú chế biến. Khi order, giá Modifier được tách biệt với giá base của Variant để in hóa đơn chi tiết.
+- **InventoryTransaction (Ledger Inventory)**: Sổ cái ghi nhận mọi biến động tồn kho (IN/OUT/ADJUSTMENT) như Nhập kho, Xuất bán, Kiểm kê. Tồn kho hiện tại của một Variant được tính toán On-the-fly hoặc Cached từ tổng các giao dịch này.
+- **Negative Stock**: Tình trạng tồn kho ảo bị âm do bán hàng Offline (khi thiết bị không có mạng để check tồn kho thực tế). Chấp nhận bán để không làm gián đoạn doanh thu.
+- **Promotion**: Chương trình khuyến mãi. Hệ thống tự động chọn 1 Promotion tốt nhất cho hoá đơn, KHÔNG cho phép xếp chồng (stacking) nhiều khuyến mãi.

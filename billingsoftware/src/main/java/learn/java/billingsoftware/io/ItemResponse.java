@@ -22,4 +22,6 @@ public class ItemResponse {
     private String imgUrl;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private java.util.List<VariantResponse> variants;
+    private java.util.List<ModifierGroupResponse> modifierGroups;
 }

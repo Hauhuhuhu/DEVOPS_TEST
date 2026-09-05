@@ -58,6 +58,11 @@ function Menubar() {
                   </NavLink>
                 </li>
                 <li className="nav-item">
+                  <NavLink className={navLinkClass} to={"/modifiers"}>
+                    Manage modifiers
+                  </NavLink>
+                </li>
+                <li className="nav-item">
                   <NavLink className={navLinkClass} to={"/users"}>
                     Manage users
                   </NavLink>

@@ -16,4 +16,6 @@ public class ItemRequest {
     private BigDecimal price;
     private String categoryId;
     private String description;
+    private java.util.List<VariantRequest> variants;
+    private java.util.List<String> modifierGroupIds;
 }
