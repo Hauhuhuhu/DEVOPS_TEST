@@ -2,10 +2,12 @@ import { useState } from "react";
 import Spinner from "../../ui/Spinner";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { useDeleteItem } from "./useDeleteItem";
+import StockOperationModal from "../Inventory/StockOperationModal";
 
 function Item({ item }) {
   const { isDeleting, deleteItem } = useDeleteItem();
   const [showDetails, setShowDetails] = useState(false);
+  const [selectedVariantForStock, setSelectedVariantForStock] = useState(null);
 
   const hasVariants = item.variants && item.variants.length > 0;
   const hasModifiers = item.modifierGroups && item.modifierGroups.length > 0;
@@ -104,9 +106,30 @@ function Item({ item }) {
                             <span className="text-muted">Standard</span>
                           )}
                         </div>
-                        <span className="fw-bold text-warning">
-                          {formatCurrency(v.basePrice)}
-                        </span>
+                        <div className="d-flex align-items-center gap-2">
+                          <span
+                            className={`badge ${
+                              (v.cachedStockQuantity ?? 0) > 0
+                                ? "bg-success"
+                                : "bg-danger"
+                            }`}
+                            title="Current Cached Stock"
+                          >
+                            Stock: {v.cachedStockQuantity ?? 0}
+                          </span>
+                          <span className="fw-bold text-warning">
+                            {formatCurrency(v.basePrice)}
+                          </span>
+                          <button
+                            type="button"
+                            className="btn btn-outline-warning btn-sm py-0 px-2"
+                            style={{ fontSize: "0.75rem" }}
+                            onClick={() => setSelectedVariantForStock(v)}
+                            title="Stock Operations (Nhập kho / Xuất huỷ)"
+                          >
+                            <i className="bi bi-box-seam me-1"></i> Stock Op
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -147,6 +170,13 @@ function Item({ item }) {
           </div>
         )}
       </div>
+
+      <StockOperationModal
+        variant={selectedVariantForStock}
+        itemName={item.name}
+        isOpen={Boolean(selectedVariantForStock)}
+        onClose={() => setSelectedVariantForStock(null)}
+      />
     </div>
   );
 }

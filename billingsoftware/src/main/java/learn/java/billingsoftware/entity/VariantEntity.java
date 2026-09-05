@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import learn.java.billingsoftware.entity.converter.JsonAttributesConverter;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -52,6 +53,6 @@ public class VariantEntity {
     @Column(updatable = false)
     private Timestamp createdAt;
 
-    @CreationTimestamp
+    @UpdateTimestamp
     private Timestamp updatedAt;
 }
