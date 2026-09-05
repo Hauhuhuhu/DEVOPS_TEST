@@ -5,10 +5,11 @@ A centralized Customer Relationship Management (CRM) feature where cashiers can 
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** closed
+Completed: true
 
-- [ ] Cashier can search for a customer by typing their phone number in the POS checkout screen and have their details automatically populated.
-- [ ] Cashier can create a new customer profile directly from the POS interface if the phone number is not found.
-- [ ] Store manager can view, create, and update customer profiles in an Admin Customer Directory.
-- [ ] Backend API securely persists customer entities with unique phone numbers and provides search and CRUD capabilities.
-- [ ] API integration tests verify customer creation, phone lookup, and validation rules.
+- [x] Cashier can search for a customer by typing their phone number in the POS checkout screen and have their details automatically populated.
+- [x] Cashier can create a new customer profile directly from the POS interface if the phone number is not found.
+- [x] Store manager can view, create, and update customer profiles in an Admin Customer Directory.
+- [x] Backend API securely persists customer entities with unique phone numbers and provides search and CRUD capabilities.
+- [x] API integration tests verify customer creation, phone lookup, and validation rules.

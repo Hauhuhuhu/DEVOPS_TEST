@@ -5,12 +5,13 @@ Store managers can create, view, update, and toggle marketing promotions (Coupon
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** closed
+Completed: true
 
-- [ ] Store manager can view a list of all active and inactive promotions along with their current redemption counts.
-- [ ] Store manager can create percentage or fixed-amount discount coupons with minimum spend, discount caps, validity dates, and usage limits.
-- [ ] Store manager can create Happy Hour promotions configured with specific active days of the week and daily time ranges.
-- [ ] Store manager can create BOGO rules linked to target variants.
-- [ ] Store manager can toggle any promotion active or inactive with a single action.
-- [ ] Backend API securely validates and persists promotion entities and enforces unique coupon codes.
-- [ ] API integration tests confirm creation, retrieval, validation, and status toggles of promotional campaigns.
+- [x] Store manager can view a list of all active and inactive promotions along with their current redemption counts.
+- [x] Store manager can create percentage or fixed-amount discount coupons with minimum spend, discount caps, validity dates, and usage limits.
+- [x] Store manager can create Happy Hour promotions configured with specific active days of the week and daily time ranges.
+- [x] Store manager can create BOGO rules linked to target variants.
+- [x] Store manager can toggle any promotion active or inactive with a single action.
+- [x] Backend API securely validates and persists promotion entities and enforces unique coupon codes.
+- [x] API integration tests confirm creation, retrieval, validation, and status toggles of promotional campaigns.

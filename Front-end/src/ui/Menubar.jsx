@@ -67,6 +67,16 @@ function Menubar() {
                     Manage users
                   </NavLink>
                 </li>
+                <li className="nav-item">
+                  <NavLink className={navLinkClass} to={"/promotions"}>
+                    Manage promotions
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink className={navLinkClass} to={"/customers"}>
+                    Manage customers
+                  </NavLink>
+                </li>
               </>
             )}
             <li className="nav-item">

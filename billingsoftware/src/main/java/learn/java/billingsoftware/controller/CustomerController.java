@@ -1,0 +1,50 @@
+package learn.java.billingsoftware.controller;
+
+import learn.java.billingsoftware.io.CustomerRequest;
+import learn.java.billingsoftware.io.CustomerResponse;
+import learn.java.billingsoftware.service.CustomerService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/customers")
+@RequiredArgsConstructor
+public class CustomerController {
+
+    private final CustomerService customerService;
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public CustomerResponse create(@RequestBody CustomerRequest request) {
+        return customerService.createCustomer(request);
+    }
+
+    @GetMapping
+    public List<CustomerResponse> fetchAll(@RequestParam(value = "query", required = false) String query) {
+        return customerService.fetchCustomers(query);
+    }
+
+    @GetMapping("/{customerId}")
+    public CustomerResponse fetchById(@PathVariable String customerId) {
+        return customerService.fetchByCustomerId(customerId);
+    }
+
+    @GetMapping("/by-phone/{phoneNumber}")
+    public CustomerResponse fetchByPhone(@PathVariable String phoneNumber) {
+        return customerService.fetchByPhoneNumber(phoneNumber);
+    }
+
+    @PutMapping("/{customerId}")
+    public CustomerResponse update(@PathVariable String customerId, @RequestBody CustomerRequest request) {
+        return customerService.updateCustomer(customerId, request);
+    }
+
+    @DeleteMapping("/{customerId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable String customerId) {
+        customerService.deleteCustomer(customerId);
+    }
+}
