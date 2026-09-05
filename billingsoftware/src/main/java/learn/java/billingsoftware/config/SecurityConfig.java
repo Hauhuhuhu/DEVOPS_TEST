@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/encode", "/payos/**", "/uploads/**").permitAll()
                         .requestMatchers("/payos/webhook").permitAll()
-                        .requestMatchers("/categories", "/items/**", "/orders", "/dashboard", "/modifier-groups/**", "/inventory/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/categories", "/items/**", "/orders/**", "/dashboard", "/modifier-groups/**", "/inventory/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

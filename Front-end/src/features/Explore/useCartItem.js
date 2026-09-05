@@ -4,39 +4,60 @@ export function useCartItem() {
   const [cartItems, setCartItems] = useState([]);
 
   function addToCart(item) {
-  
+    const cartItemId =
+      item.cartItemId ||
+      `${item.itemId}_${item.variantId || "default"}_${(item.selectedModifiers || [])
+        .map((m) => m.modifierId)
+        .sort()
+        .join("-")}`;
+
+    const itemToAdd = {
+      ...item,
+      cartItemId,
+      quantity: item.quantity || 1,
+    };
+
     setCartItems((prevItems) => {
-      const existingItem = prevItems.find(
-        (cartItem) => cartItem.itemId === item.itemId,
+      const existingIndex = prevItems.findIndex(
+        (ci) => ci.cartItemId === cartItemId
       );
 
-      if (existingItem) {
-        return prevItems.map((cartItem) =>
-          cartItem.itemId === item.itemId
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
-            : cartItem,
+      if (existingIndex > -1) {
+        return prevItems.map((ci, idx) =>
+          idx === existingIndex
+            ? { ...ci, quantity: ci.quantity + itemToAdd.quantity }
+            : ci
         );
       } else {
-        return [...prevItems, { ...item, quantity: 1 }];
+        return [...prevItems, itemToAdd];
       }
     });
   }
 
-  function removeFromCart(itemId) {
+  function removeFromCart(cartItemId) {
     setCartItems((prevItems) =>
-      prevItems.filter((cartItem) => cartItem.itemId !== itemId),
+      prevItems.filter(
+        (cartItem) =>
+          cartItem.cartItemId !== cartItemId && cartItem.itemId !== cartItemId
+      )
     );
   }
 
-  function updateQuantity(itemId, newQuantity) {
+  function updateQuantity(cartItemId, newQuantity) {
+    if (newQuantity <= 0) {
+      removeFromCart(cartItemId);
+      return;
+    }
+
     setCartItems((prevItems) =>
       prevItems.map((cartItem) =>
-        cartItem.itemId === itemId
+        cartItem.cartItemId === cartItemId || cartItem.itemId === cartItemId
           ? { ...cartItem, quantity: newQuantity }
-          : cartItem,
-      ),
+          : cartItem
+      )
     );
   }
+
   function clearCart() {
     setCartItems([]);
   }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCreateOrder } from "../Orders/useCreateOrder";
 import PaymentQRCode from "../Payment/PaymentQRCode"; //
 import toast from "react-hot-toast";
@@ -12,6 +13,7 @@ function CartSummary({
   cartItems,
   clearCart,
 }) {
+  const queryClient = useQueryClient();
   const { isCreating, createOrder, orderData } = useCreateOrder();
 
   // 1. Khai báo state để quản lý việc hiển thị Modal
@@ -25,10 +27,20 @@ function CartSummary({
   const grandTotal = totalAmount + tax;
 
   function onCreateOrder(paymentMode) {
+    const formattedCartItems = cartItems.map((item) => ({
+      itemId: item.itemId,
+      variantId: item.variantId || null,
+      name: item.name,
+      basePrice: item.basePrice || item.price,
+      price: item.price,
+      quantity: item.quantity,
+      selectedModifiers: item.selectedModifiers || [],
+    }));
+
     const dataForm = {
       customerName: customerName.trim() || "Người dùng mặc định",
       phoneNumber: mobileNumber.trim() || "0000000000",
-      cartItems,
+      cartItems: formattedCartItems,
       subtotal: totalAmount,
       tax,
       grandTotal,
@@ -37,14 +49,19 @@ function CartSummary({
 
     createOrder(dataForm, {
       onSuccess: (dt) => {
+        // Invalidate items and transactions queries so stock levels update immediately
+        queryClient.invalidateQueries({ queryKey: ["items"] });
+        queryClient.invalidateQueries({ queryKey: ["inventory-transactions"] });
+
         // 2. Nếu người dùng chọn PAYOS và tạo đơn thành công, mở Modal
         if (paymentMode === "PAYOS") {
           setShowModal(true);
         } else if (
           paymentMode === "CASH" &&
-          dt.data.paymentDetails?.status === "COMPLETED"
+          dt.data?.paymentDetails?.status === "COMPLETED"
         ) {
           toast.success("Thanh toán thành công");
+          handleClearCart();
         }
       },
     });

@@ -27,9 +27,12 @@ public class OrderRequest {
     @Builder
     public static class OrderItemRequest {
         private String itemId;
+        private String variantId;
         private String name;
+        private Double basePrice;
         private Double price;
         private Integer quantity;
+        private List<SelectedModifier> selectedModifiers;
     }
 
 }

@@ -18,9 +18,20 @@ import vn.payos.model.v2.paymentRequests.CreatePaymentLinkRequest;
 import vn.payos.model.v2.paymentRequests.CreatePaymentLinkResponse;
 import vn.payos.model.v2.paymentRequests.PaymentLinkItem;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import learn.java.billingsoftware.entity.InventoryTransactionEntity;
+import learn.java.billingsoftware.entity.TransactionType;
+import learn.java.billingsoftware.entity.VariantEntity;
+import learn.java.billingsoftware.io.SelectedModifier;
+import learn.java.billingsoftware.repository.InventoryTransactionRepository;
+import learn.java.billingsoftware.repository.VariantRepository;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,8 +39,12 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
     private final OrderEntityRepository orderEntityRepository;
     private final PayOS payOS;
+    private final VariantRepository variantRepository;
+    private final InventoryTransactionRepository inventoryTransactionRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
+    @Transactional
     public OrderResponse createOrder(OrderRequest request) {
         OrderEntity newOrder = convertToOrderEntity(request); 
 
@@ -48,6 +63,36 @@ public class OrderServiceImpl implements OrderService {
 
         // Lưu lần 1 để lấy ID (dùng làm orderCode cho PayOS)
         newOrder = orderEntityRepository.save(newOrder); 
+
+        // Tự động đồng bộ xuất kho vào sổ cái InventoryTransaction cho từng variant
+        for (OrderItemEntity item : newOrder.getItems()) {
+            VariantEntity variant = null;
+            if (item.getVariantId() != null && !item.getVariantId().trim().isEmpty()) {
+                variant = variantRepository.findByVariantId(item.getVariantId()).orElse(null);
+            } else if (item.getItemId() != null) {
+                List<VariantEntity> variants = variantRepository.findByItem_ItemId(item.getItemId());
+                if (!variants.isEmpty()) {
+                    variant = variants.get(0);
+                }
+            }
+
+            if (variant != null) {
+                int soldQuantity = item.getQuantity() != null ? item.getQuantity() : 1;
+                InventoryTransactionEntity transaction = InventoryTransactionEntity.builder()
+                        .transactionId(UUID.randomUUID().toString())
+                        .variant(variant)
+                        .transactionType(TransactionType.OUT)
+                        .quantity(-Math.abs(soldQuantity))
+                        .referenceId(newOrder.getOrderId())
+                        .note("POS Sale - Order " + newOrder.getOrderId())
+                        .build();
+                inventoryTransactionRepository.saveAndFlush(transaction);
+
+                Integer updatedStock = inventoryTransactionRepository.calculateStockByVariantId(variant.getVariantId());
+                variant.setCachedStockQuantity(updatedStock != null ? updatedStock : 0);
+                variantRepository.save(variant);
+            }
+        }
 
         // Xử lý tạo link PayOS nếu là thanh toán chuyển khoản
         if (newOrder.getPaymentMethod() == PaymentMethod.PAYOS) { 
@@ -93,11 +138,22 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private OrderItemEntity convertToOrderItemEntity(OrderRequest.OrderItemRequest orderItemRequest) {
+        String modifiersJson = null;
+        if (orderItemRequest.getSelectedModifiers() != null && !orderItemRequest.getSelectedModifiers().isEmpty()) {
+            try {
+                modifiersJson = objectMapper.writeValueAsString(orderItemRequest.getSelectedModifiers());
+            } catch (Exception ignored) {
+            }
+        }
+
         return OrderItemEntity.builder() 
                 .itemId(orderItemRequest.getItemId()) 
+                .variantId(orderItemRequest.getVariantId())
                 .name(orderItemRequest.getName()) 
+                .basePrice(orderItemRequest.getBasePrice() != null ? orderItemRequest.getBasePrice() : orderItemRequest.getPrice())
                 .price(orderItemRequest.getPrice()) 
                 .quantity(orderItemRequest.getQuantity()) 
+                .selectedModifiers(modifiersJson)
                 .build(); 
     }
 
@@ -119,11 +175,24 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private OrderResponse.OrderItemResponse convertToItemResponse(OrderItemEntity orderItemEntity) {
+        List<SelectedModifier> selectedModifiers = new ArrayList<>();
+        if (orderItemEntity.getSelectedModifiers() != null && !orderItemEntity.getSelectedModifiers().trim().isEmpty()) {
+            try {
+                selectedModifiers = objectMapper.readValue(
+                        orderItemEntity.getSelectedModifiers(),
+                        new TypeReference<List<SelectedModifier>>() {});
+            } catch (Exception ignored) {
+            }
+        }
+
         return OrderResponse.OrderItemResponse.builder() 
                 .itemId(orderItemEntity.getItemId()) 
+                .variantId(orderItemEntity.getVariantId())
                 .name(orderItemEntity.getName()) 
+                .basePrice(orderItemEntity.getBasePrice())
                 .price(orderItemEntity.getPrice()) 
                 .quantity(orderItemEntity.getQuantity()) 
+                .selectedModifiers(selectedModifiers)
                 .build(); 
     }
 
