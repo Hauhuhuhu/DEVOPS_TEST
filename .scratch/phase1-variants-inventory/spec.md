@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: completed
 
 # Spec: Phase 1 - Variants, Modifiers, and Advanced Inventory
 
