@@ -5,11 +5,12 @@ A real-time promotion evaluation engine that assesses cart items against active 
 
 **Blocked by:** 02: Promotion Management (Admin Campaign Configuration).
 
-**Status:** ready-for-agent
+**Status:** closed
+**Completed:** true
 
-- [ ] Cashier can enter a coupon code in the POS cart and receive instant validation feedback (success or informative error for expired, inactive, or unreached minimum spend).
-- [ ] POS interface automatically detects when a Happy Hour is currently active and displays an informational badge.
-- [ ] Backend evaluation endpoint evaluates all eligible promotions (Happy Hour, BOGO, Coupon) and selects only the single best promotion yielding the highest discount (ADR-0003).
-- [ ] Cart summary dynamically displays subtotal, applied promotion name, discount amount, tax, and grand total.
-- [ ] Cashier can clear or remove an applied coupon code to restore original pricing.
-- [ ] API integration tests verify single-best promotion selection, coupon validation rules, Happy Hour time checks, and discount calculations.
+- [x] Cashier can enter a coupon code in the POS cart and receive instant validation feedback (success or informative error for expired, inactive, or unreached minimum spend).
+- [x] POS interface automatically detects when a Happy Hour is currently active and displays an informational badge.
+- [x] Backend evaluation endpoint evaluates all eligible promotions (Happy Hour, BOGO, Coupon) and selects only the single best promotion yielding the highest discount (ADR-0003).
+- [x] Cart summary dynamically displays subtotal, applied promotion name, discount amount, tax, and grand total.
+- [x] Cashier can clear or remove an applied coupon code to restore original pricing.
+- [x] API integration tests verify single-best promotion selection, coupon validation rules, Happy Hour time checks, and discount calculations.

@@ -34,3 +34,9 @@ export const deletePromotion = async (promotionId) => {
   const response = await api.delete(`/admin/promotions/${promotionId}`);
   return response.data;
 };
+
+export const evaluatePromotion = async (data) => {
+  const response = await api.post("/promotions/evaluate", data);
+  return response.data;
+};
+
