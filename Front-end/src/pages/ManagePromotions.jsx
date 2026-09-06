@@ -7,6 +7,7 @@ import { useTogglePromotion } from "../features/Promotions/useTogglePromotion";
 import { useDeletePromotion } from "../features/Promotions/useDeletePromotion";
 import { formatCurrency } from "../utils/formatCurrency";
 import Spinner from "../ui/Spinner";
+import { Tag, Check, Plus, Clock, Pencil, Trash2 } from "lucide-react";
 
 const DAYS_OF_WEEK = [
   { key: "MONDAY", label: "Mon" },
@@ -141,439 +142,479 @@ function ManagePromotions() {
   });
 
   return (
-    <div className="item-container p-3">
-      <div className="left-column">
-        <div className="card shadow-sm border-0">
-          <div className="card-header bg-primary text-white py-2">
-            <h5 className="mb-0 fs-6">
-              <i className="bi bi-tag-fill me-2"></i>
-              {editingPromo ? "Edit Promotion" : "Create Promotion"}
-            </h5>
+    <div className="flex gap-6 p-6 h-[calc(100vh-4rem)] bg-slate-50 overflow-hidden">
+      {/* Left Column - Promotion Form */}
+      <div className="w-96 flex-shrink-0 bg-white rounded-xl shadow-sm border border-slate-200 p-5 overflow-y-auto">
+        <div className="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+            <Tag size={18} />
           </div>
-          <div className="card-body">
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="mb-3">
-                <label className="form-label small fw-semibold">Promotion Type *</label>
-                <select
-                  className="form-select form-select-sm"
-                  {...register("type", { required: true })}
-                >
-                  <option value="COUPON">Coupon Code (Voucher)</option>
-                  <option value="HAPPY_HOUR">Happy Hour (Time-Window)</option>
-                  <option value="BOGO">Buy One Get One (BOGO)</option>
-                </select>
-              </div>
+          <h2 className="text-base font-semibold text-slate-900">
+            {editingPromo ? "Edit Promotion" : "Create Promotion"}
+          </h2>
+        </div>
 
-              <div className="mb-3">
-                <label className="form-label small fw-semibold">Promotion Name *</label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Promotion Type *
+            </label>
+            <select
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              {...register("type", { required: true })}
+            >
+              <option value="COUPON">Coupon Code (Voucher)</option>
+              <option value="HAPPY_HOUR">Happy Hour (Time-Window)</option>
+              <option value="BOGO">Buy One Get One (BOGO)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Promotion Name *
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Summer Mega Discount"
+              {...register("name", { required: "Promotion name is required" })}
+              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                errors.name ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:border-blue-500"
+              }`}
+            />
+            {errors.name && (
+              <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Description
+            </label>
+            <textarea
+              rows={2}
+              placeholder="Details about this promo..."
+              {...register("description")}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          </div>
+
+          {/* Conditional Type Fields */}
+          {selectedType === "COUPON" && (
+            <div className="border border-slate-200 rounded-lg p-3 bg-slate-50 space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Coupon Code *
+                </label>
                 <input
                   type="text"
-                  className={`form-control form-control-sm ${errors.name ? "is-invalid" : ""}`}
-                  placeholder="e.g. Summer Mega Discount"
-                  {...register("name", { required: "Promotion name is required" })}
+                  placeholder="e.g. SUMMER2026"
+                  {...register("code", {
+                    required: selectedType === "COUPON" ? "Coupon code is required" : false,
+                  })}
+                  className={`w-full rounded-lg border px-3 py-1.5 text-sm uppercase font-bold text-slate-900 placeholder-slate-400 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    errors.code ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:border-blue-500"
+                  }`}
                 />
-                {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label small fw-semibold">Description</label>
-                <textarea
-                  rows="2"
-                  className="form-control form-control-sm"
-                  placeholder="Details about this promo..."
-                  {...register("description")}
-                />
-              </div>
-
-              {selectedType === "COUPON" && (
-                <div className="border rounded p-2 mb-3 bg-light">
-                  <div className="mb-2">
-                    <label className="form-label small fw-semibold">Coupon Code *</label>
-                    <input
-                      type="text"
-                      className={`form-control form-control-sm text-uppercase fw-bold ${
-                        errors.code ? "is-invalid" : ""
-                      }`}
-                      placeholder="e.g. SUMMER2026"
-                      {...register("code", {
-                        required: selectedType === "COUPON" ? "Coupon code is required" : false,
-                      })}
-                    />
-                    {errors.code && <div className="invalid-feedback">{errors.code.message}</div>}
-                  </div>
-
-                  <div className="row g-2 mb-2">
-                    <div className="col-6">
-                      <label className="form-label small fw-semibold">Discount Type</label>
-                      <select
-                        className="form-select form-select-sm"
-                        {...register("discountType")}
-                      >
-                        <option value="PERCENTAGE">Percentage (%)</option>
-                        <option value="FIXED_AMOUNT">Fixed Cash (VND)</option>
-                      </select>
-                    </div>
-                    <div className="col-6">
-                      <label className="form-label small fw-semibold">
-                        Value ({discountType === "PERCENTAGE" ? "%" : "VND"}) *
-                      </label>
-                      <input
-                        type="number"
-                        step="any"
-                        className="form-control form-control-sm"
-                        placeholder={discountType === "PERCENTAGE" ? "e.g. 15" : "e.g. 20000"}
-                        {...register("discountValue", { required: true, min: 0 })}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="row g-2 mb-2">
-                    <div className="col-6">
-                      <label className="form-label small fw-semibold">Min Order (VND)</label>
-                      <input
-                        type="number"
-                        className="form-control form-control-sm"
-                        placeholder="e.g. 50000"
-                        {...register("minOrderAmount")}
-                      />
-                    </div>
-                    <div className="col-6">
-                      <label className="form-label small fw-semibold">Max Cap (VND)</label>
-                      <input
-                        type="number"
-                        className="form-control form-control-sm"
-                        placeholder="e.g. 100000"
-                        {...register("maxDiscountAmount")}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mb-2">
-                    <label className="form-label small fw-semibold">Usage Limit (Max Uses)</label>
-                    <input
-                      type="number"
-                      className="form-control form-control-sm"
-                      placeholder="Leave empty for unlimited"
-                      {...register("usageLimit")}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {selectedType === "HAPPY_HOUR" && (
-                <div className="border rounded p-2 mb-3 bg-light">
-                  <div className="row g-2 mb-2">
-                    <div className="col-6">
-                      <label className="form-label small fw-semibold">Discount Type</label>
-                      <select
-                        className="form-select form-select-sm"
-                        {...register("discountType")}
-                      >
-                        <option value="PERCENTAGE">Percentage (%)</option>
-                        <option value="FIXED_AMOUNT">Fixed Cash (VND)</option>
-                      </select>
-                    </div>
-                    <div className="col-6">
-                      <label className="form-label small fw-semibold">
-                        Discount Value *
-                      </label>
-                      <input
-                        type="number"
-                        step="any"
-                        className="form-control form-control-sm"
-                        placeholder={discountType === "PERCENTAGE" ? "e.g. 20" : "e.g. 15000"}
-                        {...register("discountValue", { required: true, min: 0 })}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="row g-2 mb-2">
-                    <div className="col-6">
-                      <label className="form-label small fw-semibold">Start Time</label>
-                      <input
-                        type="time"
-                        className="form-control form-control-sm"
-                        {...register("startTime")}
-                      />
-                    </div>
-                    <div className="col-6">
-                      <label className="form-label small fw-semibold">End Time</label>
-                      <input
-                        type="time"
-                        className="form-control form-control-sm"
-                        {...register("endTime")}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="form-label small fw-semibold d-block mb-1">
-                      Active Days of Week
-                    </label>
-                    <div className="d-flex flex-wrap gap-2">
-                      {DAYS_OF_WEEK.map((day) => (
-                        <div key={day.key} className="form-check form-check-inline">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            value={day.key}
-                            id={`day-${day.key}`}
-                            {...register("daysOfWeek")}
-                          />
-                          <label className="form-check-label small" htmlFor={`day-${day.key}`}>
-                            {day.label}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {selectedType === "BOGO" && (
-                <div className="border rounded p-2 mb-3 bg-light">
-                  <div className="mb-2">
-                    <label className="form-label small fw-semibold">Buy Variant ID / Keyword</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      placeholder="Target variant ID"
-                      {...register("buyVariantId")}
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <label className="form-label small fw-semibold">Get Variant ID / Keyword</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      placeholder="Free/discounted variant ID"
-                      {...register("getVariantId")}
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <label className="form-label small fw-semibold">Discount % on Gift Item</label>
-                    <input
-                      type="number"
-                      className="form-control form-control-sm"
-                      placeholder="100 for Free"
-                      {...register("bogoDiscountPercent")}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="row g-2 mb-3">
-                <div className="col-6">
-                  <label className="form-label small fw-semibold">Start Date</label>
-                  <input
-                    type="date"
-                    className="form-control form-control-sm"
-                    {...register("startDate")}
-                  />
-                </div>
-                <div className="col-6">
-                  <label className="form-label small fw-semibold">End Date</label>
-                  <input
-                    type="date"
-                    className="form-control form-control-sm"
-                    {...register("endDate")}
-                  />
-                </div>
-              </div>
-
-              <div className="d-flex gap-2 mt-4">
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-sm flex-grow-1"
-                  disabled={isCreating || isUpdating}
-                >
-                  {isCreating || isUpdating ? (
-                    "Saving..."
-                  ) : editingPromo ? (
-                    <>
-                      <i className="bi bi-check-lg me-1"></i> Update Promo
-                    </>
-                  ) : (
-                    <>
-                      <i className="bi bi-plus-lg me-1"></i> Save Promo
-                    </>
-                  )}
-                </button>
-                {editingPromo && (
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={cancelEdit}
-                  >
-                    Cancel
-                  </button>
+                {errors.code && (
+                  <p className="text-xs text-red-600 mt-1">{errors.code.message}</p>
                 )}
               </div>
-            </form>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Discount Type</label>
+                  <select
+                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    {...register("discountType")}
+                  >
+                    <option value="PERCENTAGE">Percentage (%)</option>
+                    <option value="FIXED_AMOUNT">Fixed Cash (VND)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Value ({discountType === "PERCENTAGE" ? "%" : "VND"}) *
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder={discountType === "PERCENTAGE" ? "e.g. 15" : "e.g. 20000"}
+                    {...register("discountValue", { required: true, min: 0 })}
+                    className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Min Order (VND)</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 50000"
+                    {...register("minOrderAmount")}
+                    className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Max Cap (VND)</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 100000"
+                    {...register("maxDiscountAmount")}
+                    className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Usage Limit (Max Uses)</label>
+                <input
+                  type="number"
+                  placeholder="Leave empty for unlimited"
+                  {...register("usageLimit")}
+                  className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          )}
+
+          {selectedType === "HAPPY_HOUR" && (
+            <div className="border border-slate-200 rounded-lg p-3 bg-slate-50 space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Discount Type</label>
+                  <select
+                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    {...register("discountType")}
+                  >
+                    <option value="PERCENTAGE">Percentage (%)</option>
+                    <option value="FIXED_AMOUNT">Fixed Cash (VND)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Value *
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder={discountType === "PERCENTAGE" ? "e.g. 20" : "e.g. 15000"}
+                    {...register("discountValue", { required: true, min: 0 })}
+                    className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Start Time</label>
+                  <input
+                    type="time"
+                    {...register("startTime")}
+                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">End Time</label>
+                  <input
+                    type="time"
+                    {...register("endTime")}
+                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Active Days of Week
+                </label>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {DAYS_OF_WEEK.map((day) => (
+                    <label key={day.key} className="inline-flex items-center gap-1.5 text-xs text-slate-700 bg-white px-2 py-1 rounded border border-slate-200 cursor-pointer hover:bg-slate-50">
+                      <input
+                        type="checkbox"
+                        value={day.key}
+                        className="rounded text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
+                        {...register("daysOfWeek")}
+                      />
+                      <span>{day.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {selectedType === "BOGO" && (
+            <div className="border border-slate-200 rounded-lg p-3 bg-slate-50 space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Buy Variant ID / Keyword</label>
+                <input
+                  type="text"
+                  placeholder="Target variant ID"
+                  {...register("buyVariantId")}
+                  className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Get Variant ID / Keyword</label>
+                <input
+                  type="text"
+                  placeholder="Free/discounted variant ID"
+                  {...register("getVariantId")}
+                  className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Discount % on Gift Item</label>
+                <input
+                  type="number"
+                  placeholder="100 for Free"
+                  {...register("bogoDiscountPercent")}
+                  className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Date Range */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">Start Date</label>
+              <input
+                type="date"
+                {...register("startDate")}
+                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">End Date</label>
+              <input
+                type="date"
+                {...register("endDate")}
+                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
-        </div>
+
+          <div className="flex gap-2 pt-2">
+            <button
+              type="submit"
+              disabled={isCreating || isUpdating}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              {isCreating || isUpdating ? (
+                <Spinner className="text-white" />
+              ) : editingPromo ? (
+                <>
+                  <Check size={16} /> Update Promo
+                </>
+              ) : (
+                <>
+                  <Plus size={16} /> Save Promo
+                </>
+              )}
+            </button>
+            {editingPromo && (
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        </form>
       </div>
 
-      <div className="right-column">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div className="btn-group btn-group-sm" role="group">
+      {/* Right Column - Promotions List */}
+      <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col overflow-hidden">
+        <div className="flex justify-between items-center mb-4 gap-4">
+          {/* Filter Pills */}
+          <div className="inline-flex rounded-lg border border-slate-200 p-1 bg-slate-50">
             <button
               type="button"
-              className={`btn ${filterType === "ALL" ? "btn-dark" : "btn-outline-dark"}`}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                filterType === "ALL"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
               onClick={() => setFilterType("ALL")}
             >
               All
             </button>
             <button
               type="button"
-              className={`btn ${filterType === "COUPON" ? "btn-primary" : "btn-outline-primary"}`}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                filterType === "COUPON"
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
               onClick={() => setFilterType("COUPON")}
             >
               Coupons
             </button>
             <button
               type="button"
-              className={`btn ${filterType === "HAPPY_HOUR" ? "btn-warning text-dark" : "btn-outline-warning text-dark"}`}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                filterType === "HAPPY_HOUR"
+                  ? "bg-amber-500 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
               onClick={() => setFilterType("HAPPY_HOUR")}
             >
               Happy Hour
             </button>
             <button
               type="button"
-              className={`btn ${filterType === "BOGO" ? "btn-success" : "btn-outline-success"}`}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                filterType === "BOGO"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
               onClick={() => setFilterType("BOGO")}
             >
               BOGO
             </button>
           </div>
-          <span className="badge bg-secondary fs-6">
+
+          <span className="bg-blue-100 text-blue-700 rounded-full px-3 py-1 text-sm font-medium">
             Total: {filteredPromotions?.length || 0} Promos
           </span>
         </div>
 
         {isLoading ? (
-          <Spinner />
+          <div className="flex justify-center items-center flex-1">
+            <Spinner size={32} className="text-blue-600" />
+          </div>
         ) : (
-          <div className="table-responsive bg-white rounded shadow-sm">
-            <table className="table table-hover align-middle mb-0">
-              <thead className="table-light">
+          <div className="flex-1 overflow-auto rounded-lg border border-slate-200">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50 sticky top-0">
                 <tr>
-                  <th>Type & Name</th>
-                  <th>Discount Rule</th>
-                  <th>Valid Window</th>
-                  <th className="text-center">Usage</th>
-                  <th className="text-center">Status</th>
-                  <th className="text-center">Actions</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Type & Name</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Discount Rule</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Valid Window</th>
+                  <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Usage</th>
+                  <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100 bg-white">
                 {filteredPromotions?.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-4 text-muted">
-                      <i className="bi bi-tag fs-2 d-block mb-2"></i>
-                      No promotions found
+                    <td colSpan="6" className="text-center py-12 text-slate-400">
+                      <Tag size={36} className="mx-auto mb-2 text-slate-300" />
+                      <p className="text-sm">No promotions found</p>
                     </td>
                   </tr>
                 ) : (
-                  filteredPromotions?.map((promo) => (
-                    <tr key={promo.promotionId}>
-                      <td>
-                        <div className="d-flex align-items-center gap-2">
-                          <span
-                            className={`badge ${
-                              promo.type === "COUPON"
-                                ? "bg-primary"
-                                : promo.type === "HAPPY_HOUR"
-                                ? "bg-warning text-dark"
-                                : "bg-success"
-                            }`}
-                          >
-                            {promo.type}
+                  filteredPromotions?.map((promo) => {
+                    const isCoupon = promo.type === "COUPON";
+                    const isHappyHour = promo.type === "HAPPY_HOUR";
+
+                    return (
+                      <tr key={promo.promotionId} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${
+                                isCoupon
+                                  ? "bg-blue-100 text-blue-800"
+                                  : isHappyHour
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-emerald-100 text-emerald-800"
+                              }`}
+                            >
+                              {promo.type}
+                            </span>
+                            <span className="text-sm font-semibold text-slate-900">{promo.name}</span>
+                          </div>
+                          {promo.code && (
+                            <div className="mt-1">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                                {promo.code}
+                              </span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm">
+                          {promo.type === "BOGO" ? (
+                            <div className="text-slate-700">Buy 1 get 1 (-{promo.bogoDiscountPercent}%)</div>
+                          ) : (
+                            <div>
+                              <span className="font-semibold text-red-600">
+                                {promo.discountType === "PERCENTAGE"
+                                  ? `-${promo.discountValue}%`
+                                  : `-${formatCurrency(promo.discountValue)}`}
+                              </span>
+                              {promo.minOrderAmount > 0 && (
+                                <div className="text-xs text-slate-500 mt-0.5">
+                                  Min: {formatCurrency(promo.minOrderAmount)}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-slate-600">
+                          {promo.type === "HAPPY_HOUR" && promo.startTime && (
+                            <div className="inline-flex items-center gap-1 text-xs text-blue-600 font-semibold mb-0.5">
+                              <Clock size={12} />
+                              <span>{promo.startTime ? promo.startTime.substring(0, 5) : ""} - {promo.endTime ? promo.endTime.substring(0, 5) : ""}</span>
+                            </div>
+                          )}
+                          {promo.startDate || promo.endDate ? (
+                            <div className="text-xs text-slate-500">
+                              {promo.startDate || "Any"} to {promo.endDate || "Ongoing"}
+                            </div>
+                          ) : (
+                            <div className="text-xs text-slate-400">Always active</div>
+                          )}
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-center text-xs">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 font-medium">
+                            {promo.timesUsed} {promo.usageLimit ? `/ ${promo.usageLimit}` : "uses"}
                           </span>
-                          <span className="fw-bold">{promo.name}</span>
-                        </div>
-                        {promo.code && (
-                          <div className="mt-1">
-                            <span className="badge bg-dark text-white font-monospace">
-                              {promo.code}
-                            </span>
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-center">
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(promo.isActive)}
+                              onChange={() => toggleActive(promo.promotionId)}
+                              disabled={isToggling}
+                              className="sr-only peer"
+                            />
+                            <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                          </label>
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-center">
+                          <div className="inline-flex items-center gap-1.5">
+                            <button
+                              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors cursor-pointer"
+                              onClick={() => startEdit(promo)}
+                              title="Edit Promotion"
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+                              onClick={() => {
+                                if (window.confirm(`Delete promotion "${promo.name}"?`)) {
+                                  removePromotion(promo.promotionId);
+                                }
+                              }}
+                              disabled={isDeleting}
+                              title="Delete Promotion"
+                            >
+                              <Trash2 size={15} />
+                            </button>
                           </div>
-                        )}
-                      </td>
-                      <td>
-                        {promo.type === "BOGO" ? (
-                          <div>Buy 1 get 1 (-{promo.bogoDiscountPercent}%)</div>
-                        ) : (
-                          <div>
-                            <span className="fw-bold text-danger">
-                              {promo.discountType === "PERCENTAGE"
-                                ? `-${promo.discountValue}%`
-                                : `-${formatCurrency(promo.discountValue)}`}
-                            </span>
-                            {promo.minOrderAmount > 0 && (
-                              <small className="text-muted d-block">
-                                Min: {formatCurrency(promo.minOrderAmount)}
-                              </small>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        {promo.type === "HAPPY_HOUR" && promo.startTime && (
-                          <small className="d-block text-primary fw-semibold">
-                            <i className="bi bi-clock me-1"></i>
-                            {promo.startTime.substring(0, 5)} - {promo.endTime.substring(0, 5)}
-                          </small>
-                        )}
-                        {promo.startDate || promo.endDate ? (
-                          <small className="text-muted d-block">
-                            {promo.startDate || "Any"} to {promo.endDate || "Ongoing"}
-                          </small>
-                        ) : (
-                          <small className="text-muted">Always active</small>
-                        )}
-                      </td>
-                      <td className="text-center">
-                        <span className="badge bg-light text-dark border">
-                          {promo.timesUsed} {promo.usageLimit ? `/ ${promo.usageLimit}` : "uses"}
-                        </span>
-                      </td>
-                      <td className="text-center">
-                        <div className="form-check form-switch d-inline-block">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            role="switch"
-                            checked={Boolean(promo.isActive)}
-                            onChange={() => toggleActive(promo.promotionId)}
-                            disabled={isToggling}
-                            title="Toggle active status"
-                          />
-                        </div>
-                      </td>
-                      <td className="text-center">
-                        <button
-                          className="btn btn-sm btn-outline-primary me-2"
-                          onClick={() => startEdit(promo)}
-                          title="Edit Promotion"
-                        >
-                          <i className="bi bi-pencil"></i>
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => {
-                            if (window.confirm(`Delete promotion "${promo.name}"?`)) {
-                              removePromotion(promo.promotionId);
-                            }
-                          }}
-                          disabled={isDeleting}
-                          title="Delete Promotion"
-                        >
-                          <i className="bi bi-trash"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

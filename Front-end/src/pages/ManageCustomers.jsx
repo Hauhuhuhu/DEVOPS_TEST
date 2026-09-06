@@ -6,6 +6,7 @@ import { useUpdateCustomer } from "../features/Customers/useUpdateCustomer";
 import { useDeleteCustomer } from "../features/Customers/useDeleteCustomer";
 import { formatCurrency } from "../utils/formatCurrency";
 import Spinner from "../ui/Spinner";
+import { UserPlus, Search, X, Phone, Pencil, Trash2, Users, Check } from "lucide-react";
 
 function ManageCustomers() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,180 +59,202 @@ function ManageCustomers() {
   }
 
   return (
-    <div className="item-container p-3">
-      <div className="left-column">
-        <div className="card shadow-sm border-0">
-          <div className="card-header bg-primary text-white py-2">
-            <h5 className="mb-0 fs-6">
-              <i className="bi bi-person-plus me-2"></i>
-              {editingCustomer ? "Edit Customer" : "Add New Customer"}
-            </h5>
+    <div className="flex gap-6 p-6 h-[calc(100vh-4rem)] bg-slate-50 overflow-hidden">
+      {/* Left Column - Form */}
+      <div className="w-96 flex-shrink-0 bg-white rounded-xl shadow-sm border border-slate-200 p-5 overflow-y-auto">
+        <div className="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+            <UserPlus size={18} />
           </div>
-          <div className="card-body">
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="mb-3">
-                <label className="form-label small fw-semibold">Customer Name *</label>
-                <input
-                  type="text"
-                  className={`form-control form-control-sm ${errors.name ? "is-invalid" : ""}`}
-                  placeholder="e.g. Nguyen Van A"
-                  {...register("name", { required: "Name is required" })}
-                />
-                {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label small fw-semibold">Phone Number *</label>
-                <input
-                  type="tel"
-                  className={`form-control form-control-sm ${errors.phoneNumber ? "is-invalid" : ""}`}
-                  placeholder="e.g. 0912345678"
-                  {...register("phoneNumber", {
-                    required: "Phone number is required",
-                    pattern: {
-                      value: /^[0-9+ ]{8,15}$/,
-                      message: "Invalid phone number format",
-                    },
-                  })}
-                />
-                {errors.phoneNumber && (
-                  <div className="invalid-feedback">{errors.phoneNumber.message}</div>
-                )}
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label small fw-semibold">Email (Optional)</label>
-                <input
-                  type="email"
-                  className="form-control form-control-sm"
-                  placeholder="e.g. customer@example.com"
-                  {...register("email")}
-                />
-              </div>
-
-              <div className="d-flex gap-2 mt-4">
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-sm flex-grow-1"
-                  disabled={isCreating || isUpdating}
-                >
-                  {isCreating || isUpdating ? (
-                    "Saving..."
-                  ) : editingCustomer ? (
-                    <>
-                      <i className="bi bi-check-lg me-1"></i> Update
-                    </>
-                  ) : (
-                    <>
-                      <i className="bi bi-plus-lg me-1"></i> Save Customer
-                    </>
-                  )}
-                </button>
-                {editingCustomer && (
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={cancelEdit}
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
+          <h2 className="text-base font-semibold text-slate-900">
+            {editingCustomer ? "Edit Customer" : "Add New Customer"}
+          </h2>
         </div>
-      </div>
 
-      <div className="right-column">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div className="input-group" style={{ maxWidth: "360px" }}>
-            <span className="input-group-text bg-white border-end-0">
-              <i className="bi bi-search text-muted"></i>
-            </span>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Customer Name *
+            </label>
             <input
               type="text"
-              className="form-control border-start-0"
-              placeholder="Search by name or phone..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="e.g. Nguyen Van A"
+              {...register("name", { required: "Name is required" })}
+              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                errors.name ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:border-blue-500"
+              }`}
             />
-            {searchQuery && (
+            {errors.name && (
+              <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Phone Number *
+            </label>
+            <input
+              type="tel"
+              placeholder="e.g. 0912345678"
+              {...register("phoneNumber", {
+                required: "Phone number is required",
+                pattern: {
+                  value: /^[0-9+ ]{8,15}$/,
+                  message: "Invalid phone number format",
+                },
+              })}
+              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                errors.phoneNumber ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:border-blue-500"
+              }`}
+            />
+            {errors.phoneNumber && (
+              <p className="text-xs text-red-600 mt-1">{errors.phoneNumber.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Email (Optional)
+            </label>
+            <input
+              type="email"
+              placeholder="e.g. customer@example.com"
+              {...register("email")}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <button
+              type="submit"
+              disabled={isCreating || isUpdating}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              {isCreating || isUpdating ? (
+                <Spinner className="text-white" />
+              ) : editingCustomer ? (
+                <>
+                  <Check size={16} /> Update
+                </>
+              ) : (
+                <>
+                  <UserPlus size={16} /> Save Customer
+                </>
+              )}
+            </button>
+            {editingCustomer && (
               <button
-                className="btn btn-outline-secondary border-start-0"
-                onClick={() => setSearchQuery("")}
+                type="button"
+                onClick={cancelEdit}
+                className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium transition-colors cursor-pointer"
               >
-                <i className="bi bi-x"></i>
+                Cancel
               </button>
             )}
           </div>
-          <span className="badge bg-secondary fs-6">
+        </form>
+      </div>
+
+      {/* Right Column - List */}
+      <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col overflow-hidden">
+        <div className="flex justify-between items-center mb-4 gap-4">
+          <div className="relative w-72">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by name or phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-slate-300 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+
+          <span className="bg-blue-100 text-blue-700 rounded-full px-3 py-1 text-sm font-medium">
             Total: {customers?.length || 0} Customers
           </span>
         </div>
 
         {isLoading ? (
-          <Spinner />
+          <div className="flex justify-center items-center flex-1">
+            <Spinner size={32} className="text-blue-600" />
+          </div>
         ) : (
-          <div className="table-responsive bg-white rounded shadow-sm">
-            <table className="table table-hover align-middle mb-0">
-              <thead className="table-light">
+          <div className="flex-1 overflow-auto rounded-lg border border-slate-200">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50 sticky top-0">
                 <tr>
-                  <th>Customer</th>
-                  <th>Phone Number</th>
-                  <th>Email</th>
-                  <th className="text-center">Orders</th>
-                  <th className="text-end">Total Spent</th>
-                  <th className="text-center">Actions</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Phone Number</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                  <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Orders</th>
+                  <th className="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Spent</th>
+                  <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100 bg-white">
                 {customers?.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-4 text-muted">
-                      <i className="bi bi-people fs-2 d-block mb-2"></i>
-                      No customers found
+                    <td colSpan="6" className="text-center py-12 text-slate-400">
+                      <Users size={36} className="mx-auto mb-2 text-slate-300" />
+                      <p className="text-sm">No customers found</p>
                     </td>
                   </tr>
                 ) : (
                   customers?.map((customer) => (
-                    <tr key={customer.customerId}>
-                      <td>
-                        <div className="fw-bold">{customer.name}</div>
-                        <small className="text-muted">ID: {customer.customerId.substring(0, 8)}...</small>
+                    <tr key={customer.customerId} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <div className="text-sm font-semibold text-slate-900">{customer.name}</div>
+                        <div className="text-xs text-slate-400">
+                          ID: {customer.customerId ? (customer.customerId.length > 8 ? `${customer.customerId.substring(0, 8)}...` : customer.customerId) : "—"}
+                        </div>
                       </td>
-                      <td>
-                        <i className="bi bi-telephone text-primary me-1"></i>
-                        {customer.phoneNumber}
+                      <td className="px-5 py-3.5 whitespace-nowrap text-sm text-slate-600">
+                        <div className="inline-flex items-center gap-1">
+                          <Phone size={14} className="text-blue-600" />
+                          <span>{customer.phoneNumber}</span>
+                        </div>
                       </td>
-                      <td>{customer.email || <span className="text-muted">-</span>}</td>
-                      <td className="text-center">
-                        <span className="badge bg-info text-dark rounded-pill px-2">
+                      <td className="px-5 py-3.5 whitespace-nowrap text-sm text-slate-600">
+                        {customer.email || <span className="text-slate-400">-</span>}
+                      </td>
+                      <td className="px-5 py-3.5 whitespace-nowrap text-center">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
                           {customer.orderCount} orders
                         </span>
                       </td>
-                      <td className="text-end fw-semibold text-success">
+                      <td className="px-5 py-3.5 whitespace-nowrap text-right text-sm font-semibold text-emerald-600">
                         {formatCurrency(customer.totalSpent || 0)}
                       </td>
-                      <td className="text-center">
-                        <button
-                          className="btn btn-sm btn-outline-primary me-2"
-                          onClick={() => startEdit(customer)}
-                          title="Edit Customer"
-                        >
-                          <i className="bi bi-pencil"></i>
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => {
-                            if (window.confirm(`Delete customer "${customer.name}"?`)) {
-                              removeCustomer(customer.customerId);
-                            }
-                          }}
-                          disabled={isDeleting}
-                          title="Delete Customer"
-                        >
-                          <i className="bi bi-trash"></i>
-                        </button>
+                      <td className="px-5 py-3.5 whitespace-nowrap text-center">
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors cursor-pointer"
+                            onClick={() => startEdit(customer)}
+                            title="Edit Customer"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+                            onClick={() => {
+                              if (window.confirm(`Delete customer "${customer.name}"?`)) {
+                                removeCustomer(customer.customerId);
+                              }
+                            }}
+                            disabled={isDeleting}
+                            title="Delete Customer"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

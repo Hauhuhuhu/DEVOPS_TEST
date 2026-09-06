@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { formatCurrency } from "../../utils/formatCurrency";
 import POSItemModal from "./POSItemModal";
+import { Plus } from "lucide-react";
 
 function DisplayItem({ addToCart, item }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,56 +30,60 @@ function DisplayItem({ addToCart, item }) {
   return (
     <>
       <div
-        className="p-3 bg-dark rounded shadow-sm h-100 d-flex align-items-center item-card category-hover"
+        className="p-3 bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md hover:border-blue-400 transition-all cursor-pointer flex items-center justify-between gap-3 group"
         onClick={handleCardClick}
-        style={{ cursor: "pointer" }}
       >
-        <div style={{ position: "relative", marginRight: "15px" }}>
+        <div className="flex items-center gap-3 min-w-0">
           <img
             src={item.imgUrl || "https://placehold.co/60x60?text=Item"}
             alt={item.name}
-            className="item-image"
+            className="w-12 h-12 rounded-lg object-cover border border-slate-200 bg-slate-50 flex-shrink-0"
           />
+          <div className="min-w-0">
+            <h6 className="text-xs font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+              {item.name}
+            </h6>
+            <p className="text-xs font-bold text-slate-800 mt-0.5">
+              {formatCurrency(item.price)}
+            </p>
+            <div className="flex items-center gap-1 mt-1 flex-wrap">
+              {hasVariants && (
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium bg-slate-100 text-slate-600">
+                  {item.variants.length} var
+                </span>
+              )}
+              {hasModifiers && (
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium bg-blue-50 text-blue-700">
+                  Custom
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="flex-grow-1 ms-2">
-          <h6 className="mb-1 text-light">{item.name}</h6>
-          <p className="mb-0 fw-bold text-warning">{formatCurrency(item.price)}</p>
-          {hasVariants && (
-            <span className="badge bg-secondary me-1" style={{ fontSize: "0.65rem" }}>
-              {item.variants.length} Variants
-            </span>
-          )}
-          {hasModifiers && (
-            <span className="badge bg-info text-dark" style={{ fontSize: "0.65rem" }}>
-              Customizable
-            </span>
-          )}
-        </div>
-        <div
-          className="d-flex flex-column justify-content-between align-items-center ms-3"
-          style={{ height: "100%" }}
+
+        <button
+          type="button"
+          className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCardClick();
+          }}
+          title={needsCustomization ? "Customize item" : "Add to cart"}
         >
-          <i className="bi bi-cart-plus fs-4 text-warning"></i>
-          <button
-            className="btn btn-sm btn-success"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleCardClick();
-            }}
-            title={needsCustomization ? "Customize item" : "Add to cart"}
-          >
-            <i className="bi bi-plus"></i>
-          </button>
-        </div>
+          <Plus size={16} />
+        </button>
       </div>
 
-      <POSItemModal
-        item={item}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAddToCart={addToCart}
-      />
+      {isModalOpen && (
+        <POSItemModal
+          item={item}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onAddToCart={addToCart}
+        />
+      )}
     </>
   );
 }
+
 export default DisplayItem;

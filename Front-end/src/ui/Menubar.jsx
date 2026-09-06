@@ -1,144 +1,231 @@
-import { NavLink } from "react-router-dom"; // Thay Link bằng NavLink
+import { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import useLogout from "../features/Auth/useLogout";
-import { useQuery } from "@tanstack/react-query";
+import { useCurrentUser } from "../hooks/useCurrentUser";
+import { useOutsideClick } from "../hooks/useOutsideClick";
+import { 
+  LayoutDashboard, Compass, Package, Tags, SlidersHorizontal, Users, 
+  Percent, UserCircle, History, LogOut, Settings, Activity, Menu, X, ChevronDown
+} from "lucide-react";
 
 function Menubar() {
   const { logout } = useLogout();
-  const { data: user } = useQuery({
-    queryKey: ["user"],
-    queryFn: () => null, // Hàm giả để không bị văng lỗi
-    staleTime: Infinity, // Không bao giờ tự động refetch (tải lại) dữ liệu này
-    gcTime: Infinity, // Tùy chọn: Giữ cache không bị xóa khi component unmount
-  });
-  let isAdmin = user?.role === "ROLE_ADMIN";
+  const { isAdmin } = useCurrentUser();
+  const location = useLocation();
 
-  // Hàm helper để render class dựa trên trạng thái active
+  const [isManageOpen, setIsManageOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const manageRef = useOutsideClick(() => setIsManageOpen(false));
+  const profileRef = useOutsideClick(() => setIsProfileOpen(false));
+  const navRef = useOutsideClick(() => setIsMobileMenuOpen(false));
+
+  // Auto-close dropdowns and mobile menu on route changes
+  const [prevPathname, setPrevPathname] = useState(location.pathname);
+  if (location.pathname !== prevPathname) {
+    setPrevPathname(location.pathname);
+    setIsManageOpen(false);
+    setIsProfileOpen(false);
+    setIsMobileMenuOpen(false);
+  }
+
   const navLinkClass = ({ isActive }) =>
-    isActive ? "nav-link active fw-bold text-primary" : "nav-link";
+    `flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+      isActive
+        ? "bg-blue-50 text-blue-700"
+        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+    }`;
+
+  const adminLinks = [
+    { to: "/items", icon: Package, label: "Items" },
+    { to: "/categories", icon: Tags, label: "Categories" },
+    { to: "/modifiers", icon: SlidersHorizontal, label: "Modifiers" },
+    { to: "/users", icon: Users, label: "Users" },
+    { to: "/promotions", icon: Percent, label: "Promotions" },
+    { to: "/customers", icon: UserCircle, label: "Customers" },
+  ];
 
   return (
-    <nav className="navbar navbar-expand-lg bg-body-tertiary">
-      <div className="container-fluid">
-        <a className="navbar-brand" href="#">
-          Navbar
-        </a>
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div className="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            <li className="nav-item">
-              <NavLink className={navLinkClass} to={"/dashboard"}>
-                Dashboard
+    <nav ref={navRef} className="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <NavLink to="/dashboard" className="flex-shrink-0 flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-xl shadow-sm">
+                B
+              </div>
+              <span className="font-bold text-xl text-slate-900 tracking-tight hidden md:block">BillingApp</span>
+            </NavLink>
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:ml-8 md:flex md:space-x-2 md:items-center">
+              <NavLink className={navLinkClass} to="/dashboard">
+                <LayoutDashboard size={18} />
+                <span>Dashboard</span>
               </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className={navLinkClass} to={"/explore"}>
-                Explore
+              <NavLink className={navLinkClass} to="/explore">
+                <Compass size={18} />
+                <span>Explore</span>
               </NavLink>
-            </li>
-            {isAdmin && (
-              <>
-                <li className="nav-item">
-                  <NavLink className={navLinkClass} to={"/items"}>
-                    Manage items
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className={navLinkClass} to={"/categories"}>
-                    Manage categories
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className={navLinkClass} to={"/modifiers"}>
-                    Manage modifiers
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className={navLinkClass} to={"/users"}>
-                    Manage users
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className={navLinkClass} to={"/promotions"}>
-                    Manage promotions
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className={navLinkClass} to={"/customers"}>
-                    Manage customers
-                  </NavLink>
-                </li>
-              </>
-            )}
-            <li className="nav-item">
-              <NavLink className={navLinkClass} to={"/orders"}>
-                Order history
+              
+              <NavLink className={navLinkClass} to="/orders">
+                <History size={18} />
+                <span>Orders</span>
               </NavLink>
-            </li>
-          </ul>
-          <div className="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-            <div className="nav-item dropdown">
-              <a
-                href="#"
-                className="nav-link dropdown-toggle"
-                id="navbarDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <img
-                  src={
-                    "https://www.svgrepo.com/show/341256/user-avatar-filled.svg"
-                  }
-                  alt=""
-                  height={32}
-                  width={32}
-                />
-              </a>
-              <ul
-                className="dropdown-menu dropdown-menu-end"
-                aria-labelledby="navbarDropdown"
-              >
-                <li>
-                  <a className="dropdown-item" href="#">
-                    Activity Log
-                  </a>
-                </li>
-                <li>
-                  <a className="dropdown-item" href="#">
-                    Settings
-                  </a>
-                </li>
-                <li>
-                  <hr className="dropdown-divider" />
-                </li>
-                <li>
-                  <a
-                    className="dropdown-item"
-                    href="#!"
+
+              {isAdmin && (
+                <div ref={manageRef} className="relative flex items-center">
+                  <button 
+                    type="button"
+                    onClick={() => setIsManageOpen((prev) => !prev)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isManageOpen 
+                        ? "bg-slate-100 text-slate-900" 
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    }`}
+                  >
+                    <Settings size={18} />
+                    <span>Manage</span>
+                    <ChevronDown size={14} className={`transition-transform duration-200 ${isManageOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {isManageOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50">
+                      {adminLinks.map((link) => (
+                        <NavLink
+                          key={link.to}
+                          to={link.to}
+                          onClick={() => setIsManageOpen(false)}
+                          className={({ isActive }) =>
+                            `flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
+                              isActive ? "bg-blue-50 text-blue-700 font-medium" : "text-slate-700 hover:bg-slate-50"
+                            }`
+                          }
+                        >
+                          <link.icon size={16} />
+                          {link.label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center">
+            {/* Profile dropdown */}
+            <div ref={profileRef} className="relative ml-3">
+              <div>
+                <button
+                  type="button"
+                  className="flex rounded-full bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 p-1 border border-slate-200 transition-shadow"
+                  onClick={() => setIsProfileOpen((prev) => !prev)}
+                >
+                  <span className="sr-only">Open user menu</span>
+                  <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold">
+                    {isAdmin ? 'A' : 'U'}
+                  </div>
+                </button>
+              </div>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 z-50 mt-2 w-52 origin-top-right rounded-lg bg-white py-1 shadow-lg border border-slate-200 focus:outline-none">
+                  <div className="px-4 py-2.5 border-b border-slate-100">
+                    <p className="text-sm font-semibold text-slate-900">{isAdmin ? 'Admin User' : 'Staff User'}</p>
+                    <p className="text-xs text-slate-500">{isAdmin ? 'Administrator' : 'Standard Access'}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsProfileOpen(false)}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    <Activity size={16} /> Activity Log
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsProfileOpen(false)}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    <Settings size={16} /> Settings
+                  </button>
+                  <button
                     onClick={(e) => {
                       e.preventDefault();
                       logout();
                     }}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-t border-slate-100 transition-colors"
                   >
-                    Logout
-                  </a>
-                </li>
-              </ul>
+                    <LogOut size={16} /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Mobile menu button */}
+            <div className="flex items-center ml-4 md:hidden">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              >
+                <span className="sr-only">Open main menu</span>
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-200 bg-white">
+          <div className="space-y-1 pb-3 pt-2 px-2">
+            <NavLink 
+              className={navLinkClass} 
+              to="/dashboard"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <LayoutDashboard size={18} /> Dashboard
+            </NavLink>
+            <NavLink 
+              className={navLinkClass} 
+              to="/explore"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <Compass size={18} /> Explore
+            </NavLink>
+            <NavLink 
+              className={navLinkClass} 
+              to="/orders"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <History size={18} /> Orders
+            </NavLink>
+            
+            {isAdmin && (
+              <>
+                <div className="px-3 pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Management
+                </div>
+                {adminLinks.map((link) => (
+                  <NavLink 
+                    key={link.to} 
+                    className={navLinkClass} 
+                    to={link.to}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <link.icon size={18} /> {link.label}
+                  </NavLink>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
+
 export default Menubar;

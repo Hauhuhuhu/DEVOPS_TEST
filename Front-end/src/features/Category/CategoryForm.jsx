@@ -3,8 +3,8 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useCreateCategory } from "./useCreateCategory";
 import Spinner from "../../ui/Spinner";
+import { FolderPlus, Image as ImageIcon } from "lucide-react";
 
-// Tạo hằng số cho ảnh mặc định để dễ quản lý
 const DEFAULT_PREVIEW = "https://placehold.co/60x60?text=Upload";
 
 function CategoryForm() {
@@ -12,7 +12,6 @@ function CategoryForm() {
   const { isCreating, createCategory } = useCreateCategory();
   const { register, handleSubmit, reset } = useForm();
 
-  // Dọn dẹp URL object để tránh memory leak khi component unmount
   useEffect(() => {
     return () => {
       if (previewUrl !== DEFAULT_PREVIEW) {
@@ -32,11 +31,9 @@ function CategoryForm() {
 
     formData.append("category", JSON.stringify(categoryRequest));
 
-    // Lấy file ảnh trực tiếp từ data của react-hook-form
     const imageFile = data.imgUrl?.[0];
     if (imageFile) {
       if (imageFile.size > 5 * 1024 * 1024) {
-        // 5MB limit
         toast.error("Image size should not exceed 5MB");
         return;
       }
@@ -48,15 +45,13 @@ function CategoryForm() {
 
     createCategory(formData, {
       onSuccess: () => {
-        reset(); // reset() của RHF giờ sẽ tự động xóa value của input file
+        reset();
         setPreviewUrl(DEFAULT_PREVIEW);
-        // ĐÃ XÓA: logic fileInputRef.current.value = ""
       },
     });
   }
 
   function onError(errors) {
-    // Rút gọn logic hiển thị lỗi bằng Object.values
     const firstError = Object.values(errors)[0];
     if (firstError) toast.error(firstError.message);
   }
@@ -73,118 +68,114 @@ function CategoryForm() {
   };
 
   return (
-    <div className="mx-2 overflow-hidden overflow-x-hidden overflow-y-auto">
-      <div className="row">
-        <div className="card col-md-12 form-container">
-          <div className="card-body">
-            <h5 className="card-title mb-3">Add Category</h5>
-            <form onSubmit={handleSubmit(onSubmit, onError)}>
-              {/* --- CẢI THIỆN: Label Upload Ảnh --- */}
-              <div className="mb-2 text-center">
-                <label
-                  htmlFor="imgUrl"
-                  className="form-label d-inline-block"
-                  style={{ cursor: isCreating ? "not-allowed" : "pointer" }}
-                >
-                  <div
-                    className="p-2 rounded"
-                    style={{
-                      border: "2px dashed #ccc",
-                      backgroundColor: "#f8f9fa",
-                      opacity: isCreating ? 0.6 : 1,
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <img
-                      src={previewUrl}
-                      width={60}
-                      height={60}
-                      alt="preview"
-                      className="img-thumbnail border-0 object-fit-cover"
-                    />
-                    <div
-                      className="text-muted mt-2 fw-medium"
-                      style={{ fontSize: "0.85rem" }}
-                    >
-                      Click to upload image
-                    </div>
-                  </div>
-                </label>
-                <input
-                  type="file"
-                  id="imgUrl"
-                  hidden
-                  accept="image/*"
-                  disabled={isCreating}
-                  {...register("imgUrl", {
-                    onChange: handleImageChange,
-                  })}
-                />
-              </div>
+    <div>
+      <div className="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
+        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+          <FolderPlus size={18} />
+        </div>
+        <h2 className="text-base font-semibold text-slate-900">Add Category</h2>
+      </div>
 
-              <div className="mb-3">
-                <label htmlFor="name" className="form-label">
-                  Category Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  className="form-control"
-                  disabled={isCreating}
-                  placeholder="Enter category name"
-                  {...register("name", {
-                    required: "Category name is required",
-                  })}
+      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
+        {/* Image Upload Area */}
+        <div className="text-center">
+          <label
+            htmlFor="imgUrl"
+            className={`block border-2 border-dashed rounded-xl p-3 text-center transition-colors ${
+              isCreating
+                ? "border-slate-200 opacity-60 cursor-not-allowed bg-slate-50"
+                : "border-slate-300 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/20 cursor-pointer"
+            }`}
+          >
+            <div className="flex flex-col items-center justify-center">
+              {previewUrl !== DEFAULT_PREVIEW ? (
+                <img
+                  src={previewUrl}
+                  alt="preview"
+                  className="w-16 h-16 rounded-lg object-cover shadow-xs border border-slate-200"
                 />
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="description" className="form-label">
-                  Category Description
-                </label>
-                <textarea
-                  rows={3}
-                  className="form-control"
-                  id="description"
-                  placeholder="Enter category description"
-                  {...register("description", {
-                    required: "Category description is required",
-                  })}
-                  disabled={isCreating}
-                />
-              </div>
-
-              <div className="mb-4">
-                <label htmlFor="bgColor" className="form-label">
-                  Background Color
-                </label>
-                <div className="d-flex align-items-center">
-                  <input
-                    type="color"
-                    id="bgColor"
-                    className="form-control form-control-color me-2"
-                    title="Choose your color"
-                    {...register("bgColor", {
-                      required: "Background color is required",
-                    })}
-                    disabled={isCreating}
-                  />
-                  <span className="text-muted small">Select a theme color</span>
+              ) : (
+                <div className="w-12 h-12 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
+                  <ImageIcon size={24} />
                 </div>
-              </div>
+              )}
+              <span className="text-xs font-medium text-slate-600 mt-2">
+                Click to upload image
+              </span>
+              <span className="text-[11px] text-slate-400">PNG, JPG up to 5MB</span>
+            </div>
+          </label>
+          <input
+            type="file"
+            id="imgUrl"
+            hidden
+            accept="image/*"
+            disabled={isCreating}
+            {...register("imgUrl", {
+              onChange: handleImageChange,
+            })}
+          />
+        </div>
 
-              {/* --- CẢI THIỆN: Nút Submit Loading --- */}
-              <button
-                type="submit"
-                className="btn btn-warning w-100 d-flex justify-content-center align-items-center gap-2"
-                disabled={isCreating}
-              >
-                {isCreating ? <Spinner /> : "Submit"}
-              </button>
-            </form>
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">
+            Category Name *
+          </label>
+          <input
+            type="text"
+            id="name"
+            disabled={isCreating}
+            placeholder="Enter category name"
+            {...register("name", {
+              required: "Category name is required",
+            })}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-1">
+            Category Description *
+          </label>
+          <textarea
+            rows={3}
+            id="description"
+            placeholder="Enter category description"
+            {...register("description", {
+              required: "Category description is required",
+            })}
+            disabled={isCreating}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="bgColor" className="block text-sm font-medium text-slate-700 mb-1">
+            Background Color *
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              id="bgColor"
+              title="Choose theme color"
+              {...register("bgColor", {
+                required: "Background color is required",
+              })}
+              disabled={isCreating}
+              className="w-10 h-10 p-0.5 rounded-lg border border-slate-300 cursor-pointer disabled:opacity-50"
+            />
+            <span className="text-xs text-slate-500">Pick a badge accent color</span>
           </div>
         </div>
-      </div>
+
+        <button
+          type="submit"
+          disabled={isCreating}
+          className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
+        >
+          {isCreating ? <Spinner className="text-white" /> : "Submit Category"}
+        </button>
+      </form>
     </div>
   );
 }

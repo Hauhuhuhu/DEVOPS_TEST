@@ -3,6 +3,7 @@ import Spinner from "../../ui/Spinner";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { useModifierGroups } from "./useModifierGroups";
 import { useDeleteModifierGroup } from "./useDeleteModifierGroup";
+import { Search, Trash2, SlidersHorizontal } from "lucide-react";
 
 function ModifierGroupList() {
   const { modifierGroups, isLoading } = useModifierGroups();
@@ -14,88 +15,88 @@ function ModifierGroupList() {
   );
 
   return (
-    <div
-      className="category-list-container"
-      style={{ height: "100%", overflowY: "auto", overflowX: "hidden" }}
-    >
-      <div className="row pe-2">
-        <div className="input-group mb-3 block">
-          <input
-            type="text"
-            placeholder="Search modifier groups..."
-            className="form-control"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <span className="input-group-text bg-warning">
-            <i className="bi bi-search"></i>
-          </span>
-        </div>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Search Header */}
+      <div className="relative mb-4">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Search modifier groups..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-300 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+        />
       </div>
 
-      <div className="row g-3 pe-2">
+      {/* List Container */}
+      <div className="flex-1 overflow-y-auto space-y-3 pr-1">
         {isLoading ? (
-          <Spinner />
+          <div className="flex justify-center items-center py-12">
+            <Spinner size={32} className="text-blue-600" />
+          </div>
         ) : filteredGroups?.length === 0 ? (
-          <div className="col-12 text-center text-muted py-4">
-            No modifier groups found
+          <div className="text-center py-12 text-slate-400">
+            <SlidersHorizontal size={36} className="mx-auto mb-2 text-slate-300" />
+            <p className="text-sm">No modifier groups found</p>
           </div>
         ) : (
           filteredGroups?.map((group) => (
-            <div key={group.groupId} className="col-12">
-              <div className="card p-3 bg-dark text-white shadow-sm border-secondary">
-                <div className="d-flex justify-content-between align-items-start">
-                  <div>
-                    <h6 className="mb-1 text-warning fw-bold">{group.name}</h6>
-                    {group.description && (
-                      <p className="text-secondary small mb-2">
-                        {group.description}
-                      </p>
-                    )}
-                    <div className="mb-2">
-                      <span className="badge bg-secondary me-2">
-                        Min: {group.minSelections}
-                      </span>
-                      <span className="badge bg-secondary">
-                        Max: {group.maxSelections}
-                      </span>
-                    </div>
+            <div
+              key={group.groupId}
+              className="p-4 rounded-xl border border-slate-200 bg-white shadow-xs hover:shadow-sm transition-all"
+            >
+              <div className="flex justify-between items-start gap-2">
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-900">{group.name}</h4>
+                  {group.description && (
+                    <p className="text-xs text-slate-500 mt-0.5 mb-2">
+                      {group.description}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-2 mt-1 mb-2">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
+                      Min: {group.minSelections}
+                    </span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
+                      Max: {group.maxSelections}
+                    </span>
                   </div>
-                  <button
-                    className="btn btn-outline-danger btn-sm"
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          `Delete modifier group "${group.name}"?`
-                        )
-                      ) {
-                        deleteModifierGroup(group.groupId);
-                      }
-                    }}
-                    disabled={isDeleting}
-                    title="Delete group"
-                  >
-                    <i className="bi bi-trash"></i>
-                  </button>
                 </div>
 
-                <div className="mt-2 pt-2 border-top border-secondary">
-                  <div className="text-muted small mb-1">Options:</div>
-                  <div className="d-flex flex-wrap gap-2">
-                    {group.modifiers?.map((mod) => (
-                      <span
-                        key={mod.modifierId}
-                        className="badge bg-dark border border-warning text-light py-1 px-2"
-                      >
-                        {mod.name}
-                        {mod.priceAdjustment > 0 && (
-                          <span className="text-warning ms-1">
-                            (+{formatCurrency(mod.priceAdjustment)})
-                          </span>
-                        )}
-                      </span>
-                    ))}
-                  </div>
+                <button
+                  type="button"
+                  className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
+                  onClick={() => {
+                    if (window.confirm(`Delete modifier group "${group.name}"?`)) {
+                      deleteModifierGroup(group.groupId);
+                    }
+                  }}
+                  disabled={isDeleting}
+                  title="Delete group"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+
+              {/* Options */}
+              <div className="mt-2 pt-2 border-t border-slate-100">
+                <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-1.5">
+                  Options:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.modifiers?.map((mod) => (
+                    <span
+                      key={mod.modifierId}
+                      className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-800 border border-blue-100"
+                    >
+                      {mod.name}
+                      {mod.priceAdjustment > 0 && (
+                        <span className="text-blue-600 font-semibold ml-1">
+                          (+{formatCurrency(mod.priceAdjustment)})
+                        </span>
+                      )}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>

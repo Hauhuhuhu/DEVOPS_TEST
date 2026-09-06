@@ -2,6 +2,8 @@ import { useState } from "react";
 import { fetchCustomerByPhone, createCustomer } from "../../services/CustomerService";
 import { formatCurrency } from "../../utils/formatCurrency";
 import toast from "react-hot-toast";
+import Spinner from "../../ui/Spinner";
+import { Search, Star, UserPlus } from "lucide-react";
 
 function CustomerForm({
   customerName,
@@ -68,90 +70,82 @@ function CustomerForm({
   }
 
   return (
-    <div className="p-3">
-      <div className="mb-3">
-        <div className="d-flex align-items-center gap-2">
-          <label htmlFor="mobileNumber" className="col-4 small fw-semibold">
-            Phone Number
-          </label>
-          <div className="input-group input-group-sm">
-            <input
-              type="tel"
-              className="form-control"
-              id="mobileNumber"
-              placeholder="e.g. 0912345678"
-              value={mobileNumber}
-              onChange={(e) => {
-                setMobileNumber(e.target.value);
-                setCustomerInfo(null);
-                setIsNewCustomer(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handlePhoneSearch();
-                }
-              }}
-            />
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={() => handlePhoneSearch()}
-              disabled={isSearching || !mobileNumber.trim()}
-              title="Lookup Customer"
-            >
-              {isSearching ? (
-                <span className="spinner-border spinner-border-sm" role="status"></span>
-              ) : (
-                <i className="bi bi-search"></i>
-              )}
-            </button>
-          </div>
+    <div className="space-y-2">
+      {/* Phone Number Input */}
+      <div>
+        <div className="flex gap-1.5">
+          <input
+            type="tel"
+            id="mobileNumber"
+            placeholder="Phone number..."
+            value={mobileNumber}
+            onChange={(e) => {
+              setMobileNumber(e.target.value);
+              setCustomerInfo(null);
+              setIsNewCustomer(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handlePhoneSearch();
+              }
+            }}
+            className="flex-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          />
+          <button
+            type="button"
+            onClick={() => handlePhoneSearch()}
+            disabled={isSearching || !mobileNumber.trim()}
+            title="Lookup Customer"
+            className="p-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-600 disabled:opacity-40 cursor-pointer"
+          >
+            {isSearching ? <Spinner size={14} /> : <Search size={14} />}
+          </button>
         </div>
       </div>
 
-      <div className="mb-3">
-        <div className="d-flex align-items-center gap-2">
-          <label htmlFor="customerName" className="col-4 small fw-semibold">
-            Customer Name
-          </label>
-          <input
-            type="text"
-            className="form-control form-control-sm"
-            id="customerName"
-            placeholder="Customer name"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-          />
-        </div>
+      {/* Customer Name Input */}
+      <div>
+        <input
+          type="text"
+          id="customerName"
+          placeholder="Customer name..."
+          value={customerName}
+          onChange={(e) => setCustomerName(e.target.value)}
+          className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+        />
       </div>
 
       {customerInfo && (
-        <div className="alert alert-success py-2 px-3 small mb-0 d-flex justify-content-between align-items-center">
+        <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-xs flex justify-between items-center">
           <div>
-            <i className="bi bi-star-fill text-warning me-1"></i>
-            <strong>Returning Customer</strong>
-            <div className="text-muted small">
-              {customerInfo.orderCount} orders &bull; Spent: {formatCurrency(customerInfo.totalSpent || 0)}
+            <div className="inline-flex items-center gap-1 font-semibold text-emerald-900">
+              <Star size={12} className="text-amber-500 fill-amber-500" />
+              <span>Returning Customer</span>
+            </div>
+            <div className="text-[11px] text-emerald-700">
+              {customerInfo.orderCount} orders • {formatCurrency(customerInfo.totalSpent || 0)}
             </div>
           </div>
-          <span className="badge bg-success">Verified</span>
+          <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-200 text-emerald-900">
+            Verified
+          </span>
         </div>
       )}
 
       {isNewCustomer && (
-        <div className="alert alert-warning py-2 px-3 small mb-0 d-flex justify-content-between align-items-center">
-          <div>
-            <i className="bi bi-person-plus text-primary me-1"></i>
-            <span className="text-muted">New customer not in CRM.</span>
+        <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-xs flex justify-between items-center">
+          <div className="text-amber-800 text-[11px]">
+            New customer not in CRM.
           </div>
           <button
             type="button"
-            className="btn btn-primary btn-sm py-0 px-2"
             onClick={handleQuickSaveCustomer}
             disabled={isSaving || !customerName.trim()}
+            className="inline-flex items-center gap-1 px-2 py-0.8 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-medium transition-colors disabled:opacity-50 cursor-pointer"
           >
-            {isSaving ? "Saving..." : "Save to CRM"}
+            <UserPlus size={12} />
+            <span>{isSaving ? "Saving..." : "Save"}</span>
           </button>
         </div>
       )}

@@ -8,7 +8,6 @@ import DisplayCategories from "../../features/Explore/DisplayCategories";
 import DisplayItems from "../../features/Explore/DisplayItems";
 import Spinner from "../../ui/Spinner";
 import { formatCurrency } from "../../utils/formatCurrency";
-import "./Explore.css";
 import { useCartItem } from "../../features/Explore/useCartItem";
 
 function Explore() {
@@ -20,23 +19,25 @@ function Explore() {
   const { activePromotions } = useActivePromotions();
   const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart } =
     useCartItem();
+
   return (
-    <div className="item-container text-light">
-      <div className="left-column">
+    <div className="flex gap-6 p-6 h-[calc(100vh-4rem)] bg-slate-50 overflow-hidden">
+      {/* Left Column - Categories & Items */}
+      <div className="flex-1 flex flex-col min-w-0 bg-white rounded-xl shadow-sm border border-slate-200 p-5 overflow-hidden">
         {/* Store-wide Active Promotions Banner */}
         {activePromotions && activePromotions.length > 0 && (
-          <div className="alert alert-dark border border-warning-subtle py-2 px-3 mb-2 rounded-3 shadow-sm text-light small">
-            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
-              <div className="d-flex align-items-center flex-wrap gap-2">
-                <span className="badge bg-warning text-dark fw-bold px-2 py-1">
-                  🔥 KHUYẾN MÃI CỬA HÀNG
+          <div className="bg-slate-900 text-white py-2 px-3 mb-3 rounded-lg shadow-xs text-xs flex-shrink-0">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center flex-wrap gap-2">
+                <span className="inline-flex items-center px-2 py-0.5 rounded font-bold bg-amber-400 text-slate-900 text-[11px]">
+                  🔥 KHUYẾN MÃI
                 </span>
                 {activePromotions.map((p) => {
                   if (p.type === "HAPPY_HOUR") {
                     return (
                       <span
                         key={p.id}
-                        className="badge bg-danger d-inline-flex align-items-center gap-1 py-1 px-2 shadow-sm"
+                        className="inline-flex items-center px-2 py-0.5 rounded bg-red-600 text-white font-medium text-xs shadow-xs"
                         title={`Áp dụng khung giờ ${p.startTime?.substring(0, 5)} - ${p.endTime?.substring(0, 5)}`}
                       >
                         ⚡ Giờ vàng: {p.name} (
@@ -51,7 +52,7 @@ function Explore() {
                     return (
                       <span
                         key={p.id}
-                        className="badge bg-info text-dark d-inline-flex align-items-center gap-1 py-1 px-2 shadow-sm"
+                        className="inline-flex items-center px-2 py-0.5 rounded bg-blue-600 text-white font-medium text-xs shadow-xs"
                       >
                         🎁 BOGO: {p.name}
                       </span>
@@ -61,7 +62,7 @@ function Explore() {
                     return (
                       <span
                         key={p.id}
-                        className="badge bg-success d-inline-flex align-items-center gap-1 py-1 px-2 shadow-sm"
+                        className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-600 text-white font-medium text-xs shadow-xs"
                         title={p.name}
                       >
                         🏷️ Mã: <strong>{p.code}</strong> (
@@ -75,16 +76,19 @@ function Explore() {
                   return null;
                 })}
               </div>
-              <span className="text-secondary" style={{ fontSize: "0.75rem" }}>
+              <span className="text-slate-400 text-[11px]">
                 * Áp dụng 1 ưu đãi cao nhất cho hóa đơn
               </span>
             </div>
           </div>
         )}
 
-        <div className="first-row" style={{ overflowY: "auto" }}>
+        {/* Categories Row */}
+        <div className="flex-shrink-0 overflow-x-auto pb-2">
           {isLoading ? (
-            <Spinner />
+            <div className="flex justify-center py-4">
+              <Spinner size={24} className="text-blue-600" />
+            </div>
           ) : (
             <DisplayCategories
               selectedCategory={selectedCategory}
@@ -93,16 +97,22 @@ function Explore() {
             />
           )}
         </div>
-        <hr className="horizontal-line" />
-        <div className="second-row" style={{ overflowY: "auto" }}>
+
+        <div className="border-t border-slate-200 my-3 flex-shrink-0"></div>
+
+        {/* Items Grid Row */}
+        <div className="flex-1 overflow-y-auto">
           <DisplayItems
             addToCart={addToCart}
             selectedCategory={selectedCategory}
           />
         </div>
       </div>
-      <div className="right-column d-flex flex-column">
-        <div className="customer-form-container" style={{ height: "14%" }}>
+
+      {/* Right Column - Cart & Customer */}
+      <div className="w-96 flex-shrink-0 flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 p-5 overflow-hidden">
+        {/* Customer Form */}
+        <div className="flex-shrink-0 border-b border-slate-200 pb-3 mb-2">
           <CustomerForm
             customerName={customerName}
             setCustomerName={setCustomerName}
@@ -111,18 +121,18 @@ function Explore() {
             setCustomerId={setCustomerId}
           />
         </div>
-        <hr className="my-2 text-light" />
-        <div
-          className="cart-items-container"
-          style={{ height: "46%", overflowY: "auto" }}
-        >
+
+        {/* Cart Items List */}
+        <div className="flex-1 overflow-y-auto min-h-0 py-1">
           <CartItems
             cartItems={cartItems}
             removeFromCart={removeFromCart}
             updateQuantity={updateQuantity}
           />
         </div>
-        <div className="cart-summary-container" style={{ height: "40%", overflowY: "auto" }}>
+
+        {/* Cart Summary */}
+        <div className="flex-shrink-0 border-t border-slate-200 pt-3 overflow-y-auto max-h-[50%]">
           <CartSummary
             customerName={customerName}
             setCustomerName={setCustomerName}
@@ -138,4 +148,5 @@ function Explore() {
     </div>
   );
 }
+
 export default Explore;

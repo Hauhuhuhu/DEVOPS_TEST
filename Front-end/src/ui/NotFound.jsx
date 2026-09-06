@@ -1,20 +1,25 @@
+import { Link } from "react-router-dom";
+
 function NotFound() {
   return (
-    <div class="d-flex align-items-center justify-content-center vh-100 bg-light">
-      <div class="text-center">
-        <h1 class="display-1 fw-bold text-danger">404</h1>
-        <p class="fs-3">
-          <span class="text-danger">Rất tiếc!</span> Trang bạn tìm kiếm không
-          tồn tại.
+    <div className="flex items-center justify-center min-h-screen bg-slate-50 px-4">
+      <div className="text-center max-w-md">
+        <h1 className="text-7xl font-extrabold text-red-500 mb-2">404</h1>
+        <p className="text-2xl font-semibold text-slate-800 mb-2">
+          <span className="text-red-500">Rất tiếc!</span> Trang bạn tìm kiếm không tồn tại.
         </p>
-        <p class="lead mb-4">
+        <p className="text-slate-600 mb-6">
           Đường dẫn có thể đã bị thay đổi, hoặc bạn đã nhập sai địa chỉ.
         </p>
-        <a href="/dashboard" class="btn btn-primary btn-lg">
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors"
+        >
           Quay lại trang chủ
-        </a>
+        </Link>
       </div>
     </div>
   );
 }
+
 export default NotFound;

@@ -6,6 +6,7 @@ import ReceiptPopup from "./ReceiptPopup";
 import toast from "react-hot-toast";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { evaluatePromotion } from "../../services/PromotionService";
+import { Tag, Banknote, CreditCard, X } from "lucide-react";
 
 function CartSummary({
   customerName,
@@ -191,41 +192,42 @@ function CartSummary({
   }
 
   return (
-    <div className="mt-2">
+    <div className="space-y-3">
       {/* Coupon Input Section */}
-      <div className="input-group input-group-sm mb-2">
+      <div className="flex gap-1.5">
         <input
           type="text"
-          className="form-control bg-dark text-white border-secondary"
           placeholder="Mã giảm giá (Coupon)"
           value={couponInput}
           onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
           disabled={isEvaluating || Boolean(appliedCoupon)}
+          className="flex-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs uppercase font-medium text-slate-900 placeholder-slate-400 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 transition-colors"
         />
         {appliedCoupon ? (
           <button
-            className="btn btn-outline-danger"
             type="button"
             onClick={handleRemoveCoupon}
             disabled={isEvaluating}
+            className="px-2.5 py-1.5 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 text-xs font-semibold transition-colors cursor-pointer"
           >
             Gỡ mã
           </button>
         ) : (
           <button
-            className="btn btn-outline-warning"
             type="button"
             onClick={handleApplyCoupon}
             disabled={isEvaluating || !cartItems.length}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors disabled:opacity-40 cursor-pointer"
           >
-            {isEvaluating ? "Đang tính..." : "Áp dụng"}
+            <Tag size={12} />
+            <span>{isEvaluating ? "..." : "Áp dụng"}</span>
           </button>
         )}
       </div>
 
-      {/* Promotion Active Badge */}
+      {/* Active Promotion Badges */}
       {activeEvaluation?.appliedPromotionType === "HAPPY_HOUR" && (
-        <div className="d-flex align-items-center justify-content-between mb-2 p-1 px-2 rounded bg-warning-subtle text-warning-emphasis small">
+        <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center justify-between">
           <span>
             ⚡ Khung giờ vàng: <strong>{activeEvaluation.appliedPromotionName}</strong>
           </span>
@@ -233,7 +235,7 @@ function CartSummary({
       )}
 
       {activeEvaluation?.appliedPromotionType === "COUPON" && (
-        <div className="d-flex align-items-center justify-content-between mb-2 p-1 px-2 rounded bg-success-subtle text-success small">
+        <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between">
           <span>
             🏷️ Mã ưu đãi: <strong>{appliedCoupon}</strong> ({activeEvaluation.appliedPromotionName})
           </span>
@@ -241,7 +243,7 @@ function CartSummary({
       )}
 
       {activeEvaluation?.appliedPromotionType === "BOGO" && (
-        <div className="d-flex align-items-center justify-content-between mb-2 p-1 px-2 rounded bg-info-subtle text-info-emphasis small">
+        <div className="p-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800 flex items-center justify-between">
           <span>
             🎁 Mua 1 Tặng 1: <strong>{activeEvaluation.appliedPromotionName}</strong>
           </span>
@@ -249,53 +251,61 @@ function CartSummary({
       )}
 
       {/* Pricing Breakdown */}
-      <div className="d-flex justify-content-between mb-1">
-        <span className="text-secondary small">Tạm tính:</span>
-        <span className="text-light">{formatCurrency(subtotal)}</span>
-      </div>
-
-      {discountAmount > 0 && (
-        <div className="d-flex justify-content-between mb-1 text-danger">
-          <span className="small">
-            Giảm giá {activeEvaluation?.appliedPromotionName ? `(${activeEvaluation.appliedPromotionName})` : ""}:
-          </span>
-          <span className="fw-semibold">-{formatCurrency(discountAmount)}</span>
+      <div className="space-y-1.5 pt-1 text-xs">
+        <div className="flex justify-between text-slate-500">
+          <span>Tạm tính:</span>
+          <span className="text-slate-800 font-medium">{formatCurrency(subtotal)}</span>
         </div>
-      )}
 
-      <div className="d-flex justify-content-between mb-1">
-        <span className="text-secondary small">Thuế (10%):</span>
-        <span className="text-light">{formatCurrency(tax)}</span>
-      </div>
+        {discountAmount > 0 && (
+          <div className="flex justify-between text-red-600 font-semibold">
+            <span>
+              Giảm giá {activeEvaluation?.appliedPromotionName ? `(${activeEvaluation.appliedPromotionName})` : ""}:
+            </span>
+            <span>-{formatCurrency(discountAmount)}</span>
+          </div>
+        )}
 
-      <div className="d-flex justify-content-between mb-2">
-        <span className="text-light fw-bold">Tổng thanh toán:</span>
-        <span className="text-warning fw-bold fs-5">
-          {formatCurrency(grandTotal)}
-        </span>
+        <div className="flex justify-between text-slate-500">
+          <span>Thuế VAT (10%):</span>
+          <span className="text-slate-800 font-medium">{formatCurrency(tax)}</span>
+        </div>
+
+        <div className="border-t border-slate-200 pt-2 flex justify-between items-center text-sm font-bold text-slate-900">
+          <span>Tổng thanh toán:</span>
+          <span className="text-base text-blue-600">
+            {formatCurrency(grandTotal)}
+          </span>
+        </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="d-flex gap-2">
+      <div className="grid grid-cols-2 gap-2 pt-1">
         <button
-          className="btn btn-success flex-grow-1"
+          type="button"
           onClick={() => onCreateOrder("CASH")}
           disabled={isCreating || !cartItems.length}
+          className="inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors disabled:opacity-40 cursor-pointer"
         >
-          TIỀN MẶT
+          <Banknote size={15} />
+          <span>TIỀN MẶT</span>
         </button>
         <button
-          className="btn btn-primary flex-grow-1"
+          type="button"
           onClick={() => onCreateOrder("PAYOS")}
           disabled={isCreating || !cartItems.length}
+          className="inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors disabled:opacity-40 cursor-pointer"
         >
-          CHUYỂN KHOẢN (PAYOS)
+          <CreditCard size={15} />
+          <span>CHUYỂN KHOẢN</span>
         </button>
       </div>
-      <div className="d-flex gap-2 mt-2">
+
+      <div>
         <button
-          className="btn btn-outline-secondary btn-sm flex-grow-1"
+          type="button"
           onClick={() => handleClearCart()}
+          className="w-full py-1.5 text-xs text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
         >
           Xóa giỏ hàng
         </button>
@@ -315,36 +325,48 @@ function CartSummary({
 
       {/* Modal PayOS */}
       {showModal && (
-        <div
-          className="modal show d-block"
-          tabIndex="-1"
-          style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content shadow-lg border-0">
-              <div className="modal-header border-0 pb-0">
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => {
-                    setShowModal(false);
-                    const cachedData = queryClient.getQueryData([
-                      "order",
-                      orderData?.data?.orderId,
-                    ]);
-                    if (
-                      cachedData?.data?.paymentDetails?.status === "COMPLETED" ||
-                      orderData?.data?.paymentDetails?.status === "COMPLETED"
-                    ) {
-                      handleClearCart();
-                    }
-                  }}
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div className="modal-body pt-0">
-                {orderData && <PaymentQRCode orderData={orderData} />}
-              </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
+            onClick={() => {
+              setShowModal(false);
+              const cachedData = queryClient.getQueryData([
+                "order",
+                orderData?.data?.orderId,
+              ]);
+              if (
+                cachedData?.data?.paymentDetails?.status === "COMPLETED" ||
+                orderData?.data?.paymentDetails?.status === "COMPLETED"
+              ) {
+                handleClearCart();
+              }
+            }}
+          />
+
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-10 p-5">
+            <button
+              type="button"
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              onClick={() => {
+                setShowModal(false);
+                const cachedData = queryClient.getQueryData([
+                  "order",
+                  orderData?.data?.orderId,
+                ]);
+                if (
+                  cachedData?.data?.paymentDetails?.status === "COMPLETED" ||
+                  orderData?.data?.paymentDetails?.status === "COMPLETED"
+                ) {
+                  handleClearCart();
+                }
+              }}
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+
+            <div>
+              {orderData && <PaymentQRCode orderData={orderData} />}
             </div>
           </div>
         </div>
@@ -354,4 +376,3 @@ function CartSummary({
 }
 
 export default CartSummary;
-

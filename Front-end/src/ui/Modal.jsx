@@ -1,7 +1,7 @@
 import { cloneElement, createContext, useContext, useState } from "react";
 import { createPortal } from "react-dom";
-// import { HiXMark } from "react-icons/hi2";
 import { useOutsideClick } from "../hooks/useOutsideClick";
+import { X } from "lucide-react";
 
 const ModalContext = createContext();
 
@@ -33,42 +33,30 @@ function Window({ children, name }) {
   if (name !== openName) return null;
 
   return createPortal(
-    <>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Overlay */}
       <div
-        className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
-        style={{
-          zIndex: 1050,
-          backdropFilter: "blur(4px)",
-        }}
+        className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
+        aria-hidden="true"
       />
 
-      {/* Modal */}
+      {/* Modal Card */}
       <div
-        className="position-fixed top-50 start-50 translate-middle"
-        style={{ zIndex: 1055 }}
+        ref={ref}
+        className="relative bg-white rounded-xl shadow-xl border border-slate-200 p-6 z-10 w-full max-w-lg mx-auto"
       >
-        <div
-          ref={ref}
-          className="bg-white rounded shadow position-relative p-4"
-          style={{
-            minWidth: "500px",
-            maxWidth: "90vw",
-          }}
+        <button
+          type="button"
+          className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+          onClick={close}
+          aria-label="Close"
         >
-          <button
-            type="button"
-            className="btn btn-light position-absolute top-0 end-0 m-3 border-0"
-            onClick={close}
-          >
-            {/* <HiXMark size={24} /> */}
-            X
-          </button>
+          <X size={18} />
+        </button>
 
-          <div>{cloneElement(children, { onCloseModal: close })}</div>
-        </div>
+        <div>{cloneElement(children, { onCloseModal: close })}</div>
       </div>
-    </>,
+    </div>,
     document.body,
   );
 }

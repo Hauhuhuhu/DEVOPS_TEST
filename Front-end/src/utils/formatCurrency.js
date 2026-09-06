@@ -1,5 +1,7 @@
-export const formatCurrency = (amount) =>
-  new Intl.NumberFormat("vi-VN", {
+export const formatCurrency = (amount) => {
+  const numeric = Number(amount);
+  return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
-  }).format(amount);
+  }).format(Number.isFinite(numeric) ? numeric : 0);
+};

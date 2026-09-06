@@ -3,6 +3,7 @@ import { queryClient } from "./queryClient"; // Import queryClient gốc của b
 
 const api = axios.create({
   baseURL: '/api',
+  // baseURL: "http://localhost:8080/api/v1.0"
 });
 
 // Thêm token vào mỗi request
@@ -23,7 +24,8 @@ api.interceptors.response.use(
       console.log("Token hết hạn, tự động đăng xuất!");
 
       // 1. Xóa storage
-      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
 
       // 2. Xóa cache của TanStack Query để ngắt các tiến trình đang dở dang
       queryClient.clear();

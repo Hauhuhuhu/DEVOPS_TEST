@@ -1,21 +1,25 @@
 import LoginForm from "../features/Auth/LoginForm";
+
 function Login() {
   return (
-    <div className="bg-light d-flex justify-content-center align-items-center vh-100 login-background">
-      <div className="card shadow-lg w-100" style={{ maxWidth: "480px" }}>
-        <div className="card-body">
-          <div className="text-center">
-            <h1 className="card-title text-center">Sign in</h1>
-            <p className="card-text text-muted">
-              Please enter your credentials to sign in
-            </p>
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-2xl mx-auto shadow-md mb-3">
+            B
           </div>
-          <div className="mt-4">
-            <LoginForm />
-          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Sign in to BillingApp</h1>
+          <p className="text-sm text-slate-600 mt-1">
+            Please enter your credentials to access your account
+          </p>
+        </div>
+
+        <div className="bg-white py-8 px-6 shadow-sm border border-slate-200 rounded-xl sm:px-10">
+          <LoginForm />
         </div>
       </div>
     </div>
   );
 }
+
 export default Login;

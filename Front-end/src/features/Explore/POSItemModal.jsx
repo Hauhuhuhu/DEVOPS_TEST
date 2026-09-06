@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { X, Minus, Plus } from "lucide-react";
 
 function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
   const hasVariants = item?.variants && item.variants.length > 0;
@@ -60,7 +61,6 @@ function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
 
       if (isSingleSelect) {
         if (currentSelected.has(modifier.modifierId)) {
-          // If already selected and minSelections is 0, allow deselecting
           if (group.minSelections === 0) {
             currentSelected.clear();
           }
@@ -69,7 +69,6 @@ function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
           currentSelected.add(modifier.modifierId);
         }
       } else {
-        // Multi-select
         if (currentSelected.has(modifier.modifierId)) {
           currentSelected.delete(modifier.modifierId);
         } else {
@@ -117,229 +116,222 @@ function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
   };
 
   return (
-    <div
-      className="modal show d-block"
-      tabIndex="-1"
-      style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
-    >
-      <div className="modal-dialog modal-dialog-centered modal-lg">
-        <div className="modal-content bg-dark text-light border border-secondary shadow-lg">
-          {/* Header */}
-          <div className="modal-header border-secondary">
-            <div className="d-flex align-items-center gap-3">
-              {item.imgUrl && (
-                <img
-                  src={item.imgUrl}
-                  alt={item.name}
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    objectFit: "cover",
-                    borderRadius: "6px",
-                  }}
-                />
-              )}
-              <div>
-                <h5 className="modal-title text-warning fw-bold mb-0">
-                  {item.name}
-                </h5>
-                <span className="text-muted small">
-                  Category: {item.categoryName || "General"}
-                </span>
-              </div>
-            </div>
-            <button
-              type="button"
-              className="btn-close btn-close-white"
-              onClick={onClose}
-            ></button>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" 
+        onClick={onClose}
+      />
 
-          <div
-            className="modal-body"
-            style={{ maxHeight: "65vh", overflowY: "auto" }}
-          >
-            {/* 1. Variant Selection */}
-            {hasVariants && (
-              <div className="mb-4">
-                <label className="form-label text-warning fw-semibold small text-uppercase">
-                  Select Variant / Size:
-                </label>
-                <div className="row g-2">
-                  {item.variants.map((variant) => {
-                    const isSelected =
-                      (activeVariant?.variantId || item.variants[0]?.variantId) ===
-                      variant.variantId;
-                    const attrSummary = variant.attributes
-                      ? Object.entries(variant.attributes)
-                          .map(([k, v]) => `${k}: ${v}`)
-                          .join(" | ")
-                      : variant.sku;
-
-                    return (
-                      <div key={variant.variantId} className="col-md-6">
-                        <div
-                          className={`p-3 rounded border cursor-pointer d-flex justify-content-between align-items-center ${
-                            isSelected
-                              ? "border-warning bg-black bg-opacity-50 text-warning"
-                              : "border-secondary bg-black bg-opacity-25 text-light"
-                          }`}
-                          style={{ cursor: "pointer" }}
-                          onClick={() => setSelectedVariantId(variant.variantId)}
-                        >
-                          <div>
-                            <div className="fw-bold">
-                              {attrSummary || variant.sku}
-                            </div>
-                            <div className="small text-muted">
-                              SKU: {variant.sku}
-                            </div>
-                            <div className="mt-1">
-                              <span
-                                className={`badge ${
-                                  (variant.cachedStockQuantity ?? 0) > 0
-                                    ? "bg-success"
-                                    : "bg-danger"
-                                }`}
-                                style={{ fontSize: "0.7rem" }}
-                              >
-                                Stock: {variant.cachedStockQuantity ?? 0}
-                              </span>
-                            </div>
-                          </div>
-                          <span className="fw-bold fs-6">
-                            {formatCurrency(variant.basePrice)}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+      {/* Modal Card */}
+      <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-10 flex flex-col max-h-[85vh]">
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+          <div className="flex items-center gap-3">
+            {item.imgUrl && (
+              <img
+                src={item.imgUrl}
+                alt={item.name}
+                className="w-12 h-12 rounded-lg object-cover border border-slate-200"
+              />
             )}
+            <div>
+              <h3 className="text-base font-bold text-slate-900 leading-tight">
+                {item.name}
+              </h3>
+              <span className="text-xs text-slate-500">
+                Category: {item.categoryName || "General"}
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            onClick={onClose}
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-            {/* 2. Modifiers Selection */}
-            {hasModifiers && (
-              <div className="mb-3">
-                <label className="form-label text-warning fw-semibold small text-uppercase mb-2">
-                  Customize Options & Add-ons:
-                </label>
-                {item.modifierGroups.map((group) => {
-                  const selectedSet =
-                    selectedModifiersMap[group.groupId] || new Set();
-                  const isSingleSelect = group.maxSelections === 1;
+        {/* Modal Body */}
+        <div className="p-5 overflow-y-auto space-y-4 flex-1">
+          {/* 1. Variant Selection */}
+          {hasVariants && (
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                Select Variant / Size:
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {item.variants.map((variant) => {
+                  const isSelected =
+                    (activeVariant?.variantId || item.variants[0]?.variantId) ===
+                    variant.variantId;
+                  const attrSummary = variant.attributes
+                    ? Object.entries(variant.attributes)
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join(" | ")
+                    : variant.sku;
+                  const inStock = (variant.cachedStockQuantity ?? 0) > 0;
 
                   return (
                     <div
-                      key={group.groupId}
-                      className="p-3 mb-3 rounded bg-black bg-opacity-25 border border-secondary"
+                      key={variant.variantId}
+                      className={`p-3 rounded-xl border transition-all cursor-pointer flex justify-between items-center ${
+                        isSelected
+                          ? "border-blue-600 bg-blue-50/60 shadow-xs"
+                          : "border-slate-200 hover:border-slate-300 hover:bg-slate-50 bg-white"
+                      }`}
+                      onClick={() => setSelectedVariantId(variant.variantId)}
                     >
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <span className="fw-bold text-light">
-                          {group.name}
-                        </span>
-                        <span className="badge bg-secondary text-light">
-                          {isSingleSelect
-                            ? "Choose 1"
-                            : `Max ${group.maxSelections || "unlimited"}`}
-                        </span>
-                      </div>
-                      {group.description && (
-                        <div className="small text-muted mb-2">
-                          {group.description}
+                      <div>
+                        <div className={`text-xs font-bold ${isSelected ? "text-blue-900" : "text-slate-900"}`}>
+                          {attrSummary || variant.sku}
                         </div>
-                      )}
-
-                      <div className="d-flex flex-wrap gap-2">
-                        {group.modifiers?.map((mod) => {
-                          const isModSelected = selectedSet.has(mod.modifierId);
-                          return (
-                            <button
-                              key={mod.modifierId}
-                              type="button"
-                              className={`btn btn-sm ${
-                                isModSelected
-                                  ? "btn-warning text-dark fw-bold"
-                                  : "btn-outline-secondary text-light"
-                              }`}
-                              onClick={() => handleModifierToggle(group, mod)}
-                            >
-                              {mod.name}
-                              {mod.priceAdjustment > 0 && (
-                                <span className="ms-1 small">
-                                  (+{formatCurrency(mod.priceAdjustment)})
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
+                        <div className="text-[11px] text-slate-400 font-mono">
+                          SKU: {variant.sku}
+                        </div>
+                        <div className="mt-1">
+                          <span
+                            className={`inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-semibold ${
+                              inStock
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            Stock: {variant.cachedStockQuantity ?? 0}
+                          </span>
+                        </div>
                       </div>
+                      <span className={`text-xs font-bold ${isSelected ? "text-blue-700" : "text-slate-800"}`}>
+                        {formatCurrency(variant.basePrice)}
+                      </span>
                     </div>
                   );
                 })}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* 3. Quantity Selector */}
-            <div className="d-flex align-items-center justify-content-between p-3 rounded bg-black bg-opacity-25 border border-secondary mb-3">
-              <span className="fw-bold text-light">Quantity:</span>
-              <div className="d-flex align-items-center gap-2">
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary btn-sm"
-                  disabled={quantity <= 1}
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                >
-                  <i className="bi bi-dash"></i>
-                </button>
-                <span className="fw-bold px-3 fs-5 text-warning">
-                  {quantity}
+          {/* 2. Modifiers Selection */}
+          {hasModifiers && (
+            <div className="space-y-3">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Customize Options & Add-ons:
+              </label>
+              {item.modifierGroups.map((group) => {
+                const selectedSet =
+                  selectedModifiersMap[group.groupId] || new Set();
+                const isSingleSelect = group.maxSelections === 1;
+
+                return (
+                  <div
+                    key={group.groupId}
+                    className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2"
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-slate-800">
+                        {group.name}
+                      </span>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-200 text-slate-700">
+                        {isSingleSelect
+                          ? "Choose 1"
+                          : `Max ${group.maxSelections || "unlimited"}`}
+                      </span>
+                    </div>
+                    {group.description && (
+                      <p className="text-[11px] text-slate-500">
+                        {group.description}
+                      </p>
+                    )}
+
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {group.modifiers?.map((mod) => {
+                        const isModSelected = selectedSet.has(mod.modifierId);
+                        return (
+                          <button
+                            key={mod.modifierId}
+                            type="button"
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                              isModSelected
+                                ? "bg-blue-600 border-blue-600 text-white shadow-xs"
+                                : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
+                            }`}
+                            onClick={() => handleModifierToggle(group, mod)}
+                          >
+                            <span>{mod.name}</span>
+                            {mod.priceAdjustment > 0 && (
+                              <span className={`ml-1 text-[11px] ${isModSelected ? "text-blue-100" : "text-blue-600"}`}>
+                                (+{formatCurrency(mod.priceAdjustment)})
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* 3. Quantity Selector */}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-xs font-bold text-slate-800">Quantity:</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="w-7 h-7 rounded-md border border-slate-300 bg-white hover:bg-slate-100 flex items-center justify-center text-slate-600 disabled:opacity-40 cursor-pointer"
+                disabled={quantity <= 1}
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              >
+                <Minus size={13} />
+              </button>
+              <span className="text-sm font-bold text-slate-900 w-8 text-center">
+                {quantity}
+              </span>
+              <button
+                type="button"
+                className="w-7 h-7 rounded-md border border-slate-300 bg-white hover:bg-slate-100 flex items-center justify-center text-slate-600 cursor-pointer"
+                onClick={() => setQuantity((q) => q + 1)}
+              >
+                <Plus size={13} />
+              </button>
+            </div>
+          </div>
+
+          {/* Price Breakdown */}
+          <div className="flex justify-between items-center text-xs text-slate-500 pt-1">
+            <span>
+              Unit: <strong className="text-slate-700">{formatCurrency(unitPrice)}</strong>
+              {selectedModifiersList.length > 0 && (
+                <span className="ml-1 text-[11px]">
+                  ({formatCurrency(basePrice)} + {selectedModifiersList.length} modifiers)
                 </span>
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary btn-sm"
-                  onClick={() => setQuantity((q) => q + 1)}
-                >
-                  <i className="bi bi-plus"></i>
-                </button>
-              </div>
-            </div>
-
-            {/* Price breakdown */}
-            <div className="d-flex justify-content-between align-items-center text-muted small px-1">
-              <span>
-                Unit: {formatCurrency(unitPrice)}
-                {selectedModifiersList.length > 0 && (
-                  <span className="ms-1">
-                    ({formatCurrency(basePrice)} + {selectedModifiersList.length}{" "}
-                    modifiers)
-                  </span>
-                )}
-              </span>
-              <span className="fs-5 fw-bold text-warning">
-                Total: {formatCurrency(totalLinePrice)}
-              </span>
-            </div>
+              )}
+            </span>
+            <span className="text-base font-bold text-blue-600">
+              Total: {formatCurrency(totalLinePrice)}
+            </span>
           </div>
+        </div>
 
-          {/* Footer */}
-          <div className="modal-footer border-secondary">
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="btn btn-success fw-bold px-4"
-              onClick={handleAdd}
-            >
-              <i className="bi bi-cart-plus me-1"></i> Add to Cart -{" "}
-              {formatCurrency(totalLinePrice)}
-            </button>
-          </div>
+        {/* Footer */}
+        <div className="px-5 py-3.5 border-t border-slate-200 bg-slate-50 flex justify-end gap-2">
+          <button
+            type="button"
+            className="px-4 py-2 text-xs font-medium text-slate-700 rounded-lg border border-slate-300 hover:bg-white transition-colors cursor-pointer"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors cursor-pointer"
+            onClick={handleAdd}
+          >
+            <Plus size={14} />
+            <span>Add to Cart - {formatCurrency(totalLinePrice)}</span>
+          </button>
         </div>
       </div>
     </div>

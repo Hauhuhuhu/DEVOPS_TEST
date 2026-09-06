@@ -12,14 +12,11 @@ function DisplayCategories({
     }
     setSelectedCategory(categoryId);
   }
+
   return (
-    <div className="row g-3" style={{ width: "100%", margin: 0 }}>
+    <div className="flex items-center gap-3 overflow-x-auto pb-1">
       {categories?.map((category, index) => (
-        <div
-          key={index}
-          className="col-sm-6 col-md-3"
-          style={{ padding: "0 10px" }}
-        >
+        <div key={category.categoryId || index} className="flex-shrink-0">
           <DisplayCategory
             category={category}
             isSelected={selectedCategory === category.categoryId}
@@ -30,4 +27,5 @@ function DisplayCategories({
     </div>
   );
 }
+
 export default DisplayCategories;

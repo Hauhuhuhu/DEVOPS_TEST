@@ -1,80 +1,29 @@
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
+@import "tailwindcss";
+
+:root {
+  --color-primary: #2563EB;
+  --color-primary-hover: #1d4ed8;
+  --color-accent: #059669;
+  --color-background: #F8FAFC;
+  --color-card: #FFFFFF;
+  --color-muted: #F1F5FD;
+  --color-muted-foreground: #475569;
+  --color-border: #E4ECFC;
+  --color-destructive: #DC2626;
+  --color-foreground: #0F172A;
+}
 
 * {
   box-sizing: border-box;
-  padding: 0;
-  margin: 0;
   font-family: "Outfit", sans-serif;
 }
-html {
-  /* font-size: 62.5%; */
-  font-size: 90%;
-  overflow: hidden;
-}
 
-.item-container {
-  display: flex;
-  gap: 20px;
-  padding: 20px;
-  height: calc(100vh - 4rem);
-  /* height: 100vh; */
-  box-sizing: border-box;
-  background-color: #2c3335;
-  color: #fff;
-}
-
-.left-column {
-  flex: 0.7;
-  background-color: #2c3335;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 16px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-}
-
-.right-column {
-  flex: 0.3;
-  background-color: #2c3335;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 16px;
-  box-sizing: border-box;
-}
-
-.category-image,
-.item-image {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 10px;
-  border: 2px solid #fff;
-}
-
-/* login */
-.login-background {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(
-    rgba(255, 255, 255, 0.5),
-    rgba(255, 255, 255, 0.5)
-  );
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.card {
-  background-color: #fff;
-  width: 100%;
-  max-width: 480px;
-  border: none;
-  box-shadow: 0 0px 20px rgba(0, 0, 0, 0.2);
-}
-
-.card-body {
-  padding: 2rem;
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  -webkit-font-smoothing: antialiased;
 }

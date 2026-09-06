@@ -5,6 +5,7 @@ import { useCreateItem } from "./useCreateItem";
 import Spinner from "../../ui/Spinner";
 import { useCategories } from "../Category/useCategories";
 import { useModifierGroups } from "../Modifiers/useModifierGroups";
+import { PackagePlus, Image as ImageIcon, PlusCircle, Trash2, CheckSquare, Square, X } from "lucide-react";
 
 const DEFAULT_PREVIEW = "https://placehold.co/60x60?text=Upload";
 
@@ -15,49 +16,48 @@ function VariantAttributes({ control, vIndex, register, disabled }) {
   });
 
   return (
-    <div className="p-1 bg-light rounded">
-      <div className="d-flex justify-content-between align-items-center mb-1">
-        <span className="text-muted" style={{ fontSize: "0.75rem" }}>
+    <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 mt-2">
+      <div className="flex justify-between items-center mb-1.5">
+        <span className="text-xs font-semibold text-slate-500">
           Attributes (JSON)
         </span>
         <button
           type="button"
-          className="btn btn-link btn-sm p-0 text-decoration-none"
-          style={{ fontSize: "0.75rem" }}
+          className="text-xs text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
           onClick={() => append({ key: "", value: "" })}
           disabled={disabled}
         >
           + Add Attribute
         </button>
       </div>
-      {fields.map((field, aIndex) => (
-        <div key={field.id} className="d-flex gap-1 mb-1 align-items-center">
-          <input
-            type="text"
-            className="form-control form-control-sm"
-            placeholder="Key (e.g. Size)"
-            {...register(`variants.${vIndex}.attributes.${aIndex}.key`)}
-            style={{ fontSize: "0.8rem" }}
-            disabled={disabled}
-          />
-          <input
-            type="text"
-            className="form-control form-control-sm"
-            placeholder="Value (e.g. M)"
-            {...register(`variants.${vIndex}.attributes.${aIndex}.value`)}
-            style={{ fontSize: "0.8rem" }}
-            disabled={disabled}
-          />
-          <button
-            type="button"
-            className="btn btn-outline-secondary btn-sm py-0 px-1"
-            onClick={() => remove(aIndex)}
-            disabled={disabled}
-          >
-            &times;
-          </button>
-        </div>
-      ))}
+      <div className="space-y-1.5">
+        {fields.map((field, aIndex) => (
+          <div key={field.id} className="flex gap-1.5 items-center">
+            <input
+              type="text"
+              placeholder="Key (e.g. Size)"
+              {...register(`variants.${vIndex}.attributes.${aIndex}.key`)}
+              disabled={disabled}
+              className="flex-1 rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-900 placeholder-slate-400 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <input
+              type="text"
+              placeholder="Value (e.g. M)"
+              {...register(`variants.${vIndex}.attributes.${aIndex}.value`)}
+              disabled={disabled}
+              className="flex-1 rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-900 placeholder-slate-400 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <button
+              type="button"
+              onClick={() => remove(aIndex)}
+              disabled={disabled}
+              className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -220,287 +220,274 @@ function ItemForm() {
   };
 
   return (
-    <div className="mx-2 mt-2 overflow-hidden overflow-x-hidden overflow-y-auto">
-      <div className="row">
-        <div className="card col-md-12 form-container">
-          <div className="card-body">
-            <h5 className="card-title">Add Item</h5>
-            <form onSubmit={handleSubmit(onSubmit, onError)}>
-              <div className="mb-2 text-center">
-                <label
-                  htmlFor="imgUrl"
-                  className="form-label d-inline-block"
-                  style={{ cursor: isCreating ? "not-allowed" : "pointer" }}
-                >
-                  <div
-                    className="p-2 rounded"
-                    style={{
-                      border: "2px dashed #ccc",
-                      backgroundColor: "#f8f9fa",
-                      opacity: isCreating ? 0.6 : 1,
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <img
-                      src={previewUrl}
-                      width={60}
-                      height={60}
-                      alt="preview"
-                      className="img-thumbnail border-0 object-fit-cover"
-                    />
-                    <div
-                      className="text-muted mt-2 fw-medium"
-                      style={{ fontSize: "0.85rem" }}
-                    >
-                      Click to upload image
-                    </div>
-                  </div>
-                </label>
-                <input
-                  type="file"
-                  id="imgUrl"
-                  name="imgUrl"
-                  hidden
-                  accept="image/*"
-                  disabled={isCreating}
-                  {...register("imgUrl", {
-                    onChange: handleImageChange,
-                  })}
+    <div>
+      <div className="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
+        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+          <PackagePlus size={18} />
+        </div>
+        <h2 className="text-base font-semibold text-slate-900">Add Item</h2>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
+        {/* Image Upload Area */}
+        <div className="text-center">
+          <label
+            htmlFor="imgUrl"
+            className={`block border-2 border-dashed rounded-xl p-3 text-center transition-colors ${
+              isCreating
+                ? "border-slate-200 opacity-60 cursor-not-allowed bg-slate-50"
+                : "border-slate-300 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/20 cursor-pointer"
+            }`}
+          >
+            <div className="flex flex-col items-center justify-center">
+              {previewUrl !== DEFAULT_PREVIEW ? (
+                <img
+                  src={previewUrl}
+                  alt="preview"
+                  className="w-16 h-16 rounded-lg object-cover shadow-xs border border-slate-200"
                 />
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="itemName" className="form-label">
-                  Item Name *
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="itemName"
-                  placeholder="Enter item name"
-                  {...register("name", { required: "Item name is required" })}
-                  disabled={isCreating}
-                />
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="category" className="form-label">
-                  Category *
-                </label>
-                <select
-                  className="form-control"
-                  id="category"
-                  {...register("categoryId", {
-                    required: "Category is required",
-                  })}
-                  disabled={isCreating}
-                >
-                  <option value="">--Select category--</option>
-                  {isCategoriesLoading ? (
-                    <option disabled>Loading categories...</option>
-                  ) : (
-                    categories?.map((category, index) => (
-                      <option key={index} value={category.categoryId}>
-                        {category.name}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="itemDescription" className="form-label">
-                  Item Description *
-                </label>
-                <textarea
-                  rows={2}
-                  className="form-control"
-                  id="itemDescription"
-                  placeholder="Enter item description"
-                  {...register("description", {
-                    required: "Item description is required",
-                  })}
-                  disabled={isCreating}
-                />
-              </div>
-
-              {/* Ticket 01: Physical Variants Management via RHF */}
-              <div className="mb-3 p-2 rounded bg-light border">
-                <div className="form-check form-switch mb-2">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="hasVariantsSwitch"
-                    {...register("hasVariants")}
-                    disabled={isCreating}
-                  />
-                  <label
-                    className="form-check-label fw-bold text-dark"
-                    htmlFor="hasVariantsSwitch"
-                  >
-                    Multiple Physical Variants (SKUs, Colors, Sizes)
-                  </label>
+              ) : (
+                <div className="w-12 h-12 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
+                  <ImageIcon size={24} />
                 </div>
+              )}
+              <span className="text-xs font-medium text-slate-600 mt-2">
+                Click to upload image
+              </span>
+              <span className="text-[11px] text-slate-400">PNG, JPG up to 5MB</span>
+            </div>
+          </label>
+          <input
+            type="file"
+            id="imgUrl"
+            name="imgUrl"
+            hidden
+            accept="image/*"
+            disabled={isCreating}
+            {...register("imgUrl", {
+              onChange: handleImageChange,
+            })}
+          />
+        </div>
 
-                {!hasVariants ? (
-                  <div>
-                    <label htmlFor="price" className="form-label">
-                      Price *
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="price"
-                      min={0}
-                      placeholder="10000"
-                      {...register("price", {
-                        required: !hasVariants ? "Price is required" : false,
-                        min: {
-                          value: 0,
-                          message: "Price must be a positive number",
-                        },
-                      })}
-                      disabled={isCreating}
-                    />
-                  </div>
-                ) : (
-                  <div className="mt-2">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="small fw-semibold text-secondary">
-                        Configure Variants ({variantFields.length})
-                      </span>
+        <div>
+          <label htmlFor="itemName" className="block text-sm font-medium text-slate-700 mb-1">
+            Item Name *
+          </label>
+          <input
+            type="text"
+            id="itemName"
+            placeholder="Enter item name"
+            {...register("name", { required: "Item name is required" })}
+            disabled={isCreating}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-1">
+            Category *
+          </label>
+          <select
+            id="category"
+            {...register("categoryId", {
+              required: "Category is required",
+            })}
+            disabled={isCreating}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          >
+            <option value="">--Select category--</option>
+            {isCategoriesLoading ? (
+              <option disabled>Loading categories...</option>
+            ) : (
+              categories?.map((category, index) => (
+                <option key={index} value={category.categoryId}>
+                  {category.name}
+                </option>
+              ))
+            )}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="itemDescription" className="block text-sm font-medium text-slate-700 mb-1">
+            Item Description *
+          </label>
+          <textarea
+            rows={2}
+            id="itemDescription"
+            placeholder="Enter item description"
+            {...register("description", {
+              required: "Item description is required",
+            })}
+            disabled={isCreating}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          />
+        </div>
+
+        {/* Physical Variants Management */}
+        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <label className="relative inline-flex items-center cursor-pointer mb-2">
+            <input
+              type="checkbox"
+              id="hasVariantsSwitch"
+              {...register("hasVariants")}
+              disabled={isCreating}
+              className="sr-only peer"
+            />
+            <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+            <span className="ml-2.5 text-xs font-semibold text-slate-800">
+              Multiple Physical Variants (SKUs, Colors, Sizes)
+            </span>
+          </label>
+
+          {!hasVariants ? (
+            <div className="mt-2">
+              <label htmlFor="price" className="block text-xs font-medium text-slate-700 mb-1">
+                Price *
+              </label>
+              <input
+                type="number"
+                id="price"
+                min={0}
+                placeholder="10000"
+                {...register("price", {
+                  required: !hasVariants ? "Price is required" : false,
+                  min: {
+                    value: 0,
+                    message: "Price must be a positive number",
+                  },
+                })}
+                disabled={isCreating}
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          ) : (
+            <div className="mt-2 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-semibold text-slate-600">
+                  Configure Variants ({variantFields.length})
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    appendVariant({
+                      sku: "",
+                      basePrice: "",
+                      attributes: [
+                        { key: "Color", value: "" },
+                        { key: "Size", value: "" },
+                      ],
+                    })
+                  }
+                  disabled={isCreating}
+                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
+                >
+                  <PlusCircle size={14} /> Add Variant
+                </button>
+              </div>
+
+              {variantFields.map((field, vIndex) => (
+                <div
+                  key={field.id}
+                  className="border border-slate-200 rounded-lg p-3 bg-white shadow-xs"
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
+                      Variant #{vIndex + 1}
+                    </span>
+                    {variantFields.length > 1 && (
                       <button
                         type="button"
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={() =>
-                          appendVariant({
-                            sku: "",
-                            basePrice: "",
-                            attributes: [
-                              { key: "Color", value: "" },
-                              { key: "Size", value: "" },
-                            ],
-                          })
-                        }
+                        onClick={() => removeVariant(vIndex)}
                         disabled={isCreating}
+                        title="Remove Variant"
+                        className="p-1 text-slate-400 hover:text-red-600 cursor-pointer"
                       >
-                        <i className="bi bi-plus-circle me-1"></i> Add Variant
+                        <Trash2 size={14} />
                       </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 mb-2">
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="SKU (e.g., TS-RED-M)"
+                        {...register(`variants.${vIndex}.sku`)}
+                        disabled={isCreating}
+                        className="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
                     </div>
-
-                    {variantFields.map((field, vIndex) => (
-                      <div
-                        key={field.id}
-                        className="border rounded p-2 mb-2 bg-white shadow-sm"
-                      >
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <span className="badge bg-secondary">
-                            Variant #{vIndex + 1}
-                          </span>
-                          {variantFields.length > 1 && (
-                            <button
-                              type="button"
-                              className="btn btn-outline-danger btn-sm py-0 px-1"
-                              onClick={() => removeVariant(vIndex)}
-                              disabled={isCreating}
-                              title="Remove Variant"
-                            >
-                              <i className="bi bi-trash"></i>
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="row g-2 mb-2">
-                          <div className="col-6">
-                            <input
-                              type="text"
-                              className="form-control form-control-sm"
-                              placeholder="SKU (e.g., TS-RED-M)"
-                              {...register(`variants.${vIndex}.sku`)}
-                              disabled={isCreating}
-                            />
-                          </div>
-                          <div className="col-6">
-                            <input
-                              type="number"
-                              className="form-control form-control-sm"
-                              placeholder="Base Price"
-                              min={0}
-                              {...register(`variants.${vIndex}.basePrice`)}
-                              disabled={isCreating}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Nested Dynamic Attributes via useFieldArray */}
-                        <VariantAttributes
-                          control={control}
-                          vIndex={vIndex}
-                          register={register}
-                          disabled={isCreating}
-                        />
-                      </div>
-                    ))}
+                    <div>
+                      <input
+                        type="number"
+                        placeholder="Base Price"
+                        min={0}
+                        {...register(`variants.${vIndex}.basePrice`)}
+                        disabled={isCreating}
+                        className="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
                   </div>
-                )}
-              </div>
 
-              {/* Ticket 02: Modifier Groups Attachment */}
-              <div className="mb-3 p-2 rounded bg-light border">
-                <label className="form-label fw-bold text-dark d-block mb-1">
-                  Attached Modifier Groups (F&B Add-ons)
-                </label>
-                {modifierGroups?.length === 0 ? (
-                  <p
-                    className="text-muted mb-0"
-                    style={{ fontSize: "0.85rem" }}
-                  >
-                    No modifier groups available. Create them in Manage
-                    Modifiers.
-                  </p>
-                ) : (
-                  <div className="d-flex flex-wrap gap-2 mt-1">
-                    {modifierGroups?.map((group) => {
-                      const isChecked = selectedModifierGroupIds.includes(
-                        group.groupId
-                      );
-                      return (
-                        <div
-                          key={group.groupId}
-                          className={`badge p-2 border cursor-pointer ${
-                            isChecked
-                              ? "bg-warning text-dark border-warning"
-                              : "bg-white text-dark border-secondary"
-                          }`}
-                          onClick={() =>
-                            handleToggleModifierGroup(group.groupId)
-                          }
-                          style={{ cursor: "pointer" }}
-                        >
-                          <i
-                            className={`bi ${
-                              isChecked ? "bi-check-square-fill" : "bi-square"
-                            } me-1`}
-                          ></i>
-                          {group.name} ({group.modifiers?.length || 0})
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                className="btn btn-warning w-100"
-                disabled={isCreating}
-              >
-                {isCreating ? <Spinner /> : "Submit Item"}
-              </button>
-            </form>
-          </div>
+                  <VariantAttributes
+                    control={control}
+                    vIndex={vIndex}
+                    register={register}
+                    disabled={isCreating}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
+
+        {/* Modifier Groups Attachment */}
+        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <label className="block text-xs font-semibold text-slate-800 mb-1">
+            Attached Modifier Groups (F&B Add-ons)
+          </label>
+          {modifierGroups?.length === 0 ? (
+            <p className="text-xs text-slate-400">
+              No modifier groups available. Create them in Manage Modifiers.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {modifierGroups?.map((group) => {
+                const isChecked = selectedModifierGroupIds.includes(group.groupId);
+                return (
+                  <button
+                    key={group.groupId}
+                    type="button"
+                    onClick={() => handleToggleModifierGroup(group.groupId)}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                      isChecked
+                        ? "bg-blue-50 border-blue-300 text-blue-800"
+                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    {isChecked ? (
+                      <CheckSquare size={14} className="text-blue-600" />
+                    ) : (
+                      <Square size={14} className="text-slate-400" />
+                    )}
+                    <span>{group.name} ({group.modifiers?.length || 0})</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={isCreating}
+          className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors disabled:opacity-50 cursor-pointer mt-2"
+        >
+          {isCreating ? <Spinner className="text-white" /> : "Submit Item"}
+        </button>
+      </form>
     </div>
   );
 }

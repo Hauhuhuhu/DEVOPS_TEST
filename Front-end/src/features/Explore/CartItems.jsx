@@ -1,91 +1,95 @@
 import { formatCurrency } from "../../utils/formatCurrency";
+import { Minus, Plus, Trash2, ShoppingCart } from "lucide-react";
 
 function CartItems({ cartItems, removeFromCart, updateQuantity }) {
   return (
-    <div className="p-3 overflow-y-auto">
+    <div className="space-y-2">
       {cartItems.length === 0 ? (
-        <p className="text-light">Your cart is empty</p>
-      ) : (
-        <div className="cart-items-list">
-          {cartItems.map((item, index) => {
-            const id = item.cartItemId || item.itemId;
-            return (
-              <div
-                key={id || index}
-                className="cart-item mb-3 p-3 bg-dark border border-secondary rounded shadow-sm"
-              >
-                <div className="d-flex justify-content-between align-items-start mb-1">
-                  <div>
-                    <h6 className="mb-0 text-light fw-bold">{item.name}</h6>
-                    {item.variantLabel && (
-                      <span
-                        className="badge bg-secondary me-1 mt-1"
-                        style={{ fontSize: "0.7rem" }}
-                      >
-                        {item.variantLabel}
-                      </span>
-                    )}
-                    {item.variantSku && !item.variantLabel && (
-                      <span
-                        className="badge bg-secondary me-1 mt-1"
-                        style={{ fontSize: "0.7rem" }}
-                      >
-                        {item.variantSku}
-                      </span>
-                    )}
-                  </div>
-                  <p className="mb-0 text-warning fw-bold">
-                    {formatCurrency(item.price * item.quantity)}
-                  </p>
-                </div>
-
-                {item.selectedModifiers && item.selectedModifiers.length > 0 && (
-                  <div className="small text-info mb-2" style={{ fontSize: "0.75rem" }}>
-                    {item.selectedModifiers.map((m) => (
-                      <span key={m.modifierId} className="me-2">
-                        +{m.name}
-                        {m.priceAdjustment > 0 &&
-                          ` (${formatCurrency(m.priceAdjustment)})`}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="d-flex justify-content-between align-items-center mt-2">
-                  <div className="d-flex align-items-center gap-2">
-                    <button
-                      className="btn btn-danger btn-sm py-0 px-2"
-                      disabled={item.quantity === 1}
-                      onClick={() => updateQuantity(id, item.quantity - 1)}
-                    >
-                      <i className="bi bi-dash"></i>
-                    </button>
-                    <span className="text-light fw-bold">{item.quantity}</span>
-                    <button
-                      className="btn btn-primary btn-sm py-0 px-2"
-                      onClick={() => updateQuantity(id, item.quantity + 1)}
-                    >
-                      <i className="bi bi-plus"></i>
-                    </button>
-                    <span className="text-muted small ms-2">
-                      @ {formatCurrency(item.price)}
-                    </span>
-                  </div>
-                  <button
-                    className="btn btn-outline-danger btn-sm py-0 px-2"
-                    style={{ width: "auto" }}
-                    onClick={() => removeFromCart(id)}
-                    title="Remove item"
-                  >
-                    <i className="bi bi-trash"></i>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+        <div className="text-center py-8 text-slate-400">
+          <ShoppingCart size={32} className="mx-auto mb-2 text-slate-300" />
+          <p className="text-xs">Your cart is empty</p>
         </div>
+      ) : (
+        cartItems.map((item, index) => {
+          const id = item.cartItemId || item.itemId;
+          return (
+            <div
+              key={id || index}
+              className="p-3 bg-slate-50 border border-slate-200 rounded-xl shadow-2xs hover:border-slate-300 transition-all"
+            >
+              <div className="flex justify-between items-start gap-2 mb-1">
+                <div className="min-w-0">
+                  <h6 className="text-xs font-semibold text-slate-900 truncate">
+                    {item.name}
+                  </h6>
+                  {item.variantLabel && (
+                    <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium bg-slate-200 text-slate-700 mr-1 mt-0.5">
+                      {item.variantLabel}
+                    </span>
+                  )}
+                  {item.variantSku && !item.variantLabel && (
+                    <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium bg-slate-200 text-slate-700 mr-1 mt-0.5">
+                      {item.variantSku}
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs font-bold text-slate-900 flex-shrink-0">
+                  {formatCurrency(item.price * item.quantity)}
+                </span>
+              </div>
+
+              {item.selectedModifiers && item.selectedModifiers.length > 0 && (
+                <div className="text-[11px] text-blue-600 mb-1.5 flex flex-wrap gap-1">
+                  {item.selectedModifiers.map((m) => (
+                    <span key={m.modifierId}>
+                      +{m.name}
+                      {m.priceAdjustment > 0 &&
+                        ` (${formatCurrency(m.priceAdjustment)})`}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex justify-between items-center mt-2 pt-1 border-t border-slate-100">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    className="w-6 h-6 rounded-md border border-slate-200 bg-white hover:bg-slate-100 flex items-center justify-center text-slate-600 disabled:opacity-40 cursor-pointer"
+                    disabled={item.quantity === 1}
+                    onClick={() => updateQuantity(id, item.quantity - 1)}
+                  >
+                    <Minus size={12} />
+                  </button>
+                  <span className="text-xs font-bold text-slate-900 w-5 text-center">
+                    {item.quantity}
+                  </span>
+                  <button
+                    type="button"
+                    className="w-6 h-6 rounded-md border border-slate-200 bg-white hover:bg-slate-100 flex items-center justify-center text-slate-600 cursor-pointer"
+                    onClick={() => updateQuantity(id, item.quantity + 1)}
+                  >
+                    <Plus size={12} />
+                  </button>
+                  <span className="text-[11px] text-slate-400 ml-1.5">
+                    @ {formatCurrency(item.price)}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className="p-1 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
+                  onClick={() => removeFromCart(id)}
+                  title="Remove item"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          );
+        })
       )}
     </div>
   );
 }
+
 export default CartItems;

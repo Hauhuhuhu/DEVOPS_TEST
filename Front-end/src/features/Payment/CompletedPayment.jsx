@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { formatCurrency } from "../../utils/formatCurrency";
 import ReceiptPopup from "../Explore/ReceiptPopup";
+import { CheckCircle2, Receipt } from "lucide-react";
 
 function CompletedPayment({ orderId, order }) {
   const [showReceipt, setShowReceipt] = useState(false);
@@ -8,51 +9,44 @@ function CompletedPayment({ orderId, order }) {
 
   return (
     <>
-      <div
-        className="mt-4 p-4 border rounded text-center shadow-sm"
-        style={{ backgroundColor: "#d4edda", borderColor: "#c3e6cb" }}
-      >
-        <h5 className="text-success fw-bold mb-3">🎉 Thanh toán thành công!</h5>
-        <div className="mb-3">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="56"
-            height="56"
-            fill="#28a745"
-            className="bi bi-check-circle-fill"
-            viewBox="0 0 16 16"
-          >
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
-          </svg>
+      <div className="mt-4 p-5 border border-emerald-200 bg-emerald-50/50 rounded-2xl text-center shadow-xs">
+        <h5 className="text-base font-bold text-emerald-800 mb-2">
+          🎉 Thanh toán thành công!
+        </h5>
+        
+        <div className="flex justify-center mb-3 text-emerald-600">
+          <CheckCircle2 size={52} />
         </div>
-        <div className="order-details text-dark">
-          <p className="mb-1">
+
+        <div className="text-slate-800 text-sm space-y-1">
+          <p>
             <strong>Mã đơn hàng:</strong> #{orderId || currentOrder.orderId}
           </p>
           {currentOrder.grandTotal !== undefined && (
-            <p className="mb-1">
+            <p>
               <strong>Tổng thanh toán:</strong>{" "}
-              <span className="text-success fw-bold">
+              <span className="text-emerald-700 font-bold">
                 {formatCurrency(currentOrder.grandTotal)}
               </span>
             </p>
           )}
           {currentOrder.discountAmount > 0 && (
-            <div className="badge bg-success text-white py-1 px-2 mb-2">
+            <div className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 my-1">
               🏷️ Tiết kiệm: {formatCurrency(currentOrder.discountAmount)} (
               {currentOrder.promotionName || "Khuyến mãi"})
             </div>
           )}
-          <p className="mb-2 text-muted small">Cảm ơn bạn! Đơn hàng đã hoàn tất.</p>
+          <p className="text-xs text-slate-500 pt-1">Cảm ơn bạn! Đơn hàng đã hoàn tất.</p>
         </div>
 
         {currentOrder && (
           <button
             type="button"
-            className="btn btn-outline-success btn-sm mt-2"
+            className="inline-flex items-center gap-1.5 px-4 py-2 mt-4 rounded-lg border border-emerald-300 hover:bg-emerald-100/50 text-emerald-800 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
             onClick={() => setShowReceipt(true)}
           >
-            🖨️ Xem & In hóa đơn
+            <Receipt size={15} />
+            <span>Xem & In hóa đơn</span>
           </button>
         )}
       </div>
@@ -67,4 +61,5 @@ function CompletedPayment({ orderId, order }) {
     </>
   );
 }
+
 export default CompletedPayment;

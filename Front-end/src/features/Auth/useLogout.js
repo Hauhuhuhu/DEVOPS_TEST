@@ -9,8 +9,9 @@ function useLogout() {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
 
-    // Xoá cache của React Query
-    queryClient.removeQueries();
+    // Xoá user trong cache và xoá toàn bộ cache của TanStack Query
+    queryClient.setQueryData(["user"], null);
+    queryClient.clear();
 
     navigate("/login", { replace: true });
   };

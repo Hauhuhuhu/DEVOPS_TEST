@@ -3,11 +3,11 @@ import ModifierGroupList from "../features/Modifiers/ModifierGroupList";
 
 function ManageModifiers() {
   return (
-    <div className="item-container">
-      <div className="left-column">
+    <div className="flex gap-6 p-6 h-[calc(100vh-4rem)] bg-slate-50 overflow-hidden">
+      <div className="w-96 flex-shrink-0 bg-white rounded-xl shadow-sm border border-slate-200 p-5 overflow-y-auto">
         <ModifierGroupForm />
       </div>
-      <div className="right-column">
+      <div className="flex-1 overflow-auto bg-white rounded-xl shadow-sm border border-slate-200 p-5">
         <ModifierGroupList />
       </div>
     </div>
