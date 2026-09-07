@@ -8,6 +8,7 @@ import learn.java.billingsoftware.io.*;
 import learn.java.billingsoftware.repository.CustomerRepository;
 import learn.java.billingsoftware.repository.OrderEntityRepository;
 import learn.java.billingsoftware.repository.PromotionRepository;
+import learn.java.billingsoftware.service.ActivityLogService;
 import learn.java.billingsoftware.service.OrderService;
 import learn.java.billingsoftware.service.PromotionService;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,7 @@ public class OrderServiceImpl implements OrderService {
     private final PromotionService promotionService;
     private final PromotionRepository promotionRepository;
     private final CustomerRepository customerRepository;
+    private final ActivityLogService activityLogService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -212,6 +214,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
+        activityLogService.logActivity("CREATE", "ORDER", newOrder.getOrderId(), "Created order #" + newOrder.getOrderId() + " (" + newOrder.getGrandTotal() + " VND)");
         return convertToResponse(newOrder);
     }
 
@@ -297,6 +300,7 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity existingOrder = orderEntityRepository.findByOrderId(orderId) 
                 .orElseThrow(()-> new RuntimeException("Order Not Found")); 
         orderEntityRepository.delete(existingOrder); 
+        activityLogService.logActivity("DELETE", "ORDER", existingOrder.getOrderId(), "Deleted order #" + existingOrder.getOrderId());
     }
 
     @Override
@@ -331,6 +335,33 @@ public class OrderServiceImpl implements OrderService {
                 .stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public OrderPageResponse getOrdersPaginated(int page, int size, String search, String status) {
+        PaymentDetails.PaymentStatus paymentStatus = null;
+        if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("ALL")) {
+            try {
+                paymentStatus = PaymentDetails.PaymentStatus.valueOf(status.trim().toUpperCase());
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
+        String cleanSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        org.springframework.data.domain.Page<OrderEntity> orderPage = orderEntityRepository.findOrdersWithFilter(cleanSearch, paymentStatus, pageable);
+
+        List<OrderResponse> content = orderPage.getContent().stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+
+        return OrderPageResponse.builder()
+                .content(content)
+                .totalElements(orderPage.getTotalElements())
+                .totalPages(orderPage.getTotalPages())
+                .currentPage(page)
+                .pageSize(size)
+                .build();
     }
 }
 //package learn.java.billingsoftware.service.impl;

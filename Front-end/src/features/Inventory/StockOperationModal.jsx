@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import toast from "react-hot-toast";
 import { useRecordTransaction, useStockCheck } from "./useRecordTransaction";
 import { useVariantTransactions } from "./useVariantTransactions";
 import Spinner from "../../ui/Spinner";
@@ -75,6 +76,24 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
 
   const isSubmitting = isRecording || isChecking;
 
+  const onErrorQuick = (errors) => {
+    const firstError = Object.values(errors)[0];
+    if (firstError?.message) {
+      toast.error(firstError.message);
+    } else {
+      toast.error("Vui lòng kiểm tra lại các trường thông tin bắt buộc");
+    }
+  };
+
+  const onErrorCheck = (errors) => {
+    const firstError = Object.values(errors)[0];
+    if (firstError?.message) {
+      toast.error(firstError.message);
+    } else {
+      toast.error("Vui lòng kiểm tra lại các trường thông tin bắt buộc");
+    }
+  };
+
   const onSubmitQuick = (data) => {
     recordTransaction(
       {
@@ -132,7 +151,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               <Package size={20} />
             </div>
             <div>
@@ -208,7 +227,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
         {/* Content */}
         <div className="p-6 overflow-y-auto flex-1">
           {activeTab === "quick" && (
-            <form onSubmit={handleSubmit(onSubmitQuick)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmitQuick, onErrorQuick)} noValidate className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-2">
                   Transaction Type:
@@ -227,7 +246,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                       className="sr-only"
                       {...register("transactionType", { required: true })}
                     />
-                    <ArrowDownCircle size={18} className="text-emerald-600 flex-shrink-0" />
+                    <ArrowDownCircle size={18} className="text-emerald-600 shrink-0" />
                     <div>
                       <div className="text-xs font-bold">Stock IN</div>
                       <div className="text-[11px] text-slate-500">Nhập kho hàng mới</div>
@@ -247,7 +266,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                       className="sr-only"
                       {...register("transactionType", { required: true })}
                     />
-                    <ArrowUpCircle size={18} className="text-red-600 flex-shrink-0" />
+                    <ArrowUpCircle size={18} className="text-red-600 shrink-0" />
                     <div>
                       <div className="text-xs font-bold">Stock OUT</div>
                       <div className="text-[11px] text-slate-500">Xuất huỷ / Hao hụt</div>
@@ -273,7 +292,11 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                       min: { value: 1, message: "Quantity must be at least 1" },
                       valueAsNumber: true,
                     })}
-                    className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full pl-8 pr-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 transition-colors ${
+                      errors.quantity
+                        ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                        : "border-slate-300 focus:ring-blue-500"
+                    }`}
                   />
                 </div>
                 {errors.quantity && (
@@ -338,7 +361,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
           )}
 
           {activeTab === "check" && (
-            <form onSubmit={handleSubmitCheck(onSubmitCheck)} className="space-y-4">
+            <form onSubmit={handleSubmitCheck(onSubmitCheck, onErrorCheck)} noValidate className="space-y-4">
               {/* Comparison Card */}
               <div className="grid grid-cols-3 gap-2 p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
                 <div>
@@ -386,7 +409,11 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                     min: { value: 0, message: "Count cannot be negative" },
                     valueAsNumber: true,
                   })}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 transition-colors ${
+                    errorsCheck.actualCount
+                      ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                      : "border-slate-300 focus:ring-blue-500"
+                  }`}
                 />
                 {errorsCheck.actualCount && (
                   <p className="text-xs text-red-600 mt-1">{errorsCheck.actualCount.message}</p>

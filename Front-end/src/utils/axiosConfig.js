@@ -2,8 +2,8 @@ import axios from "axios";
 import { queryClient } from "./queryClient"; // Import queryClient gốc của bạn
 
 const api = axios.create({
-  baseURL: '/api',
-  // baseURL: "http://localhost:8080/api/v1.0"
+  // baseURL: "/api/v1.0",
+  baseURL: "http://localhost:8080/api/v1.0"
 });
 
 // Thêm token vào mỗi request

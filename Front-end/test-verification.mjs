@@ -152,7 +152,7 @@ test("5. LoginForm Security: Zero hardcoded test credentials in source code", ()
   );
   assert.strictEqual(loginFormContent.includes("hauthaut32@gmail.com"), false);
   assert.strictEqual(loginFormContent.includes("123456"), false);
-  assert.match(loginFormContent, /useState\(["']["']\)/, "Email state must initialize to empty string");
+  assert.match(loginFormContent, /defaultValues:\s*\{\s*email:\s*["']["']/, "Email state must initialize to empty string");
 });
 
 test("6. Menubar Interaction & Role Presentation: Static Verification", () => {

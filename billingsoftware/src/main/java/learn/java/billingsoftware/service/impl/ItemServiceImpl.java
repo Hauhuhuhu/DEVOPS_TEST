@@ -9,6 +9,7 @@ import learn.java.billingsoftware.repository.CategoryRepository;
 import learn.java.billingsoftware.repository.ItemRepository;
 import learn.java.billingsoftware.repository.ModifierGroupRepository;
 import learn.java.billingsoftware.repository.VariantRepository;
+import learn.java.billingsoftware.service.ActivityLogService;
 import learn.java.billingsoftware.service.FileUploadService;
 import learn.java.billingsoftware.service.ItemService;
 import learn.java.billingsoftware.service.ModifierGroupService;
@@ -33,6 +34,7 @@ public class ItemServiceImpl implements ItemService {
     private final VariantRepository variantRepository;
     private final ModifierGroupRepository modifierGroupRepository;
     private final ModifierGroupService modifierGroupService;
+    private final ActivityLogService activityLogService;
 
     @Override
     @Transactional
@@ -105,6 +107,7 @@ public class ItemServiceImpl implements ItemService {
         }
 
         newItem = itemRepository.save(newItem);
+        activityLogService.logActivity("CREATE", "ITEM", newItem.getItemId(), "Created item: " + newItem.getName());
         return convertToResponse(newItem);
     }
 
@@ -186,5 +189,6 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         itemRepository.delete(existingItem);
+        activityLogService.logActivity("DELETE", "ITEM", existingItem.getItemId(), "Deleted item: " + existingItem.getName());
     }
 }

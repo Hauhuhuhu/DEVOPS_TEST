@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { useCustomers } from "../features/Customers/useCustomers";
 import { useCreateCustomer } from "../features/Customers/useCreateCustomer";
 import { useUpdateCustomer } from "../features/Customers/useUpdateCustomer";
 import { useDeleteCustomer } from "../features/Customers/useDeleteCustomer";
 import { formatCurrency } from "../utils/formatCurrency";
 import Spinner from "../ui/Spinner";
+import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
 import { UserPlus, Search, X, Phone, Pencil, Trash2, Users, Check } from "lucide-react";
 
 function ManageCustomers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [editingCustomer, setEditingCustomer] = useState(null);
+  const [customerToDelete, setCustomerToDelete] = useState(null);
 
   const { customers, isLoading } = useCustomers(searchQuery);
   const { isCreating, addCustomer } = useCreateCustomer();
@@ -58,6 +61,15 @@ function ManageCustomers() {
     }
   }
 
+  function onError(errors) {
+    const firstError = Object.values(errors)[0];
+    if (firstError) {
+      toast.error(firstError.message || "Please check the required fields");
+    } else {
+      toast.error("Please check the required fields");
+    }
+  }
+
   return (
     <div className="flex gap-6 p-6 h-[calc(100vh-4rem)] bg-slate-50 overflow-hidden">
       {/* Left Column - Form */}
@@ -71,7 +83,7 @@ function ManageCustomers() {
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Customer Name *
@@ -81,7 +93,7 @@ function ManageCustomers() {
               placeholder="e.g. Nguyen Van A"
               {...register("name", { required: "Name is required" })}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                errors.name ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:border-blue-500"
+                errors.name ? "border-red-500 focus:ring-red-500 bg-red-50/10" : "border-slate-300 focus:border-blue-500"
               }`}
             />
             {errors.name && (
@@ -104,7 +116,7 @@ function ManageCustomers() {
                 },
               })}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                errors.phoneNumber ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:border-blue-500"
+                errors.phoneNumber ? "border-red-500 focus:ring-red-500 bg-red-50/10" : "border-slate-300 focus:border-blue-500"
               }`}
             />
             {errors.phoneNumber && (
@@ -244,11 +256,7 @@ function ManageCustomers() {
                           </button>
                           <button
                             className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
-                            onClick={() => {
-                              if (window.confirm(`Delete customer "${customer.name}"?`)) {
-                                removeCustomer(customer.customerId);
-                              }
-                            }}
+                            onClick={() => setCustomerToDelete(customer)}
                             disabled={isDeleting}
                             title="Delete Customer"
                           >
@@ -264,6 +272,22 @@ function ManageCustomers() {
           </div>
         )}
       </div>
+
+      <ConfirmDeleteModal
+        isOpen={Boolean(customerToDelete)}
+        onClose={() => setCustomerToDelete(null)}
+        onConfirm={() => {
+          if (customerToDelete) {
+            removeCustomer(customerToDelete.customerId, {
+              onSettled: () => setCustomerToDelete(null),
+            });
+          }
+        }}
+        title="Delete Customer"
+        entityName={customerToDelete?.name || ""}
+        message="Are you sure you want to delete this customer? Loyalty points and order history linkages will be removed."
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

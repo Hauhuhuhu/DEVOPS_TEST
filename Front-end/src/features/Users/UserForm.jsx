@@ -6,26 +6,47 @@ import { UserPlus } from "lucide-react";
 
 function UserForm() {
   const { isCreating, createUser } = useCreateUser();
-  const { register, handleSubmit, reset } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      role: "ROLE_USER",
+    },
+  });
 
   function onSubmit(data) {
     const userRequest = {
-      name: data.name,
-      email: data.email,
+      name: data.name.trim(),
+      email: data.email.trim(),
       password: data.password,
-      role: "ROLE_USER",
+      role: data.role || "ROLE_USER",
     };
 
     createUser(userRequest, {
       onSuccess: () => {
-        reset();
+        reset({
+          name: "",
+          email: "",
+          password: "",
+          role: "ROLE_USER",
+        });
       },
     });
   }
 
   function onError(errors) {
     const firstError = Object.values(errors)[0];
-    if (firstError) toast.error(firstError.message);
+    if (firstError?.message) {
+      toast.error(firstError.message);
+    } else {
+      toast.error("Vui lòng kiểm tra lại các trường thông tin bắt buộc");
+    }
   }
 
   return (
@@ -37,7 +58,7 @@ function UserForm() {
         <h2 className="text-base font-semibold text-slate-900">Add User</h2>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
         <div>
           <label htmlFor="userName" className="block text-sm font-medium text-slate-700 mb-1">
             User Name *
@@ -51,8 +72,15 @@ function UserForm() {
               required: "User name is required",
             })}
             disabled={isCreating}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
+              errors.name
+                ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
+            }`}
           />
+          {errors.name && (
+            <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>
+          )}
         </div>
 
         <div>
@@ -71,8 +99,15 @@ function UserForm() {
               },
             })}
             disabled={isCreating}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
+              errors.email
+                ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
+            }`}
           />
+          {errors.email && (
+            <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>
+          )}
         </div>
 
         <div>
@@ -88,8 +123,39 @@ function UserForm() {
             })}
             disabled={isCreating}
             autoComplete="current-password"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
+              errors.password
+                ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
+            }`}
           />
+          {errors.password && (
+            <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="userRole" className="block text-sm font-medium text-slate-700 mb-1">
+            Role *
+          </label>
+          <select
+            id="userRole"
+            {...register("role", {
+              required: "Role is required",
+            })}
+            disabled={isCreating}
+            className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 transition-colors ${
+              errors.role
+                ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
+            }`}
+          >
+            <option value="ROLE_USER">Staff (ROLE_USER)</option>
+            <option value="ROLE_ADMIN">Admin (ROLE_ADMIN)</option>
+          </select>
+          {errors.role && (
+            <p className="text-xs text-red-600 mt-1">{errors.role.message}</p>
+          )}
         </div>
 
         <button

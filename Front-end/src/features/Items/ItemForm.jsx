@@ -68,7 +68,13 @@ function ItemForm() {
   const [previewUrl, setPreviewUrl] = useState(DEFAULT_PREVIEW);
   const { isCreating, createItem } = useCreateItem();
 
-  const { register, control, handleSubmit, reset } = useForm({
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
       name: "",
       description: "",
@@ -204,8 +210,19 @@ function ItemForm() {
   }
 
   function onError(errors) {
-    const firstError = Object.values(errors)[0];
-    if (firstError) toast.error(firstError.message);
+    function getFirstMessage(err) {
+      if (!err) return null;
+      if (typeof err === "object") {
+        if (err.message && typeof err.message === "string") return err.message;
+        for (const key of Object.keys(err)) {
+          const res = getFirstMessage(err[key]);
+          if (res) return res;
+        }
+      }
+      return null;
+    }
+    const message = getFirstMessage(errors) || "Please check the required fields";
+    toast.error(message);
   }
 
   const handleImageChange = (e) => {
@@ -228,7 +245,7 @@ function ItemForm() {
         <h2 className="text-base font-semibold text-slate-900">Add Item</h2>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
         {/* Image Upload Area */}
         <div className="text-center">
           <label
@@ -280,8 +297,15 @@ function ItemForm() {
             placeholder="Enter item name"
             {...register("name", { required: "Item name is required" })}
             disabled={isCreating}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
+              errors.name
+                ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
+            }`}
           />
+          {errors.name && (
+            <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>
+          )}
         </div>
 
         <div>
@@ -294,7 +318,11 @@ function ItemForm() {
               required: "Category is required",
             })}
             disabled={isCreating}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 transition-colors ${
+              errors.categoryId
+                ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
+            }`}
           >
             <option value="">--Select category--</option>
             {isCategoriesLoading ? (
@@ -307,6 +335,9 @@ function ItemForm() {
               ))
             )}
           </select>
+          {errors.categoryId && (
+            <p className="text-xs text-red-600 mt-1">{errors.categoryId.message}</p>
+          )}
         </div>
 
         <div>
@@ -321,8 +352,15 @@ function ItemForm() {
               required: "Item description is required",
             })}
             disabled={isCreating}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
+              errors.description
+                ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
+            }`}
           />
+          {errors.description && (
+            <p className="text-xs text-red-600 mt-1">{errors.description.message}</p>
+          )}
         </div>
 
         {/* Physical Variants Management */}
@@ -359,8 +397,15 @@ function ItemForm() {
                   },
                 })}
                 disabled={isCreating}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full rounded-lg border px-3 py-1.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 transition-colors ${
+                  errors.price
+                    ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                    : "border-slate-300 focus:ring-blue-500"
+                }`}
               />
+              {errors.price && (
+                <p className="text-xs text-red-600 mt-1">{errors.price.message}</p>
+              )}
             </div>
           ) : (
             <div className="mt-2 space-y-3">
@@ -414,20 +459,46 @@ function ItemForm() {
                       <input
                         type="text"
                         placeholder="SKU (e.g., TS-RED-M)"
-                        {...register(`variants.${vIndex}.sku`)}
+                        {...register(`variants.${vIndex}.sku`, {
+                          required: hasVariants ? "Variant SKU is required" : false,
+                        })}
                         disabled={isCreating}
-                        className="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className={`w-full rounded-md border px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 transition-colors ${
+                          errors.variants?.[vIndex]?.sku
+                            ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                            : "border-slate-300 focus:ring-blue-500"
+                        }`}
                       />
+                      {errors.variants?.[vIndex]?.sku && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {errors.variants[vIndex].sku.message}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <input
                         type="number"
                         placeholder="Base Price"
                         min={0}
-                        {...register(`variants.${vIndex}.basePrice`)}
+                        {...register(`variants.${vIndex}.basePrice`, {
+                          required: hasVariants ? "Base price is required" : false,
+                          min: {
+                            value: 0,
+                            message: "Base price must be a positive number",
+                          },
+                        })}
                         disabled={isCreating}
-                        className="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className={`w-full rounded-md border px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 transition-colors ${
+                          errors.variants?.[vIndex]?.basePrice
+                            ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                            : "border-slate-300 focus:ring-blue-500"
+                        }`}
                       />
+                      {errors.variants?.[vIndex]?.basePrice && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {errors.variants[vIndex].basePrice.message}
+                        </p>
+                      )}
                     </div>
                   </div>
 

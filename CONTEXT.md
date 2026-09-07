@@ -40,10 +40,12 @@
   - **Item:** Mặt hàng cụ thể trong danh mục, có thông tin giá, hình ảnh (lưu trên AWS S3).
   - **Order:** Hóa đơn/Đơn hàng tổng của khách hàng, liên kết với cổng thanh toán PayOS.
   - **OrderItem:** Chi tiết từng mặt hàng trong một đơn hàng, ánh xạ giữa `Order` và `Item`.
+  - **ActivityLog:** Ghi nhận lịch sử hoạt động, thao tác quan trọng (Audit log) của người dùng trong hệ thống (Đăng nhập, Tạo đơn, Thay đổi sản phẩm/danh mục/tồn kho,...).
 - **Mối quan hệ cốt lõi:**
   - `Category` 1-N `Item`
   - `Order` 1-N `OrderItem`
   - `OrderItem` N-1 `Item`
+  - `User` 1-N `ActivityLog`
 
 ## 4. System Invariants & Strict Rules (RẤT QUAN TRỌNG)
 - **Auth & Security:** 
@@ -72,3 +74,4 @@
 - **InventoryTransaction (Ledger Inventory)**: Sổ cái ghi nhận mọi biến động tồn kho (IN/OUT/ADJUSTMENT) như Nhập kho, Xuất bán, Kiểm kê. Tồn kho hiện tại của một Variant được tính toán On-the-fly hoặc Cached từ tổng các giao dịch này.
 - **Negative Stock**: Tình trạng tồn kho ảo bị âm do bán hàng Offline (khi thiết bị không có mạng để check tồn kho thực tế). Chấp nhận bán để không làm gián đoạn doanh thu.
 - **Promotion**: Chương trình khuyến mãi. Hệ thống tự động chọn 1 Promotion tốt nhất cho hoá đơn, KHÔNG cho phép xếp chồng (stacking) nhiều khuyến mãi.
+- **ActivityLog**: Bản ghi nhật ký hoạt động (Audit Trail) ghi nhận ai (user/email), làm gì (action: LOGIN, CREATE, UPDATE, DELETE), trên thực thể nào (Category, Item, Order, Customer, Promotion, Variant/Inventory), vào thời điểm nào (timestamp) và ghi chú tóm tắt.

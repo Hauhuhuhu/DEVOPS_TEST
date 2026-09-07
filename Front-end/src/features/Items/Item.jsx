@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Spinner from "../../ui/Spinner";
+import ConfirmDeleteModal from "../../ui/ConfirmDeleteModal";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { useDeleteItem } from "./useDeleteItem";
 import StockOperationModal from "../Inventory/StockOperationModal";
@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp, Trash2, Package } from "lucide-react";
 
 function Item({ item }) {
   const { isDeleting, deleteItem } = useDeleteItem();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedVariantForStock, setSelectedVariantForStock] = useState(null);
 
@@ -58,15 +59,11 @@ function Item({ item }) {
           <button
             type="button"
             className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
-            onClick={() => {
-              if (window.confirm(`Delete item "${item.name}"?`)) {
-                deleteItem(item.itemId);
-              }
-            }}
+            onClick={() => setIsDeleteModalOpen(true)}
             disabled={isDeleting}
             title="Delete item"
           >
-            {isDeleting ? <Spinner size={16} /> : <Trash2 size={16} />}
+            <Trash2 size={16} />
           </button>
         </div>
       </div>
@@ -180,6 +177,20 @@ function Item({ item }) {
           onClose={() => setSelectedVariantForStock(null)}
         />
       )}
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={() => {
+          deleteItem(item.itemId, {
+            onSettled: () => setIsDeleteModalOpen(false),
+          });
+        }}
+        title="Delete Item"
+        entityName={item.name}
+        message="Are you sure you want to delete this item? All associated variants, attributes, and modifier bindings will also be removed."
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

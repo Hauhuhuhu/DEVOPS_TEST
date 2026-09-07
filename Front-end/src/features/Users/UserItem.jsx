@@ -1,9 +1,11 @@
-import Spinner from "../../ui/Spinner";
+import { useState } from "react";
 import { useDeleteUser } from "./useDeleteUser";
 import { Trash2, User } from "lucide-react";
+import ConfirmDeleteModal from "../../ui/ConfirmDeleteModal";
 
 function UserItem({ user }) {
   const { isDeleting, deleteUser } = useDeleteUser();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   return (
     <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-xs flex items-center justify-between gap-3 hover:shadow-sm transition-all">
@@ -20,16 +22,26 @@ function UserItem({ user }) {
       <button
         type="button"
         className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
-        onClick={() => {
-          if (window.confirm(`Delete user "${user.name}"?`)) {
-            deleteUser(user.userId);
-          }
-        }}
+        onClick={() => setIsDeleteModalOpen(true)}
         disabled={isDeleting}
         title="Delete user"
       >
-        {isDeleting ? <Spinner size={16} /> : <Trash2 size={16} />}
+        <Trash2 size={16} />
       </button>
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={() => {
+          deleteUser(user.userId, {
+            onSettled: () => setIsDeleteModalOpen(false),
+          });
+        }}
+        title="Delete User"
+        entityName={user.name}
+        message="Are you sure you want to delete this user? They will immediately lose login access and system privileges."
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

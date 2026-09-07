@@ -27,6 +27,6 @@ public class PaymentDetails {
     private String qrCode;
 
     public enum PaymentStatus {
-        PENDING, COMPLETED, FAILED
+        PENDING, COMPLETED, FAILED, CANCELLED
     }
 }

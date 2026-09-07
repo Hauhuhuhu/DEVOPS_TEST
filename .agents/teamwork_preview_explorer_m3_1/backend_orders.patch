@@ -1,0 +1,199 @@
+diff --git a/billingsoftware/src/main/java/learn/java/billingsoftware/io/OrderPageResponse.java b/billingsoftware/src/main/java/learn/java/billingsoftware/io/OrderPageResponse.java
+new file mode 100644
+--- /dev/null
++++ b/billingsoftware/src/main/java/learn/java/billingsoftware/io/OrderPageResponse.java
+@@ -0,0 +1,18 @@
++package learn.java.billingsoftware.io;
++
++import lombok.AllArgsConstructor;
++import lombok.Builder;
++import lombok.Data;
++import lombok.NoArgsConstructor;
++
++import java.util.List;
++
++@Data
++@AllArgsConstructor
++@NoArgsConstructor
++@Builder
++public class OrderPageResponse {
++    private List<OrderResponse> content;
++    private long totalElements;
++    private int totalPages;
++    private int currentPage;
++    private int pageSize;
++}
+diff --git a/billingsoftware/src/main/java/learn/java/billingsoftware/io/PaymentDetails.java b/billingsoftware/src/main/java/learn/java/billingsoftware/io/PaymentDetails.java
+--- a/billingsoftware/src/main/java/learn/java/billingsoftware/io/PaymentDetails.java
++++ b/billingsoftware/src/main/java/learn/java/billingsoftware/io/PaymentDetails.java
+@@ -28,5 +28,5 @@
+ 
+     public enum PaymentStatus {
+-        PENDING, COMPLETED, FAILED
++        PENDING, COMPLETED, FAILED, CANCELLED
+     }
+ }
+diff --git a/billingsoftware/src/main/java/learn/java/billingsoftware/repository/OrderEntityRepository.java b/billingsoftware/src/main/java/learn/java/billingsoftware/repository/OrderEntityRepository.java
+--- a/billingsoftware/src/main/java/learn/java/billingsoftware/repository/OrderEntityRepository.java
++++ b/billingsoftware/src/main/java/learn/java/billingsoftware/repository/OrderEntityRepository.java
+@@ -2,6 +2,9 @@
+ 
+ import learn.java.billingsoftware.entity.OrderEntity;
++import learn.java.billingsoftware.io.PaymentDetails;
++import org.springframework.data.domain.Page;
+ import org.springframework.data.domain.Pageable;
+ import org.springframework.data.jpa.repository.JpaRepository;
++import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+ import org.springframework.data.jpa.repository.Query;
+ import org.springframework.data.repository.query.Param;
+@@ -10,7 +13,7 @@
+ import java.util.List;
+ import java.util.Optional;
+ 
+-public interface OrderEntityRepository extends JpaRepository<OrderEntity, Long> {
++public interface OrderEntityRepository extends JpaRepository<OrderEntity, Long>, JpaSpecificationExecutor<OrderEntity> {
+     Optional<OrderEntity>findByOrderId(String orderId);
+ 
+     List<OrderEntity> findAllByOrderByCreatedAtDesc();
+@@ -23,4 +26,17 @@
+     @Query("SELECT o FROM OrderEntity o order by o.createdAt DESC")
+     List<OrderEntity> findRecentOrders(Pageable pageable);
++
++    @Query(value = "SELECT o FROM OrderEntity o WHERE " +
++           "(:search IS NULL OR :search = '' OR " +
++           " LOWER(o.orderId) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
++           " LOWER(o.customerName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
++           " o.phoneNumber LIKE CONCAT('%', :search, '%')) AND " +
++           "(:status IS NULL OR o.paymentDetails.status = :status)",
++           countQuery = "SELECT COUNT(o) FROM OrderEntity o WHERE " +
++           "(:search IS NULL OR :search = '' OR " +
++           " LOWER(o.orderId) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
++           " LOWER(o.customerName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
++           " o.phoneNumber LIKE CONCAT('%', :search, '%')) AND " +
++           "(:status IS NULL OR o.paymentDetails.status = :status)")
++    Page<OrderEntity> findOrdersWithFilter(@Param("search") String search,
++                                           @Param("status") PaymentDetails.PaymentStatus status,
++                                           Pageable pageable);
+ }
+diff --git a/billingsoftware/src/main/java/learn/java/billingsoftware/service/OrderService.java b/billingsoftware/src/main/java/learn/java/billingsoftware/service/OrderService.java
+--- a/billingsoftware/src/main/java/learn/java/billingsoftware/service/OrderService.java
++++ b/billingsoftware/src/main/java/learn/java/billingsoftware/service/OrderService.java
+@@ -1,5 +1,6 @@
+ package learn.java.billingsoftware.service;
+ 
++import learn.java.billingsoftware.io.OrderPageResponse;
+ import learn.java.billingsoftware.io.OrderRequest;
+ import learn.java.billingsoftware.io.OrderResponse;
+ 
+@@ -16,4 +17,7 @@
+     Long countByOrderDate(LocalDate date);
+     List<OrderResponse> findRecentOrders(int limit);
++
++    OrderPageResponse getOrdersPaginated(int page, int size, String search, String status);
++    OrderPageResponse getOrdersPaginated(Pageable pageable, String search, String status);
+ }
+diff --git a/billingsoftware/src/main/java/learn/java/billingsoftware/service/impl/OrderServiceImpl.java b/billingsoftware/src/main/java/learn/java/billingsoftware/service/impl/OrderServiceImpl.java
+--- a/billingsoftware/src/main/java/learn/java/billingsoftware/service/impl/OrderServiceImpl.java
++++ b/billingsoftware/src/main/java/learn/java/billingsoftware/service/impl/OrderServiceImpl.java
+@@ -11,4 +11,5 @@
+ import learn.java.billingsoftware.service.OrderService;
+ import learn.java.billingsoftware.service.PromotionService;
+ import lombok.RequiredArgsConstructor;
++import org.springframework.data.domain.Page;
+ import org.springframework.data.domain.PageRequest;
+ import org.springframework.data.domain.Sort;
+@@ -34,4 +35,5 @@
+ import java.time.LocalDate;
+ import java.util.ArrayList;
++import java.util.Collections;
+ import java.util.List;
+ import java.util.UUID;
+@@ -248,7 +250,7 @@
+                 .promotionName(newOrder.getPromotionName())
+                 .paymentMethod(newOrder.getPaymentMethod())
+-                .items(newOrder.getItems().stream()
++                .items(newOrder.getItems() != null ? newOrder.getItems().stream()
+                         .map(this::convertToItemResponse)
+-                        .collect(Collectors.toList()))
++                        .collect(Collectors.toList()) : Collections.emptyList())
+                 .paymentDetails(newOrder.getPaymentDetails())
+                 .createdAt(newOrder.getCreatedAt())
+@@ -331,4 +333,40 @@
+                 .collect(Collectors.toList());
+     }
++
++    @Override
++    @Transactional(readOnly = true)
++    public OrderPageResponse getOrdersPaginated(int page, int size, String search, String status) {
++        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt").and(Sort.by(Sort.Direction.DESC, "id")));
++        return getOrdersPaginated(pageable, search, status);
++    }
++
++    @Override
++    @Transactional(readOnly = true)
++    public OrderPageResponse getOrdersPaginated(Pageable pageable, String search, String status) {
++        String trimmedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
++
++        PaymentDetails.PaymentStatus paymentStatus = null;
++        if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status.trim())) {
++            try {
++                paymentStatus = PaymentDetails.PaymentStatus.valueOf(status.trim().toUpperCase());
++            } catch (IllegalArgumentException e) {
++                return OrderPageResponse.builder()
++                        .content(Collections.emptyList())
++                        .totalElements(0L)
++                        .totalPages(0)
++                        .currentPage(pageable.getPageNumber())
++                        .pageSize(pageable.getPageSize())
++                        .build();
++            }
++        }
++
++        Page<OrderEntity> orderPage = orderEntityRepository.findOrdersWithFilter(trimmedSearch, paymentStatus, pageable);
++
++        List<OrderResponse> content = orderPage.getContent().stream()
++                .map(this::convertToResponse)
++                .collect(Collectors.toList());
++
++        return OrderPageResponse.builder()
++                .content(content)
++                .totalElements(orderPage.getTotalElements())
++                .totalPages(orderPage.getTotalPages())
++                .currentPage(orderPage.getNumber())
++                .pageSize(orderPage.getSize())
++                .build();
++    }
+ }
+diff --git a/billingsoftware/src/main/java/learn/java/billingsoftware/controller/OrderController.java b/billingsoftware/src/main/java/learn/java/billingsoftware/controller/OrderController.java
+--- a/billingsoftware/src/main/java/learn/java/billingsoftware/controller/OrderController.java
++++ b/billingsoftware/src/main/java/learn/java/billingsoftware/controller/OrderController.java
+@@ -1,4 +1,5 @@
+ package learn.java.billingsoftware.controller;
+ 
++import learn.java.billingsoftware.io.OrderPageResponse;
+ import learn.java.billingsoftware.io.OrderRequest;
+ import learn.java.billingsoftware.io.OrderResponse;
+@@ -35,4 +36,13 @@
+     public OrderResponse getOrderById(@PathVariable String orderId) {
+         return orderService.getOrderById(orderId);
+     }
++
++    @GetMapping
++    public OrderPageResponse getOrders(
++            @RequestParam(value = "page", defaultValue = "0") int page,
++            @RequestParam(value = "size", defaultValue = "10") int size,
++            @RequestParam(value = "search", required = false) String search,
++            @RequestParam(value = "status", required = false) String status) {
++        return orderService.getOrdersPaginated(page, size, search, status);
++    }
+ }
+diff --git a/billingsoftware/src/main/java/learn/java/billingsoftware/config/SecurityConfig.java b/billingsoftware/src/main/java/learn/java/billingsoftware/config/SecurityConfig.java
+--- a/billingsoftware/src/main/java/learn/java/billingsoftware/config/SecurityConfig.java
++++ b/billingsoftware/src/main/java/learn/java/billingsoftware/config/SecurityConfig.java
+@@ -41,5 +41,5 @@
+                 .authorizeHttpRequests(auth -> auth
+                         .requestMatchers("/login", "/encode", "/payos/**", "/uploads/**").permitAll()
+                         .requestMatchers("/payos/webhook").permitAll()
+-                        .requestMatchers("/categories", "/items/**", "/orders/**", "/dashboard", "/modifier-groups/**", "/inventory/**", "/customers", "/customers/**", "/promotions", "/promotions/**").hasAnyRole("USER", "ADMIN")
++                        .requestMatchers("/categories", "/items/**", "/orders", "/orders/**", "/dashboard", "/modifier-groups/**", "/inventory/**", "/customers", "/customers/**", "/promotions", "/promotions/**").hasAnyRole("USER", "ADMIN")
+                         .requestMatchers("/admin/**").hasRole("ADMIN")

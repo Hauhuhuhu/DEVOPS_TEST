@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useDeleteCategory } from "./useDeleteCategory";
 import { Trash2 } from "lucide-react";
-import Spinner from "../../ui/Spinner";
+import ConfirmDeleteModal from "../../ui/ConfirmDeleteModal";
 
 function CategoryListItem({ category }) {
   const { isDeleting, deleteCategory } = useDeleteCategory();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   return (
     <div
@@ -29,16 +31,26 @@ function CategoryListItem({ category }) {
       <button
         type="button"
         disabled={isDeleting}
-        onClick={() => {
-          if (window.confirm(`Delete category "${category.name}"?`)) {
-            deleteCategory(category.categoryId);
-          }
-        }}
+        onClick={() => setIsDeleteModalOpen(true)}
         className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
         title="Delete category"
       >
-        {isDeleting ? <Spinner size={16} /> : <Trash2 size={16} />}
+        <Trash2 size={16} />
       </button>
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={() => {
+          deleteCategory(category.categoryId, {
+            onSettled: () => setIsDeleteModalOpen(false),
+          });
+        }}
+        title="Delete Category"
+        entityName={category.name}
+        message="Are you sure you want to delete this category? Items under this category will no longer be grouped."
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

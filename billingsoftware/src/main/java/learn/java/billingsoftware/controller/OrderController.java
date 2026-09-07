@@ -1,5 +1,6 @@
 package learn.java.billingsoftware.controller;
 
+import learn.java.billingsoftware.io.OrderPageResponse;
 import learn.java.billingsoftware.io.OrderRequest;
 import learn.java.billingsoftware.io.OrderResponse;
 import learn.java.billingsoftware.service.OrderService;
@@ -14,6 +15,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
+
+    @GetMapping
+    public OrderPageResponse getOrders(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "status", required = false) String status) {
+        return orderService.getOrdersPaginated(page, size, search, status);
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

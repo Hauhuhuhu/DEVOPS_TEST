@@ -11,6 +11,7 @@ function ModifierGroupForm() {
     control,
     handleSubmit,
     reset,
+    formState: { errors },
   } = useForm({
     defaultValues: {
       name: "",
@@ -61,8 +62,29 @@ function ModifierGroupForm() {
   };
 
   const onError = (errors) => {
+    if (errors.name?.message) {
+      toast.error(errors.name.message);
+      return;
+    }
+    if (errors.modifiers) {
+      const firstModError = Array.isArray(errors.modifiers)
+        ? errors.modifiers.find((m) => m?.name || m?.priceAdjustment)
+        : null;
+      if (firstModError?.name?.message) {
+        toast.error(firstModError.name.message);
+        return;
+      }
+      if (firstModError?.priceAdjustment?.message) {
+        toast.error(firstModError.priceAdjustment.message);
+        return;
+      }
+    }
     const firstError = Object.values(errors)[0];
-    if (firstError) toast.error(firstError.message);
+    if (firstError?.message) {
+      toast.error(firstError.message);
+    } else {
+      toast.error("Vui lòng kiểm tra lại các trường thông tin bắt buộc");
+    }
   };
 
   return (
@@ -74,7 +96,7 @@ function ModifierGroupForm() {
         <h2 className="text-base font-semibold text-slate-900">Add Modifier Group</h2>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
         <div>
           <label htmlFor="groupName" className="block text-sm font-medium text-slate-700 mb-1">
             Group Name *
@@ -85,8 +107,15 @@ function ModifierGroupForm() {
             placeholder="e.g., Sugar Level, Toppings"
             {...register("name", { required: "Modifier group name is required" })}
             disabled={isCreating}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
+              errors.name
+                ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
+            }`}
           />
+          {errors.name && (
+            <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>
+          )}
         </div>
 
         <div>
@@ -147,41 +176,67 @@ function ModifierGroupForm() {
             </button>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {fields.map((field, index) => (
-              <div key={field.id} className="flex gap-2 items-center">
-                <input
-                  type="text"
-                  placeholder="Option (e.g. Boba)"
-                  {...register(`modifiers.${index}.name`, {
-                    required: "Option name is required",
-                  })}
-                  disabled={isCreating}
-                  className="flex-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <input
-                  type="number"
-                  placeholder="Price (+VND)"
-                  min={0}
-                  {...register(`modifiers.${index}.priceAdjustment`)}
-                  disabled={isCreating}
-                  className="w-28 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (fields.length <= 1) {
-                      toast.error("At least one option is required");
-                      return;
-                    }
-                    remove(index);
-                  }}
-                  disabled={isCreating || fields.length === 1}
-                  title="Remove option"
-                  className="p-1.5 text-slate-400 hover:text-red-600 disabled:opacity-40 cursor-pointer"
-                >
-                  <Trash2 size={15} />
-                </button>
+              <div key={field.id} className="space-y-1">
+                <div className="flex gap-2 items-center">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder="Option (e.g. Boba)"
+                      {...register(`modifiers.${index}.name`, {
+                        required: "Option name is required",
+                      })}
+                      disabled={isCreating}
+                      className={`w-full rounded-lg border px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
+                        errors.modifiers?.[index]?.name
+                          ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                          : "border-slate-300 focus:ring-blue-500"
+                      }`}
+                    />
+                    {errors.modifiers?.[index]?.name && (
+                      <p className="text-xs text-red-600 mt-1">
+                        {errors.modifiers[index].name.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="w-28">
+                    <input
+                      type="number"
+                      placeholder="Price (+VND)"
+                      min={0}
+                      {...register(`modifiers.${index}.priceAdjustment`, {
+                        min: { value: 0, message: "Price must be >= 0" },
+                      })}
+                      disabled={isCreating}
+                      className={`w-full rounded-lg border px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 transition-colors ${
+                        errors.modifiers?.[index]?.priceAdjustment
+                          ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                          : "border-slate-300 focus:ring-blue-500"
+                      }`}
+                    />
+                    {errors.modifiers?.[index]?.priceAdjustment && (
+                      <p className="text-xs text-red-600 mt-1">
+                        {errors.modifiers[index].priceAdjustment.message}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (fields.length <= 1) {
+                        toast.error("At least one option is required");
+                        return;
+                      }
+                      remove(index);
+                    }}
+                    disabled={isCreating || fields.length === 1}
+                    title="Remove option"
+                    className="p-1.5 text-slate-400 hover:text-red-600 disabled:opacity-40 cursor-pointer self-start mt-0.5"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

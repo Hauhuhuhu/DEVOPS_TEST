@@ -51,7 +51,7 @@ function Menubar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
-            <NavLink to="/dashboard" className="flex-shrink-0 flex items-center gap-2">
+            <NavLink to="/dashboard" className="shrink-0 flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-xl shadow-sm">
                 B
               </div>
@@ -136,13 +136,13 @@ function Menubar() {
                     <p className="text-sm font-semibold text-slate-900">{isAdmin ? 'Admin User' : 'Staff User'}</p>
                     <p className="text-xs text-slate-500">{isAdmin ? 'Administrator' : 'Standard Access'}</p>
                   </div>
-                  <button
-                    type="button"
+                  <NavLink
+                    to="/activity-logs"
                     onClick={() => setIsProfileOpen(false)}
                     className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
                   >
                     <Activity size={16} /> Activity Log
-                  </button>
+                  </NavLink>
                   <button
                     type="button"
                     onClick={() => setIsProfileOpen(false)}
@@ -202,6 +202,13 @@ function Menubar() {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <History size={18} /> Orders
+            </NavLink>
+            <NavLink 
+              className={navLinkClass} 
+              to="/activity-logs"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <Activity size={18} /> Activity Log
             </NavLink>
             
             {isAdmin && (

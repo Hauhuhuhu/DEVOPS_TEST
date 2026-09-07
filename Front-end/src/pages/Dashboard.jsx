@@ -43,9 +43,9 @@ function Dashboard() {
             <ShoppingCart size={28} />
           </div>
           <div>
-            <h3 className="text-sm font-medium text-slate-500">Total Orders</h3>
+            <h3 className="text-sm font-medium text-slate-500">Today's Orders</h3>
             <p className="text-2xl font-bold text-slate-900 mt-1">
-              {dashboardData.totalOrderCount ?? 0}
+              {dashboardData.todayOrderCount ?? 0}
             </p>
           </div>
         </div>

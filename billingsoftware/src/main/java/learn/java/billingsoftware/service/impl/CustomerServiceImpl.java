@@ -4,6 +4,7 @@ import learn.java.billingsoftware.entity.CustomerEntity;
 import learn.java.billingsoftware.io.CustomerRequest;
 import learn.java.billingsoftware.io.CustomerResponse;
 import learn.java.billingsoftware.repository.CustomerRepository;
+import learn.java.billingsoftware.service.ActivityLogService;
 import learn.java.billingsoftware.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final ActivityLogService activityLogService;
 
     @Override
     @Transactional
@@ -46,6 +48,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .build();
 
         CustomerEntity saved = customerRepository.save(entity);
+        activityLogService.logActivity("CREATE", "CUSTOMER", saved.getCustomerId(), "Created customer: " + saved.getName() + " (" + saved.getPhoneNumber() + ")");
         return convertToResponse(saved);
     }
 
@@ -98,6 +101,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         CustomerEntity saved = customerRepository.save(entity);
+        activityLogService.logActivity("UPDATE", "CUSTOMER", saved.getCustomerId(), "Updated customer: " + saved.getName());
         return convertToResponse(saved);
     }
 
@@ -107,6 +111,7 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerEntity entity = customerRepository.findByCustomerId(customerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found: " + customerId));
         customerRepository.delete(entity);
+        activityLogService.logActivity("DELETE", "CUSTOMER", entity.getCustomerId(), "Deleted customer: " + entity.getName());
     }
 
     public CustomerResponse convertToResponse(CustomerEntity entity) {

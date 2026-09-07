@@ -1,6 +1,8 @@
 package learn.java.billingsoftware.repository;
 
 import learn.java.billingsoftware.entity.OrderEntity;
+import learn.java.billingsoftware.io.PaymentDetails;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,4 +25,20 @@ public interface OrderEntityRepository extends JpaRepository<OrderEntity, Long> 
 
     @Query("SELECT o FROM OrderEntity o order by o.createdAt DESC")
     List<OrderEntity> findRecentOrders(Pageable pageable);
+
+    @Query(value = "SELECT o FROM OrderEntity o WHERE " +
+            "(:status IS NULL OR o.paymentDetails.status = :status) AND " +
+            "(:search IS NULL OR :search = '' OR " +
+            "LOWER(o.orderId) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(o.customerName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "o.phoneNumber LIKE CONCAT('%', :search, '%'))",
+            countQuery = "SELECT COUNT(o) FROM OrderEntity o WHERE " +
+            "(:status IS NULL OR o.paymentDetails.status = :status) AND " +
+            "(:search IS NULL OR :search = '' OR " +
+            "LOWER(o.orderId) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(o.customerName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "o.phoneNumber LIKE CONCAT('%', :search, '%'))")
+    Page<OrderEntity> findOrdersWithFilter(@Param("search") String search,
+                                          @Param("status") PaymentDetails.PaymentStatus status,
+                                          Pageable pageable);
 }

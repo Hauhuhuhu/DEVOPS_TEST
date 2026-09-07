@@ -5,6 +5,14 @@ export const latestOrders = async () => {
   return response.data;
 };
 
+export const getOrders = async (page = 0, size = 10, search = "", status = "") => {
+  const params = { page, size };
+  if (search && search.trim()) params.search = search.trim();
+  if (status && status.trim() && status !== "ALL") params.status = status.trim();
+  const response = await api.get("/orders", { params });
+  return response.data;
+};
+
 export const createOrder = async (order) => {
   return await api.post("/orders", order);
 };

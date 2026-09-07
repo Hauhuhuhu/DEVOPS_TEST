@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import toast from "react-hot-toast";
 import { usePromotions } from "../features/Promotions/usePromotions";
 import { useCreatePromotion } from "../features/Promotions/useCreatePromotion";
 import { useUpdatePromotion } from "../features/Promotions/useUpdatePromotion";
@@ -7,6 +8,7 @@ import { useTogglePromotion } from "../features/Promotions/useTogglePromotion";
 import { useDeletePromotion } from "../features/Promotions/useDeletePromotion";
 import { formatCurrency } from "../utils/formatCurrency";
 import Spinner from "../ui/Spinner";
+import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
 import { Tag, Check, Plus, Clock, Pencil, Trash2 } from "lucide-react";
 
 const DAYS_OF_WEEK = [
@@ -22,6 +24,7 @@ const DAYS_OF_WEEK = [
 function ManagePromotions() {
   const [filterType, setFilterType] = useState("ALL");
   const [editingPromo, setEditingPromo] = useState(null);
+  const [promoToDelete, setPromoToDelete] = useState(null);
 
   const { promotions, isLoading } = usePromotions();
   const { isCreating, addPromotion } = useCreatePromotion();
@@ -136,6 +139,15 @@ function ManagePromotions() {
     }
   }
 
+  function onError(errors) {
+    const firstError = Object.values(errors)[0];
+    if (firstError) {
+      toast.error(firstError.message || "Please check the required fields");
+    } else {
+      toast.error("Please check the required fields");
+    }
+  }
+
   const filteredPromotions = promotions?.filter((p) => {
     if (filterType === "ALL") return true;
     return p.type === filterType;
@@ -154,7 +166,7 @@ function ManagePromotions() {
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
+        <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-3.5">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Promotion Type *
@@ -178,7 +190,7 @@ function ManagePromotions() {
               placeholder="e.g. Summer Mega Discount"
               {...register("name", { required: "Promotion name is required" })}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                errors.name ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:border-blue-500"
+                errors.name ? "border-red-500 focus:ring-red-500 bg-red-50/10" : "border-slate-300 focus:border-blue-500"
               }`}
             />
             {errors.name && (
@@ -212,7 +224,7 @@ function ManagePromotions() {
                     required: selectedType === "COUPON" ? "Coupon code is required" : false,
                   })}
                   className={`w-full rounded-lg border px-3 py-1.5 text-sm uppercase font-bold text-slate-900 placeholder-slate-400 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    errors.code ? "border-red-500 focus:ring-red-500" : "border-slate-300 focus:border-blue-500"
+                    errors.code ? "border-red-500 focus:ring-red-500 bg-red-50/10" : "border-slate-300 focus:border-blue-500"
                   }`}
                 />
                 {errors.code && (
@@ -239,9 +251,19 @@ function ManagePromotions() {
                     type="number"
                     step="any"
                     placeholder={discountType === "PERCENTAGE" ? "e.g. 15" : "e.g. 20000"}
-                    {...register("discountValue", { required: true, min: 0 })}
-                    className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    {...register("discountValue", {
+                      required: "Discount value is required",
+                      min: { value: 0, message: "Discount value cannot be negative" },
+                    })}
+                    className={`w-full rounded-lg border px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 transition-colors ${
+                      errors.discountValue
+                        ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                        : "border-slate-300 focus:ring-blue-500"
+                    }`}
                   />
+                  {errors.discountValue && (
+                    <p className="text-xs text-red-600 mt-1">{errors.discountValue.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -299,9 +321,19 @@ function ManagePromotions() {
                     type="number"
                     step="any"
                     placeholder={discountType === "PERCENTAGE" ? "e.g. 20" : "e.g. 15000"}
-                    {...register("discountValue", { required: true, min: 0 })}
-                    className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    {...register("discountValue", {
+                      required: "Discount value is required",
+                      min: { value: 0, message: "Discount value cannot be negative" },
+                    })}
+                    className={`w-full rounded-lg border px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 transition-colors ${
+                      errors.discountValue
+                        ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                        : "border-slate-300 focus:ring-blue-500"
+                    }`}
                   />
+                  {errors.discountValue && (
+                    <p className="text-xs text-red-600 mt-1">{errors.discountValue.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -600,11 +632,7 @@ function ManagePromotions() {
                             </button>
                             <button
                               className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
-                              onClick={() => {
-                                if (window.confirm(`Delete promotion "${promo.name}"?`)) {
-                                  removePromotion(promo.promotionId);
-                                }
-                              }}
+                              onClick={() => setPromoToDelete(promo)}
                               disabled={isDeleting}
                               title="Delete Promotion"
                             >
@@ -621,6 +649,22 @@ function ManagePromotions() {
           </div>
         )}
       </div>
+
+      <ConfirmDeleteModal
+        isOpen={Boolean(promoToDelete)}
+        onClose={() => setPromoToDelete(null)}
+        onConfirm={() => {
+          if (promoToDelete) {
+            removePromotion(promoToDelete.promotionId, {
+              onSettled: () => setPromoToDelete(null),
+            });
+          }
+        }}
+        title="Delete Promotion"
+        entityName={promoToDelete?.name || ""}
+        message="Are you sure you want to delete this promotion? Active discounts and coupons will no longer apply to customer orders."
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

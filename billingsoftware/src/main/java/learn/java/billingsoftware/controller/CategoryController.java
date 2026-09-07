@@ -33,6 +33,12 @@ public class CategoryController {
         }
     }
 
+    @PostMapping("/categories")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CategoryResponse createCategory(@RequestBody CategoryRequest request) {
+        return categoryService.create(request);
+    }
+
     @GetMapping("/categories")
     public List<CategoryResponse> fetchCategories() {
         return categoryService.read();

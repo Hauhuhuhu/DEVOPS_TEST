@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Spinner from "../../ui/Spinner";
+import ConfirmDeleteModal from "../../ui/ConfirmDeleteModal";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { useModifierGroups } from "./useModifierGroups";
 import { useDeleteModifierGroup } from "./useDeleteModifierGroup";
@@ -9,6 +10,7 @@ function ModifierGroupList() {
   const { modifierGroups, isLoading } = useModifierGroups();
   const { isDeleting, deleteModifierGroup } = useDeleteModifierGroup();
   const [searchTerm, setSearchTerm] = useState("");
+  const [groupToDelete, setGroupToDelete] = useState(null);
 
   const filteredGroups = modifierGroups?.filter((group) =>
     group.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -66,11 +68,7 @@ function ModifierGroupList() {
                 <button
                   type="button"
                   className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
-                  onClick={() => {
-                    if (window.confirm(`Delete modifier group "${group.name}"?`)) {
-                      deleteModifierGroup(group.groupId);
-                    }
-                  }}
+                  onClick={() => setGroupToDelete(group)}
                   disabled={isDeleting}
                   title="Delete group"
                 >
@@ -103,6 +101,22 @@ function ModifierGroupList() {
           ))
         )}
       </div>
+
+      <ConfirmDeleteModal
+        isOpen={Boolean(groupToDelete)}
+        onClose={() => setGroupToDelete(null)}
+        onConfirm={() => {
+          if (groupToDelete) {
+            deleteModifierGroup(groupToDelete.groupId, {
+              onSettled: () => setGroupToDelete(null),
+            });
+          }
+        }}
+        title="Delete Modifier Group"
+        entityName={groupToDelete?.name || ""}
+        message="Are you sure you want to delete this modifier group? Modifiers associated with menu items will be detached."
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

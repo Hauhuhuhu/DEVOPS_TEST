@@ -14,6 +14,7 @@ import Login from "./pages/Login";
 import AppLayout from "./ui/AppLayout";
 import ProtectedRoute from "./features/Auth/ProtectedRoute";
 import OrderHistory from "./pages/OrderHistory";
+import ActivityLogs from "./pages/ActivityLogs";
 import NotFound from "./ui/NotFound";
 import AdminRoute from "./features/Auth/AdminRoute";
 import { queryClient } from "./utils/queryClient";
@@ -40,6 +41,7 @@ function App() {
                 <Route path="/customers" element={<ManageCustomers />} />
               </Route>
                 <Route path="/orders" element={<OrderHistory />} />
+                <Route path="/activity-logs" element={<ActivityLogs />} />
               <Route path="/" element={<Dashboard />} />
             </Route>
           </Route>

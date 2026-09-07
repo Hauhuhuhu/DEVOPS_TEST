@@ -10,7 +10,12 @@ const DEFAULT_PREVIEW = "https://placehold.co/60x60?text=Upload";
 function CategoryForm() {
   const [previewUrl, setPreviewUrl] = useState(DEFAULT_PREVIEW);
   const { isCreating, createCategory } = useCreateCategory();
-  const { register, handleSubmit, reset } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
 
   useEffect(() => {
     return () => {
@@ -53,7 +58,7 @@ function CategoryForm() {
 
   function onError(errors) {
     const firstError = Object.values(errors)[0];
-    if (firstError) toast.error(firstError.message);
+    if (firstError) toast.error(firstError.message || "Please check the required fields");
   }
 
   const handleImageChange = (e) => {
@@ -76,7 +81,7 @@ function CategoryForm() {
         <h2 className="text-base font-semibold text-slate-900">Add Category</h2>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
         {/* Image Upload Area */}
         <div className="text-center">
           <label
@@ -129,8 +134,15 @@ function CategoryForm() {
             {...register("name", {
               required: "Category name is required",
             })}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
+              errors.name
+                ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
+            }`}
           />
+          {errors.name && (
+            <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>
+          )}
         </div>
 
         <div>
@@ -145,8 +157,15 @@ function CategoryForm() {
               required: "Category description is required",
             })}
             disabled={isCreating}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
+              errors.description
+                ? "border-red-500 focus:ring-red-500 bg-red-50/10"
+                : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
+            }`}
           />
+          {errors.description && (
+            <p className="text-xs text-red-600 mt-1">{errors.description.message}</p>
+          )}
         </div>
 
         <div>

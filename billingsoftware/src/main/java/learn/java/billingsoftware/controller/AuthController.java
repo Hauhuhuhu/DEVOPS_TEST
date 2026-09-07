@@ -2,6 +2,7 @@ package learn.java.billingsoftware.controller;
 
 import learn.java.billingsoftware.io.AuthRequest;
 import learn.java.billingsoftware.io.AuthResponse;
+import learn.java.billingsoftware.service.ActivityLogService;
 import learn.java.billingsoftware.service.UserService;
 import learn.java.billingsoftware.service.impl.AppUserDetailsService;
 import learn.java.billingsoftware.util.JwtUtil;
@@ -29,6 +30,7 @@ public class AuthController {
     private final AppUserDetailsService appUserDetailsService;
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final ActivityLogService activityLogService;
 
     @PostMapping("/login")
     public AuthResponse login(@RequestBody AuthRequest request) throws Exception {
@@ -37,6 +39,7 @@ public class AuthController {
         final String jwtToken = jwtUtil.generateToken(userDetails);
         //TODO: fetch the role from repository
         String role = userService.getUserRole(request.getEmail());
+        activityLogService.logActivity(request.getEmail(), "LOGIN", "USER", request.getEmail(), "User logged in successfully");
         return new AuthResponse(request.getEmail(), jwtToken, role);
     }
 

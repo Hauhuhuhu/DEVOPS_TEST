@@ -5,6 +5,7 @@ import learn.java.billingsoftware.io.CategoryRequest;
 import learn.java.billingsoftware.io.CategoryResponse;
 import learn.java.billingsoftware.repository.CategoryRepository;
 import learn.java.billingsoftware.repository.ItemRepository;
+import learn.java.billingsoftware.service.ActivityLogService;
 import learn.java.billingsoftware.service.CategoryService;
 import learn.java.billingsoftware.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
@@ -29,19 +30,23 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final FileUploadService fileUploadService;
     private final ItemRepository itemRepository;
+    private final ActivityLogService activityLogService;
+
     @Override
     public CategoryResponse add(CategoryRequest request, MultipartFile file) throws IOException {
         String imgUrl = fileUploadService.uploadFile(file);
-        // String fileName = UUID.randomUUID().toString()+"."+ StringUtils.getFilenameExtension(file.getOriginalFilename());
-        // Path uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
-        // Files.createDirectories(uploadPath);
-        // Path targetLocation = uploadPath.resolve(fileName);
-        // Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-        // String imgUrl = "http://54.254.162.86:8080/api/v1.0/uploads/"+fileName;
-
         CategoryEntity newCategory = convertToEntity(request);
         newCategory.setImgUrl(imgUrl);
         newCategory = categoryRepository.save(newCategory);
+        activityLogService.logActivity("CREATE", "CATEGORY", newCategory.getCategoryId(), "Created category: " + newCategory.getName());
+        return convertToResponse(newCategory);
+    }
+
+    @Override
+    public CategoryResponse create(CategoryRequest request) {
+        CategoryEntity newCategory = convertToEntity(request);
+        newCategory = categoryRepository.save(newCategory);
+        activityLogService.logActivity("CREATE", "CATEGORY", newCategory.getCategoryId(), "Created category: " + newCategory.getName());
         return convertToResponse(newCategory);
     }
 
@@ -57,18 +62,13 @@ public class CategoryServiceImpl implements CategoryService {
     public void delete(String categoryId) {
         CategoryEntity existingCategory = categoryRepository.findByCategoryId(categoryId)
                 .orElseThrow(()->new RuntimeException("Category not found: "+ categoryId));
-       boolean isFileDelete =fileUploadService.deleteFile(existingCategory.getImgUrl());
-        // String imgUrl = existingCategory.getImgUrl();
-        // String filename = imgUrl.substring(imgUrl.lastIndexOf("/")+1);
-        // Path uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
-        // Path filePath = uploadPath.resolve(filename);
-        // try {
-        //     Files.deleteIfExists(filePath);
-        // } catch (IOException e) {
-        //     e.printStackTrace();
-        // }
+        boolean isFileDelete = true;
+        if (existingCategory.getImgUrl() != null && !existingCategory.getImgUrl().trim().isEmpty()) {
+            isFileDelete = fileUploadService.deleteFile(existingCategory.getImgUrl());
+        }
         if(isFileDelete){
             categoryRepository.delete(existingCategory);
+            activityLogService.logActivity("DELETE", "CATEGORY", existingCategory.getCategoryId(), "Deleted category: " + existingCategory.getName());
         } else {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to delete image item");
         }
