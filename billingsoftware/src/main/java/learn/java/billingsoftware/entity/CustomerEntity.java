@@ -45,4 +45,13 @@ public class CustomerEntity {
 
     @UpdateTimestamp
     private Timestamp updatedAt;
+
+    public void revertOrderSpending(Double orderTotal) {
+        if (this.orderCount != null && this.orderCount > 0) {
+            this.orderCount--;
+        }
+        double currentSpent = this.totalSpent != null ? this.totalSpent : 0.0;
+        double amountToDeduct = orderTotal != null ? orderTotal : 0.0;
+        this.totalSpent = Math.max(0.0, currentSpent - amountToDeduct);
+    }
 }

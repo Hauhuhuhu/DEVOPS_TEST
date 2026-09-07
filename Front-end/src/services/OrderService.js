@@ -14,15 +14,18 @@ export const getOrders = async (page = 0, size = 10, search = "", status = "") =
 };
 
 export const createOrder = async (order) => {
-  return await api.post("/orders", order);
+  const response = await api.post("/orders", order);
+  return response.data;
 };
 
 export const deleteOrder = async (orderId) => {
-  return await api.delete(`/orders/${orderId}`);
+  const response = await api.delete(`/orders/${orderId}`);
+  return response.data;
 };
 
 export const getOrderById = async (orderId) => {
-  return await api.get(`/orders/${orderId}`);
+  const response = await api.get(`/orders/${orderId}`);
+  return response.data;
 };
 
 export const cancelOrder = async (orderId) => {

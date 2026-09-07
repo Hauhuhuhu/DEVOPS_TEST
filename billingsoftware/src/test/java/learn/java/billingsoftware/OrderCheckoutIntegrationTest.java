@@ -23,6 +23,7 @@ import java.util.UUID;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -398,6 +399,15 @@ public class OrderCheckoutIntegrationTest {
         // 3. Verify stock restored back to 10
         VariantEntity revertedVariant = variantRepository.findByVariantId(testVariant.getVariantId()).orElseThrow();
         assertEquals(10, revertedVariant.getCachedStockQuantity());
+
+        // Verify compensating IN ledger transaction exists for this cancelled order
+        final String cancelledOrderId = pendingOrder.getOrderId();
+        List<InventoryTransactionEntity> transactions = inventoryTransactionRepository.findByVariant_VariantIdOrderByCreatedAtDesc(testVariant.getVariantId());
+        boolean hasCompensatingInTx = transactions.stream()
+                .anyMatch(tx -> tx.getTransactionType() == TransactionType.IN
+                        && cancelledOrderId.equals(tx.getReferenceId())
+                        && tx.getQuantity() == 2);
+        assertTrue(hasCompensatingInTx, "Must record a compensating IN transaction for cancelled order");
 
         // 4. Verify promotion timesUsed decremented to 0
         PromotionEntity revertedPromo = promotionRepository.findByPromotionId(testCoupon.getPromotionId()).orElseThrow();

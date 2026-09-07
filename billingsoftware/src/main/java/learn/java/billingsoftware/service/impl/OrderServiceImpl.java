@@ -424,24 +424,13 @@ public class OrderServiceImpl implements OrderService {
         if (order.getCustomerId() != null && !order.getCustomerId().trim().isEmpty()) {
             CustomerEntity customer = customerRepository.findByCustomerId(order.getCustomerId()).orElse(null);
             if (customer != null) {
-                if (customer.getOrderCount() != null && customer.getOrderCount() > 0) {
-                    customer.setOrderCount(customer.getOrderCount() - 1);
-                }
-                double currentSpent = customer.getTotalSpent() != null ? customer.getTotalSpent() : 0.0;
-                double orderTotal = order.getGrandTotal() != null ? order.getGrandTotal() : 0.0;
-                customer.setTotalSpent(Math.max(0.0, currentSpent - orderTotal));
+                customer.revertOrderSpending(order.getGrandTotal());
                 customerRepository.save(customer);
             }
         }
 
         // 5. Hủy liên kết PayOS từ xa nếu là PAYOS
-        if (order.getPaymentMethod() == PaymentMethod.PAYOS) {
-            try {
-                payOS.paymentRequests().cancel(order.getId(), "Khách hàng hủy đơn hàng");
-            } catch (Exception e) {
-                System.err.println("Warning: Không thể hủy link PayOS cho đơn #" + order.getId() + ": " + e.getMessage());
-            }
-        }
+        cancelRemotePayOSPayment(order, "Khách hàng hủy đơn hàng");
 
         order = orderEntityRepository.save(order);
         activityLogService.logActivity("CANCEL", "ORDER", order.getOrderId(), "Cancelled order #" + order.getOrderId());
@@ -461,13 +450,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 1. Hủy link PayOS từ xa nếu là PAYOS
-        if (order.getPaymentMethod() == PaymentMethod.PAYOS) {
-            try {
-                payOS.paymentRequests().cancel(order.getId(), "Chuyển sang thanh toán tiền mặt");
-            } catch (Exception e) {
-                System.err.println("Warning: Không thể hủy link PayOS cho đơn #" + order.getId() + ": " + e.getMessage());
-            }
-        }
+        cancelRemotePayOSPayment(order, "Chuyển sang thanh toán tiền mặt");
 
         // 2. Chuyển đổi sang CASH và COMPLETED
         order.setPaymentMethod(PaymentMethod.CASH);
@@ -478,6 +461,16 @@ public class OrderServiceImpl implements OrderService {
         activityLogService.logActivity("UPDATE", "ORDER", order.getOrderId(), "Switched payment method to CASH for order #" + order.getOrderId());
 
         return convertToResponse(order);
+    }
+
+    private void cancelRemotePayOSPayment(OrderEntity order, String reason) {
+        if (order.getPaymentMethod() == PaymentMethod.PAYOS) {
+            try {
+                payOS.paymentRequests().cancel(order.getId(), reason);
+            } catch (Exception e) {
+                System.err.println("Warning: Không thể hủy link PayOS cho đơn #" + order.getId() + ": " + e.getMessage());
+            }
+        }
     }
 }
 //package learn.java.billingsoftware.service.impl;

@@ -172,10 +172,10 @@ function CartSummary({
           setShowModal(true);
         } else if (
           paymentMode === "CASH" &&
-          dt.data?.paymentDetails?.status === "COMPLETED"
+          (dt?.paymentDetails?.status === "COMPLETED" || dt?.data?.paymentDetails?.status === "COMPLETED")
         ) {
           toast.success("Thanh toán thành công");
-          setCompletedCashOrder(dt.data);
+          setCompletedCashOrder(dt?.paymentDetails ? dt : (dt?.data || dt));
         }
       },
     });
@@ -330,14 +330,10 @@ function CartSummary({
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
             onClick={() => {
               setShowModal(false);
-              const cachedData = queryClient.getQueryData([
-                "order",
-                orderData?.data?.orderId,
-              ]);
-              if (
-                cachedData?.data?.paymentDetails?.status === "COMPLETED" ||
-                orderData?.data?.paymentDetails?.status === "COMPLETED"
-              ) {
+              const activeId = orderData?.orderId || orderData?.data?.orderId;
+              const cachedData = queryClient.getQueryData(["order", activeId]);
+              const status = cachedData?.paymentDetails?.status || cachedData?.data?.paymentDetails?.status || orderData?.paymentDetails?.status || orderData?.data?.paymentDetails?.status;
+              if (status === "COMPLETED") {
                 handleClearCart();
               }
             }}
@@ -349,14 +345,10 @@ function CartSummary({
               className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
               onClick={() => {
                 setShowModal(false);
-                const cachedData = queryClient.getQueryData([
-                  "order",
-                  orderData?.data?.orderId,
-                ]);
-                if (
-                  cachedData?.data?.paymentDetails?.status === "COMPLETED" ||
-                  orderData?.data?.paymentDetails?.status === "COMPLETED"
-                ) {
+                const activeId = orderData?.orderId || orderData?.data?.orderId;
+                const cachedData = queryClient.getQueryData(["order", activeId]);
+                const status = cachedData?.paymentDetails?.status || cachedData?.data?.paymentDetails?.status || orderData?.paymentDetails?.status || orderData?.data?.paymentDetails?.status;
+                if (status === "COMPLETED") {
                   handleClearCart();
                 }
               }}

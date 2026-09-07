@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useOrders } from "../features/Orders/useOrders";
-import { cancelOrder, switchToCash } from "../services/OrderService";
+import { useOrderLifecycle } from "../features/Orders/useOrderLifecycle";
 import Spinner from "../ui/Spinner";
 import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
-import toast from "react-hot-toast";
 import { formatCurrency } from "../utils/formatCurrency";
 import ReceiptPopup from "../features/Explore/ReceiptPopup";
 import {
@@ -29,43 +27,28 @@ function OrderHistory() {
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [orderToSwitchToCash, setOrderToSwitchToCash] = useState(null);
 
-  const queryClient = useQueryClient();
-  const cancelMutation = useMutation({
-    mutationFn: (orderId) => cancelOrder(orderId),
-    onSuccess: () => {
-      toast.success("Đã hủy đơn hàng thành công");
+  const {
+    cancelOrder,
+    isCancelling,
+    switchToCash,
+    isSwitchingToCash,
+  } = useOrderLifecycle({
+    onCancelSuccess: () => {
       setOrderToCancel(null);
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["items"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory-transactions"] });
     },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || err.message || "Lỗi khi hủy đơn hàng");
-    },
-  });
-
-  const switchToCashMutation = useMutation({
-    mutationFn: (orderId) => switchToCash(orderId),
-    onSuccess: (res) => {
-      toast.success("Đã chuyển sang thanh toán tiền mặt thành công");
+    onSwitchToCashSuccess: (updatedOrder) => {
       setOrderToSwitchToCash(null);
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["items"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory-transactions"] });
-      const updatedOrder = res?.data || res;
       if (updatedOrder) {
         setSelectedOrderForReceipt(updatedOrder);
       }
     },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || err.message || "Lỗi khi chuyển sang tiền mặt");
-    },
   });
 
-  // Debounce search query by 300ms
+  // Debounce search query by 300ms and synchronize page reset
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
+      setPage(0);
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
@@ -88,7 +71,6 @@ function OrderHistory() {
   // Handle Search Input Change
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
-    setPage(0);
   };
 
   // Handle Clear Search
@@ -465,8 +447,8 @@ function OrderHistory() {
         <ConfirmDeleteModal
           isOpen={Boolean(orderToSwitchToCash)}
           onClose={() => setOrderToSwitchToCash(null)}
-          onConfirm={() => switchToCashMutation.mutate(orderToSwitchToCash.orderId)}
-          isLoading={switchToCashMutation.isPending}
+          onConfirm={() => switchToCash(orderToSwitchToCash.orderId)}
+          isLoading={isSwitchingToCash}
           title="Xác nhận thanh toán tiền mặt"
           entityName={`Đơn hàng #${orderToSwitchToCash.orderId}`}
           message="Khách hàng muốn chuyển sang thanh toán bằng Tiền mặt? Hệ thống sẽ hoàn tất đơn hàng và mở hóa đơn để in."
@@ -480,8 +462,8 @@ function OrderHistory() {
         <ConfirmDeleteModal
           isOpen={Boolean(orderToCancel)}
           onClose={() => setOrderToCancel(null)}
-          onConfirm={() => cancelMutation.mutate(orderToCancel.orderId)}
-          isLoading={cancelMutation.isPending}
+          onConfirm={() => cancelOrder(orderToCancel.orderId)}
+          isLoading={isCancelling}
           title="Xác nhận hủy đơn hàng"
           entityName={`Đơn hàng #${orderToCancel.orderId}`}
           message="Bạn có chắc chắn muốn hủy đơn hàng này không? Tồn kho của các sản phẩm sẽ được hoàn trả tự động vào kho."
