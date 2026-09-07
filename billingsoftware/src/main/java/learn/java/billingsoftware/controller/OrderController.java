@@ -46,4 +46,14 @@ public class OrderController {
     public OrderResponse getOrderById(@PathVariable String orderId) {
         return orderService.getOrderById(orderId);
     }
+
+    @PostMapping("/{orderId}/cancel")
+    public OrderResponse cancelOrder(@PathVariable String orderId) {
+        return orderService.cancelOrder(orderId);
+    }
+
+    @PostMapping("/{orderId}/switch-to-cash")
+    public OrderResponse switchToCash(@PathVariable String orderId) {
+        return orderService.switchToCash(orderId);
+    }
 }

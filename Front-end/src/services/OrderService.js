@@ -24,3 +24,14 @@ export const deleteOrder = async (orderId) => {
 export const getOrderById = async (orderId) => {
   return await api.get(`/orders/${orderId}`);
 };
+
+export const cancelOrder = async (orderId) => {
+  const response = await api.post(`/orders/${orderId}/cancel`);
+  return response.data;
+};
+
+export const switchToCash = async (orderId) => {
+  const response = await api.post(`/orders/${orderId}/switch-to-cash`);
+  return response.data;
+};
+

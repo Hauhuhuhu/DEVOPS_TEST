@@ -1,9 +1,15 @@
 import { QRCodeSVG } from "qrcode.react";
 import { formatCurrency } from "../../utils/formatCurrency";
 import Spinner from "../../ui/Spinner";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Banknote, Ban } from "lucide-react";
 
-function QRCode({ currentData }) {
+function QRCode({
+  currentData,
+  onCancelOrder,
+  onSwitchToCash,
+  isCancelling = false,
+  isSwitchingToCash = false,
+}) {
   const subtotal = currentData.subtotal;
   const discountAmount = currentData.discountAmount || 0;
   const tax = currentData.tax;
@@ -81,6 +87,41 @@ function QRCode({ currentData }) {
         <p className="text-[11px] text-slate-400 mt-2 text-center">
           * Đơn hàng sẽ tự động cập nhật trạng thái ngay sau khi bạn chuyển khoản thành công.
         </p>
+      </div>
+
+      {/* In-Flight Action Controls */}
+      <div className="mt-4 max-w-sm mx-auto space-y-2">
+        {onSwitchToCash && (
+          <button
+            type="button"
+            onClick={onSwitchToCash}
+            disabled={isSwitchingToCash || isCancelling}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {isSwitchingToCash ? (
+              <Spinner size={14} className="text-white" />
+            ) : (
+              <Banknote size={15} />
+            )}
+            <span>Chuyển sang tiền mặt</span>
+          </button>
+        )}
+
+        {onCancelOrder && (
+          <button
+            type="button"
+            onClick={onCancelOrder}
+            disabled={isSwitchingToCash || isCancelling}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {isCancelling ? (
+              <Spinner size={14} className="text-red-600" />
+            ) : (
+              <Ban size={14} />
+            )}
+            <span>Hủy đơn hàng</span>
+          </button>
+        )}
       </div>
 
       {checkoutUrl && (

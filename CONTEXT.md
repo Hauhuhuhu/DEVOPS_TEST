@@ -75,3 +75,6 @@
 - **Negative Stock**: Tình trạng tồn kho ảo bị âm do bán hàng Offline (khi thiết bị không có mạng để check tồn kho thực tế). Chấp nhận bán để không làm gián đoạn doanh thu.
 - **Promotion**: Chương trình khuyến mãi. Hệ thống tự động chọn 1 Promotion tốt nhất cho hoá đơn, KHÔNG cho phép xếp chồng (stacking) nhiều khuyến mãi.
 - **ActivityLog**: Bản ghi nhật ký hoạt động (Audit Trail) ghi nhận ai (user/email), làm gì (action: LOGIN, CREATE, UPDATE, DELETE), trên thực thể nào (Category, Item, Order, Customer, Promotion, Variant/Inventory), vào thời điểm nào (timestamp) và ghi chú tóm tắt.
+- **Order Cancellation**: Quy trình hủy đơn hàng đang ở trạng thái chờ (PENDING) hoặc lỗi thanh toán, bắt buộc thực hiện giao dịch bù trừ kho (Compensating Ledger Transaction - IN), hoàn lại lượt dùng mã khuyến mãi, điều chỉnh lại chỉ số CRM của khách hàng và hủy Payment Link trên cổng PayOS (ADR 0006).
+- **Switch Payment Method**: Quy trình chuyển đổi phương thức thanh toán trực tiếp tại quầy từ đơn PENDING (PayOS QR) sang Tiền mặt (CASH), chuyển trạng thái sang COMPLETED và hủy link PayOS mà không tạo mới đơn hay nhân đôi xuất kho (ADR 0006).
+

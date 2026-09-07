@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getOrders } from "../../services/OrderService";
 
 export function useOrders({ page = 0, size = 10, search = "", status = "" } = {}) {
@@ -12,6 +12,7 @@ export function useOrders({ page = 0, size = 10, search = "", status = "" } = {}
   } = useQuery({
     queryKey: ["orders", page, size, search, status],
     queryFn: () => getOrders(page, size, search, status),
+    placeholderData: keepPreviousData,
   });
 
   const orders = data?.content || [];

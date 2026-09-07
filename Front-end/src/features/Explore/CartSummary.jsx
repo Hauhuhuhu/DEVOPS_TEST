@@ -366,7 +366,20 @@ function CartSummary({
             </button>
 
             <div>
-              {orderData && <PaymentQRCode orderData={orderData} />}
+              {orderData && (
+                <PaymentQRCode
+                  orderData={orderData}
+                  onCancelSuccess={() => {
+                    setShowModal(false);
+                    handleClearCart();
+                  }}
+                  onSwitchToCashSuccess={(completedOrder) => {
+                    setShowModal(false);
+                    setCompletedCashOrder(completedOrder);
+                    handleClearCart();
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>

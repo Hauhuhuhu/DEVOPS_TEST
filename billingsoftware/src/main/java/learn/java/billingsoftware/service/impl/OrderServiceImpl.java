@@ -363,6 +363,122 @@ public class OrderServiceImpl implements OrderService {
                 .pageSize(size)
                 .build();
     }
+
+    @Override
+    @Transactional
+    public OrderResponse cancelOrder(String orderId) {
+        OrderEntity order = orderEntityRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng #" + orderId));
+
+        PaymentDetails paymentDetails = order.getPaymentDetails();
+        if (paymentDetails == null || paymentDetails.getStatus() != PaymentDetails.PaymentStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể hủy đơn hàng đang ở trạng thái Chờ xử lý (PENDING)");
+        }
+
+        // 1. Cập nhật trạng thái CANCELLED
+        paymentDetails.setStatus(PaymentDetails.PaymentStatus.CANCELLED);
+        order.setPaymentDetails(paymentDetails);
+
+        // 2. Bù trừ tồn kho qua giao dịch IN
+        if (order.getItems() != null) {
+            for (OrderItemEntity item : order.getItems()) {
+                VariantEntity variant = null;
+                if (item.getVariantId() != null && !item.getVariantId().trim().isEmpty()) {
+                    variant = variantRepository.findByVariantId(item.getVariantId()).orElse(null);
+                } else if (item.getItemId() != null) {
+                    List<VariantEntity> variants = variantRepository.findByItem_ItemId(item.getItemId());
+                    if (!variants.isEmpty()) {
+                        variant = variants.get(0);
+                    }
+                }
+
+                if (variant != null) {
+                    int quantityToRevert = item.getQuantity() != null ? Math.abs(item.getQuantity()) : 1;
+                    InventoryTransactionEntity transaction = InventoryTransactionEntity.builder()
+                            .transactionId(UUID.randomUUID().toString())
+                            .variant(variant)
+                            .transactionType(TransactionType.IN)
+                            .quantity(quantityToRevert)
+                            .referenceId(order.getOrderId())
+                            .note("Cancelled Order #" + order.getOrderId() + " - Stock Reversal")
+                            .build();
+                    inventoryTransactionRepository.saveAndFlush(transaction);
+
+                    Integer updatedStock = inventoryTransactionRepository.calculateStockByVariantId(variant.getVariantId());
+                    variant.setCachedStockQuantity(updatedStock != null ? updatedStock : 0);
+                    variantRepository.save(variant);
+                }
+            }
+        }
+
+        // 3. Hoàn lại quota Promotion nếu có áp dụng
+        if (order.getPromotionId() != null && !order.getPromotionId().trim().isEmpty()) {
+            PromotionEntity promo = promotionRepository.findByPromotionId(order.getPromotionId()).orElse(null);
+            if (promo != null && promo.getTimesUsed() != null && promo.getTimesUsed() > 0) {
+                promo.setTimesUsed(promo.getTimesUsed() - 1);
+                promotionRepository.save(promo);
+            }
+        }
+
+        // 4. Hoàn lại số liệu CRM của khách hàng nếu có
+        if (order.getCustomerId() != null && !order.getCustomerId().trim().isEmpty()) {
+            CustomerEntity customer = customerRepository.findByCustomerId(order.getCustomerId()).orElse(null);
+            if (customer != null) {
+                if (customer.getOrderCount() != null && customer.getOrderCount() > 0) {
+                    customer.setOrderCount(customer.getOrderCount() - 1);
+                }
+                double currentSpent = customer.getTotalSpent() != null ? customer.getTotalSpent() : 0.0;
+                double orderTotal = order.getGrandTotal() != null ? order.getGrandTotal() : 0.0;
+                customer.setTotalSpent(Math.max(0.0, currentSpent - orderTotal));
+                customerRepository.save(customer);
+            }
+        }
+
+        // 5. Hủy liên kết PayOS từ xa nếu là PAYOS
+        if (order.getPaymentMethod() == PaymentMethod.PAYOS) {
+            try {
+                payOS.paymentRequests().cancel(order.getId(), "Khách hàng hủy đơn hàng");
+            } catch (Exception e) {
+                System.err.println("Warning: Không thể hủy link PayOS cho đơn #" + order.getId() + ": " + e.getMessage());
+            }
+        }
+
+        order = orderEntityRepository.save(order);
+        activityLogService.logActivity("CANCEL", "ORDER", order.getOrderId(), "Cancelled order #" + order.getOrderId());
+
+        return convertToResponse(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse switchToCash(String orderId) {
+        OrderEntity order = orderEntityRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng #" + orderId));
+
+        PaymentDetails paymentDetails = order.getPaymentDetails();
+        if (paymentDetails == null || paymentDetails.getStatus() != PaymentDetails.PaymentStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể chuyển sang tiền mặt cho đơn hàng đang ở trạng thái Chờ xử lý (PENDING)");
+        }
+
+        // 1. Hủy link PayOS từ xa nếu là PAYOS
+        if (order.getPaymentMethod() == PaymentMethod.PAYOS) {
+            try {
+                payOS.paymentRequests().cancel(order.getId(), "Chuyển sang thanh toán tiền mặt");
+            } catch (Exception e) {
+                System.err.println("Warning: Không thể hủy link PayOS cho đơn #" + order.getId() + ": " + e.getMessage());
+            }
+        }
+
+        // 2. Chuyển đổi sang CASH và COMPLETED
+        order.setPaymentMethod(PaymentMethod.CASH);
+        paymentDetails.setStatus(PaymentDetails.PaymentStatus.COMPLETED);
+        order.setPaymentDetails(paymentDetails);
+
+        order = orderEntityRepository.save(order);
+        activityLogService.logActivity("UPDATE", "ORDER", order.getOrderId(), "Switched payment method to CASH for order #" + order.getOrderId());
+
+        return convertToResponse(order);
+    }
 }
 //package learn.java.billingsoftware.service.impl;
 //

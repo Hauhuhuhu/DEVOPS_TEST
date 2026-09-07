@@ -17,4 +17,7 @@ public interface OrderService {
     Long countByOrderDate(LocalDate date);
     List<OrderResponse> findRecentOrders(int limit);
     learn.java.billingsoftware.io.OrderPageResponse getOrdersPaginated(int page, int size, String search, String status);
+
+    OrderResponse cancelOrder(String orderId);
+    OrderResponse switchToCash(String orderId);
 }

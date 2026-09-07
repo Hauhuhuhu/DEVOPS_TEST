@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useOrders } from "../features/Orders/useOrders";
+import { cancelOrder, switchToCash } from "../services/OrderService";
 import Spinner from "../ui/Spinner";
+import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
+import toast from "react-hot-toast";
 import { formatCurrency } from "../utils/formatCurrency";
 import ReceiptPopup from "../features/Explore/ReceiptPopup";
 import {
@@ -10,6 +14,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Ban,
+  Banknote,
 } from "lucide-react";
 
 function OrderHistory() {
@@ -20,6 +26,41 @@ function OrderHistory() {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [selectedOrderForReceipt, setSelectedOrderForReceipt] = useState(null);
+  const [orderToCancel, setOrderToCancel] = useState(null);
+  const [orderToSwitchToCash, setOrderToSwitchToCash] = useState(null);
+
+  const queryClient = useQueryClient();
+  const cancelMutation = useMutation({
+    mutationFn: (orderId) => cancelOrder(orderId),
+    onSuccess: () => {
+      toast.success("Đã hủy đơn hàng thành công");
+      setOrderToCancel(null);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-transactions"] });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || "Lỗi khi hủy đơn hàng");
+    },
+  });
+
+  const switchToCashMutation = useMutation({
+    mutationFn: (orderId) => switchToCash(orderId),
+    onSuccess: (res) => {
+      toast.success("Đã chuyển sang thanh toán tiền mặt thành công");
+      setOrderToSwitchToCash(null);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-transactions"] });
+      const updatedOrder = res?.data || res;
+      if (updatedOrder) {
+        setSelectedOrderForReceipt(updatedOrder);
+      }
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || "Lỗi khi chuyển sang tiền mặt");
+    },
+  });
 
   // Debounce search query by 300ms
   useEffect(() => {
@@ -103,8 +144,9 @@ function OrderHistory() {
     return [0, "...", current - 1, current, current + 1, "...", total - 1];
   };
 
-  // Initial Loading Spinner (Only when initial dataset has not loaded yet)
-  if (isLoading && !orders.length) {
+  // Initial Loading Spinner (Only strictly on cold initial mount before any data exists)
+  const isInitialLoading = isLoading && !result?.data;
+  if (isInitialLoading) {
     return (
       <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
         <Spinner size={36} className="text-blue-600" />
@@ -201,7 +243,7 @@ function OrderHistory() {
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100 bg-white">
+            <tbody className={`divide-y divide-slate-100 bg-white transition-opacity duration-200 ${isFetching ? "opacity-60" : "opacity-100"}`}>
               {orders.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="py-16 text-center text-slate-500">
@@ -282,14 +324,38 @@ function OrderHistory() {
                         {formatDate(order.createdAt || order.orderDate)}
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap text-center text-sm">
-                        <button
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
-                          title="Xem & In hóa đơn"
-                          onClick={() => setSelectedOrderForReceipt(order)}
-                        >
-                          <Receipt size={14} className="text-blue-600" />
-                          <span>In hóa đơn</span>
-                        </button>
+                        <div className="inline-flex items-center justify-center gap-1.5">
+                          <button
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
+                            title="Xem & In hóa đơn"
+                            onClick={() => setSelectedOrderForReceipt(order)}
+                          >
+                            <Receipt size={14} className="text-blue-600" />
+                            <span>In hóa đơn</span>
+                          </button>
+                          {isPending && (
+                            <>
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100/70 text-emerald-700 text-xs font-medium transition-colors cursor-pointer"
+                                title="Chuyển sang tiền mặt"
+                                onClick={() => setOrderToSwitchToCash(order)}
+                              >
+                                <Banknote size={14} className="text-emerald-600" />
+                                <span>Thu tiền mặt</span>
+                              </button>
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 bg-red-50/50 hover:bg-red-100/70 text-red-600 text-xs font-medium transition-colors cursor-pointer"
+                                title="Hủy đơn hàng"
+                                onClick={() => setOrderToCancel(order)}
+                              >
+                                <Ban size={14} className="text-red-600" />
+                                <span>Hủy đơn</span>
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -391,6 +457,36 @@ function OrderHistory() {
           order={selectedOrderForReceipt}
           isOpen={Boolean(selectedOrderForReceipt)}
           onClose={() => setSelectedOrderForReceipt(null)}
+        />
+      )}
+
+      {/* Switch to Cash Confirmation Modal */}
+      {orderToSwitchToCash && (
+        <ConfirmDeleteModal
+          isOpen={Boolean(orderToSwitchToCash)}
+          onClose={() => setOrderToSwitchToCash(null)}
+          onConfirm={() => switchToCashMutation.mutate(orderToSwitchToCash.orderId)}
+          isLoading={switchToCashMutation.isPending}
+          title="Xác nhận thanh toán tiền mặt"
+          entityName={`Đơn hàng #${orderToSwitchToCash.orderId}`}
+          message="Khách hàng muốn chuyển sang thanh toán bằng Tiền mặt? Hệ thống sẽ hoàn tất đơn hàng và mở hóa đơn để in."
+          confirmText="Thu tiền mặt"
+          cancelText="Quay lại"
+        />
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {orderToCancel && (
+        <ConfirmDeleteModal
+          isOpen={Boolean(orderToCancel)}
+          onClose={() => setOrderToCancel(null)}
+          onConfirm={() => cancelMutation.mutate(orderToCancel.orderId)}
+          isLoading={cancelMutation.isPending}
+          title="Xác nhận hủy đơn hàng"
+          entityName={`Đơn hàng #${orderToCancel.orderId}`}
+          message="Bạn có chắc chắn muốn hủy đơn hàng này không? Tồn kho của các sản phẩm sẽ được hoàn trả tự động vào kho."
+          confirmText="Hủy đơn hàng"
+          cancelText="Quay lại"
         />
       )}
     </div>

@@ -2,8 +2,7 @@ package learn.java.billingsoftware;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import learn.java.billingsoftware.entity.*;
-import learn.java.billingsoftware.io.InventoryTransactionRequest;
-import learn.java.billingsoftware.io.OrderRequest;
+import learn.java.billingsoftware.io.*;
 import learn.java.billingsoftware.repository.*;
 import learn.java.billingsoftware.service.InventoryService;
 import org.junit.jupiter.api.BeforeEach;
@@ -326,5 +325,150 @@ public class OrderCheckoutIntegrationTest {
 
         VariantEntity updatedVariant = variantRepository.findByVariantId(testVariant.getVariantId()).orElseThrow();
         assertEquals(-5, updatedVariant.getCachedStockQuantity());
+    }
+
+    @Test
+    void testCancelOrder_revertsInventoryPromotionAndCustomerMetrics() throws Exception {
+        // 1. Create a pending order with customer and coupon
+        OrderRequest.OrderItemRequest itemRequest = OrderRequest.OrderItemRequest.builder()
+                .itemId(testItem.getItemId())
+                .variantId(testVariant.getVariantId())
+                .name(testItem.getName())
+                .price(50000.00)
+                .quantity(2)
+                .build();
+
+        // Stock starts at 10. We create a pending order directly
+        PaymentDetails pd = new PaymentDetails();
+        pd.setStatus(PaymentDetails.PaymentStatus.PENDING);
+
+        OrderEntity pendingOrder = OrderEntity.builder()
+                .orderId("ORD-TEST-PENDING")
+                .customerId(testCustomer.getCustomerId())
+                .customerName(testCustomer.getName())
+                .phoneNumber(testCustomer.getPhoneNumber())
+                .subtotal(100000.0)
+                .discountAmount(20000.0)
+                .tax(8000.0)
+                .grandTotal(88000.0)
+                .promotionId(testCoupon.getPromotionId())
+                .promotionName(testCoupon.getName())
+                .paymentMethod(PaymentMethod.PAYOS)
+                .paymentDetails(pd)
+                .build();
+
+        OrderItemEntity orderItem = OrderItemEntity.builder()
+                .itemId(testItem.getItemId())
+                .variantId(testVariant.getVariantId())
+                .name(testItem.getName())
+                .price(50000.0)
+                .quantity(2)
+                .order(pendingOrder)
+                .build();
+        pendingOrder.setItems(List.of(orderItem));
+        pendingOrder = orderEntityRepository.save(pendingOrder);
+
+        // Deduct inventory to simulate order creation state
+        inventoryService.recordTransaction(InventoryTransactionRequest.builder()
+                .variantId(testVariant.getVariantId())
+                .transactionType(TransactionType.OUT)
+                .quantity(2)
+                .referenceId(pendingOrder.getOrderId())
+                .build());
+
+        // Increment customer metrics
+        testCustomer.setOrderCount(1);
+        testCustomer.setTotalSpent(88000.0);
+        customerRepository.save(testCustomer);
+
+        // Increment coupon timesUsed
+        testCoupon.setTimesUsed(1);
+        promotionRepository.save(testCoupon);
+
+        // Verify precondition: stock is 8 (10 - 2)
+        assertEquals(8, variantRepository.findByVariantId(testVariant.getVariantId()).orElseThrow().getCachedStockQuantity());
+
+        // 2. Perform Cancel API
+        mockMvc.perform(post("/orders/" + pendingOrder.getOrderId() + "/cancel")
+                        .with(user("cashier").roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.orderId", is(pendingOrder.getOrderId())))
+                .andExpect(jsonPath("$.paymentDetails.status", is("CANCELLED")));
+
+        // 3. Verify stock restored back to 10
+        VariantEntity revertedVariant = variantRepository.findByVariantId(testVariant.getVariantId()).orElseThrow();
+        assertEquals(10, revertedVariant.getCachedStockQuantity());
+
+        // 4. Verify promotion timesUsed decremented to 0
+        PromotionEntity revertedPromo = promotionRepository.findByPromotionId(testCoupon.getPromotionId()).orElseThrow();
+        assertEquals(0, revertedPromo.getTimesUsed());
+
+        // 5. Verify customer metrics rolled back to 0
+        CustomerEntity revertedCustomer = customerRepository.findByCustomerId(testCustomer.getCustomerId()).orElseThrow();
+        assertEquals(0, revertedCustomer.getOrderCount());
+        assertEquals(0.0, revertedCustomer.getTotalSpent(), 0.01);
+    }
+
+    @Test
+    void testCancelOrder_rejectsNonPendingOrder() throws Exception {
+        PaymentDetails pd = new PaymentDetails();
+        pd.setStatus(PaymentDetails.PaymentStatus.COMPLETED);
+
+        OrderEntity completedOrder = OrderEntity.builder()
+                .orderId("ORD-TEST-COMPLETED")
+                .grandTotal(50000.0)
+                .paymentMethod(PaymentMethod.CASH)
+                .paymentDetails(pd)
+                .build();
+        completedOrder = orderEntityRepository.save(completedOrder);
+
+        mockMvc.perform(post("/orders/" + completedOrder.getOrderId() + "/cancel")
+                        .with(user("cashier").roles("USER")))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testSwitchToCash_convertsPendingOrderToCashAndCompleted() throws Exception {
+        PaymentDetails pd = new PaymentDetails();
+        pd.setStatus(PaymentDetails.PaymentStatus.PENDING);
+
+        OrderEntity pendingOrder = OrderEntity.builder()
+                .orderId("ORD-TEST-SWITCH")
+                .grandTotal(50000.0)
+                .paymentMethod(PaymentMethod.PAYOS)
+                .paymentDetails(pd)
+                .build();
+        pendingOrder = orderEntityRepository.save(pendingOrder);
+
+        // Precondition stock is 10
+        int stockBefore = variantRepository.findByVariantId(testVariant.getVariantId()).orElseThrow().getCachedStockQuantity();
+
+        mockMvc.perform(post("/orders/" + pendingOrder.getOrderId() + "/switch-to-cash")
+                        .with(user("cashier").roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.paymentMethod", is("CASH")))
+                .andExpect(jsonPath("$.paymentDetails.status", is("COMPLETED")));
+
+        // Verify stock was not deducted again
+        int stockAfter = variantRepository.findByVariantId(testVariant.getVariantId()).orElseThrow().getCachedStockQuantity();
+        assertEquals(stockBefore, stockAfter);
+    }
+
+    @Test
+    void testSwitchToCash_rejectsNonPendingOrder() throws Exception {
+        PaymentDetails pd = new PaymentDetails();
+        pd.setStatus(PaymentDetails.PaymentStatus.CANCELLED);
+
+        OrderEntity cancelledOrder = OrderEntity.builder()
+                .orderId("ORD-TEST-CANCELLED")
+                .grandTotal(50000.0)
+                .paymentMethod(PaymentMethod.PAYOS)
+                .paymentDetails(pd)
+                .build();
+        cancelledOrder = orderEntityRepository.save(cancelledOrder);
+
+        mockMvc.perform(post("/orders/" + cancelledOrder.getOrderId() + "/switch-to-cash")
+                        .with(user("cashier").roles("USER")))
+                .andExpect(status().isBadRequest());
     }
 }
