@@ -1,6 +1,6 @@
 # 03 — Global: Bootstrap Removal + Design Tokens
 
-Status: ready-for-agent
+Status: resolved
 Type: task
 
 ## Summary
@@ -9,14 +9,14 @@ Remove Bootstrap. Set up Tailwind CSS as the sole styling system. Define design 
 
 ## Acceptance Criteria
 
-- [ ] Bootstrap import removed from `index.css` (and `main.jsx` if present)
-- [ ] `bootstrap` classes (`btn`, `form-control`, `badge`, `card`, `table`, `d-flex`, `mb-3`, etc.) are absent from `index.css` and `App.css`
-- [ ] `App.css` is emptied or removed — all global styles migrated to Tailwind inline classes or `index.css` custom properties
-- [ ] CSS variables defined in `index.css`: `--color-primary`, `--color-accent`, `--color-border`, `--color-muted`, etc. (matching CRM palette)
-- [ ] `AppLayout` wraps `<Outlet>` in `min-h-screen bg-slate-50`; `<main>` gets appropriate padding wrapper
-- [ ] `Spinner` rewritten with Tailwind `animate-spin` — no `spinner-border` Bootstrap class
-- [ ] `NotFound` rewritten with Tailwind
-- [ ] `npm run build` passes without errors after this change
+- [x] Bootstrap import removed from `index.css` (and `main.jsx` if present)
+- [x] `bootstrap` classes (`btn`, `form-control`, `badge`, `card`, `table`, `d-flex`, `mb-3`, etc.) are absent from `index.css` and `App.css`
+- [x] `App.css` is emptied or removed — all global styles migrated to Tailwind inline classes or `index.css` custom properties
+- [x] CSS variables defined in `index.css`: `--color-primary`, `--color-accent`, `--color-border`, `--color-muted`, etc. (matching CRM palette)
+- [x] `AppLayout` wraps `<Outlet>` in `min-h-screen bg-slate-50`; `<main>` gets appropriate padding wrapper
+- [x] `Spinner` rewritten with Tailwind `animate-spin` — no `spinner-border` Bootstrap class
+- [x] `NotFound` rewritten with Tailwind
+- [x] `npm run build` passes without errors after this change
 
 ## Design Tokens (CSS Variables)
 
@@ -41,3 +41,8 @@ Remove Bootstrap. Set up Tailwind CSS as the sole styling system. Define design 
 - `src/ui/AppLayout.jsx` — MODIFY
 - `src/ui/Spinner.jsx` — MODIFY
 - `src/ui/NotFound.jsx` — MODIFY
+
+## Comments
+
+- Implemented via commit `0bd6123`.
+- Verified with tests 1 & 2 in `Front-end/test-verification.mjs` and `npm run build`. All passed.
