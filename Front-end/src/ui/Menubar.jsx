@@ -10,7 +10,7 @@ import {
 
 function Menubar() {
   const { logout } = useLogout();
-  const { isAdmin } = useCurrentUser();
+  const { user, isAdmin } = useCurrentUser();
   const location = useLocation();
 
   const [isManageOpen, setIsManageOpen] = useState(false);
@@ -115,26 +115,67 @@ function Menubar() {
           </div>
 
           <div className="flex items-center">
-            {/* Profile dropdown */}
-            <div ref={profileRef} className="relative ml-3">
+            {/* Profile dropdown & User Identity */}
+            <div ref={profileRef} className="relative ml-3 flex items-center gap-3">
+              {/* User Display & Role Badge */}
+              <div className="hidden sm:flex flex-col items-end text-right">
+                <span className="text-sm font-semibold text-slate-900 leading-tight">
+                  {user?.name || user?.email || "Người dùng"}
+                </span>
+                <span
+                  className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide mt-0.5 border ${
+                    isAdmin
+                      ? "bg-purple-50 text-purple-700 border-purple-200"
+                      : "bg-blue-50 text-blue-700 border-blue-200"
+                  }`}
+                >
+                  {isAdmin ? "Quản trị viên" : "Nhân viên"}
+                </span>
+              </div>
+
               <div>
                 <button
                   type="button"
-                  className="flex rounded-full bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 p-1 border border-slate-200 transition-shadow"
+                  className="flex items-center gap-1.5 rounded-full bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 p-1 border border-slate-200 transition-shadow hover:bg-slate-100 cursor-pointer"
                   onClick={() => setIsProfileOpen((prev) => !prev)}
                 >
                   <span className="sr-only">Mở menu người dùng</span>
-                  <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold">
-                    {isAdmin ? 'A' : 'U'}
+                  <div
+                    className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${
+                      isAdmin
+                        ? "bg-purple-100 text-purple-700 border border-purple-200"
+                        : "bg-blue-100 text-blue-700 border border-blue-200"
+                    }`}
+                  >
+                    {isAdmin ? "Admin" : "Staff"}
                   </div>
+                  <ChevronDown
+                    size={14}
+                    className={`text-slate-400 mr-1 transition-transform duration-200 ${
+                      isProfileOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
               </div>
 
               {isProfileOpen && (
-                <div className="absolute right-0 z-50 mt-2 w-52 origin-top-right rounded-lg bg-white py-1 shadow-lg border border-slate-200 focus:outline-none">
+                <div className="absolute right-0 top-full z-50 mt-2 w-56 origin-top-right rounded-lg bg-white py-1 shadow-lg border border-slate-200 focus:outline-none">
                   <div className="px-4 py-2.5 border-b border-slate-100">
-                    <p className="text-sm font-semibold text-slate-900">{isAdmin ? 'Quản trị viên' : 'Nhân viên'}</p>
-                    <p className="text-xs text-slate-500">{isAdmin ? 'Toàn quyền quản trị' : 'Quyền truy cập tiêu chuẩn'}</p>
+                    <p className="text-sm font-semibold text-slate-900 truncate">
+                      {user?.name || (isAdmin ? "Quản trị viên" : "Nhân viên")}
+                    </p>
+                    <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+                    <div className="mt-1.5">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${
+                          isAdmin
+                            ? "bg-purple-50 text-purple-700 border-purple-200"
+                            : "bg-blue-50 text-blue-700 border-blue-200"
+                        }`}
+                      >
+                        {isAdmin ? "Toàn quyền quản trị" : "Quyền truy cập tiêu chuẩn"}
+                      </span>
+                    </div>
                   </div>
                   <NavLink
                     to="/activity-logs"

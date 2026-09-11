@@ -9,6 +9,7 @@ import learn.java.billingsoftware.io.ModifierRequest;
 import learn.java.billingsoftware.io.ModifierResponse;
 import learn.java.billingsoftware.repository.ItemRepository;
 import learn.java.billingsoftware.repository.ModifierGroupRepository;
+import learn.java.billingsoftware.service.ActivityLogService;
 import learn.java.billingsoftware.service.ModifierGroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ public class ModifierGroupServiceImpl implements ModifierGroupService {
 
     private final ModifierGroupRepository modifierGroupRepository;
     private final ItemRepository itemRepository;
+    private final ActivityLogService activityLogService;
 
     @Override
     @Transactional
@@ -55,6 +57,7 @@ public class ModifierGroupServiceImpl implements ModifierGroupService {
         }
 
         ModifierGroupEntity saved = modifierGroupRepository.save(groupEntity);
+        activityLogService.logActivity("CREATE", "MODIFIER_GROUP", saved.getGroupId(), "Created modifier group: " + saved.getName());
         return convertToResponse(saved);
     }
 
@@ -103,6 +106,7 @@ public class ModifierGroupServiceImpl implements ModifierGroupService {
         }
 
         ModifierGroupEntity saved = modifierGroupRepository.save(entity);
+        activityLogService.logActivity("UPDATE", "MODIFIER_GROUP", saved.getGroupId(), "Updated modifier group: " + saved.getName());
         return convertToResponse(saved);
     }
 
@@ -132,6 +136,7 @@ public class ModifierGroupServiceImpl implements ModifierGroupService {
         entity.getItems().clear();
 
         modifierGroupRepository.delete(entity);
+        activityLogService.logActivity("DELETE", "MODIFIER_GROUP", entity.getGroupId(), "Deleted modifier group: " + entity.getName());
     }
 
     @Override

@@ -27,3 +27,13 @@ test("does not refresh authorization failures or other statuses", () => {
     false,
   );
 });
+
+test("does not refresh authentication endpoints", () => {
+  for (const url of ["/login", "/auth/refresh", "/auth/logout"]) {
+    assert.equal(
+      shouldRefreshRequest({ response: { status: 401 }, config: { url } }),
+      false,
+      `${url} must preserve its original authentication error`,
+    );
+  }
+});

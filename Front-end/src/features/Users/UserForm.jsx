@@ -150,8 +150,9 @@ function UserForm() {
                 : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
             }`}
           >
-            <option value="ROLE_USER">Nhân viên</option>
-            <option value="ROLE_ADMIN">Quản trị viên</option>
+            <option value="ROLE_USER">Nhân viên (ROLE_USER)</option>
+            <option value="ROLE_STAFF">Nhân viên (ROLE_STAFF)</option>
+            <option value="ROLE_ADMIN">Quản trị viên (ROLE_ADMIN)</option>
           </select>
           {errors.role && (
             <p className="text-xs text-red-600 mt-1">{errors.role.message}</p>

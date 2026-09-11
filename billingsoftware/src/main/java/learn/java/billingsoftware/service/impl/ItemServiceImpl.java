@@ -111,6 +111,124 @@ public class ItemServiceImpl implements ItemService {
         return convertToResponse(newItem);
     }
 
+    @Override
+    @Transactional
+    public ItemResponse updateItem(String itemId, ItemRequest request, MultipartFile file) throws IOException {
+        ItemEntity existingItem = itemRepository.findByItemId(itemId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found: " + itemId));
+
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            existingItem.setName(request.getName().trim());
+        }
+
+        if (request.getDescription() != null) {
+            existingItem.setDescription(request.getDescription().trim());
+        }
+
+        if (request.getPrice() != null) {
+            existingItem.setPrice(request.getPrice());
+        }
+
+        if (request.getCategoryId() != null && !request.getCategoryId().trim().isEmpty()) {
+            CategoryEntity category = categoryRepository.findByCategoryId(request.getCategoryId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found: " + request.getCategoryId()));
+            existingItem.setCategory(category);
+        }
+
+        // Handle image update
+        if (file != null && !file.isEmpty()) {
+            if (existingItem.getImgUrl() != null && !existingItem.getImgUrl().trim().isEmpty()) {
+                try {
+                    fileUploadService.deleteFile(existingItem.getImgUrl());
+                } catch (Exception ignored) {
+                }
+            }
+            String newImgUrl = fileUploadService.uploadFile(file);
+            existingItem.setImgUrl(newImgUrl);
+        }
+
+        // Handle modifier groups
+        if (request.getModifierGroupIds() != null) {
+            if (request.getModifierGroupIds().isEmpty()) {
+                existingItem.getModifierGroups().clear();
+            } else {
+                List<ModifierGroupEntity> groups = modifierGroupRepository.findByGroupIdIn(request.getModifierGroupIds());
+                existingItem.setModifierGroups(groups);
+            }
+        }
+
+        // Handle variants
+        if (request.getVariants() != null && !request.getVariants().isEmpty()) {
+            Map<String, VariantEntity> existingVariantsBySku = new HashMap<>();
+            for (VariantEntity v : existingItem.getVariants()) {
+                existingVariantsBySku.put(v.getSku().toLowerCase(), v);
+            }
+
+            Set<String> requestSkus = new HashSet<>();
+            List<VariantEntity> updatedVariants = new ArrayList<>();
+
+            for (VariantRequest vReq : request.getVariants()) {
+                if (vReq.getSku() == null || vReq.getSku().trim().isEmpty()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Variant SKU is required");
+                }
+                String trimmedSku = vReq.getSku().trim();
+                String skuLower = trimmedSku.toLowerCase();
+
+                if (!requestSkus.add(skuLower)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Duplicate SKU in request: " + trimmedSku);
+                }
+
+                VariantEntity matchedVariant = existingVariantsBySku.get(skuLower);
+                if (matchedVariant != null) {
+                    // Update existing variant
+                    if (vReq.getBasePrice() != null) {
+                        matchedVariant.setBasePrice(vReq.getBasePrice());
+                    }
+                    if (vReq.getAttributes() != null) {
+                        matchedVariant.setAttributes(vReq.getAttributes());
+                    }
+                    updatedVariants.add(matchedVariant);
+                } else {
+                    // New variant: check global SKU uniqueness
+                    if (variantRepository.existsBySku(trimmedSku)) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "SKU already exists: " + trimmedSku);
+                    }
+
+                    BigDecimal basePrice = vReq.getBasePrice() != null ? vReq.getBasePrice() : existingItem.getPrice();
+                    if (basePrice == null) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Variant base price is required");
+                    }
+
+                    VariantEntity newVariant = VariantEntity.builder()
+                            .variantId(UUID.randomUUID().toString())
+                            .sku(trimmedSku)
+                            .basePrice(basePrice)
+                            .attributes(vReq.getAttributes() != null ? vReq.getAttributes() : new HashMap<>())
+                            .cachedStockQuantity(0)
+                            .item(existingItem)
+                            .build();
+                    updatedVariants.add(newVariant);
+                }
+            }
+
+            // Orphan removal by mutating the existing collection in-place
+            existingItem.getVariants().removeIf(v -> !updatedVariants.contains(v));
+            for (VariantEntity uv : updatedVariants) {
+                if (!existingItem.getVariants().contains(uv)) {
+                    existingItem.getVariants().add(uv);
+                }
+            }
+
+            if (existingItem.getPrice() == null && !existingItem.getVariants().isEmpty()) {
+                existingItem.setPrice(existingItem.getVariants().get(0).getBasePrice());
+            }
+        }
+
+        existingItem = itemRepository.save(existingItem);
+        activityLogService.logActivity("UPDATE", "ITEM", existingItem.getItemId(), "Updated item: " + existingItem.getName());
+        return convertToResponse(existingItem);
+    }
+
     private ItemResponse convertToResponse(ItemEntity item) {
         List<VariantResponse> variantResponses = item.getVariants() != null
                 ? item.getVariants().stream()

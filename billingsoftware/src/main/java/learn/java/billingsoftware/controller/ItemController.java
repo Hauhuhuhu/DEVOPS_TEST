@@ -35,6 +35,31 @@ public class ItemController {
         }
     }
 
+    @PutMapping(value = "/admin/items/{itemId}", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ItemResponse updateItemMultipart(@PathVariable("itemId") String itemId,
+                                            @RequestPart("item") String itemString,
+                                            @RequestPart(value = "file", required = false) MultipartFile file) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            ItemRequest itemRequest = objectMapper.readValue(itemString, ItemRequest.class);
+            return itemService.updateItem(itemId, itemRequest, file);
+        } catch (JsonProcessingException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @PutMapping(value = "/admin/items/{itemId}", consumes = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
+    public ItemResponse updateItemJson(@PathVariable("itemId") String itemId,
+                                       @RequestBody ItemRequest itemRequest) {
+        try {
+            return itemService.updateItem(itemId, itemRequest, null);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
     @GetMapping("/items")
     public List<ItemResponse> readItems() {
         return itemService.fetchItems();

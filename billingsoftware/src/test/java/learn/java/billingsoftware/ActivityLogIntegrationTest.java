@@ -1,8 +1,10 @@
 package learn.java.billingsoftware;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import learn.java.billingsoftware.io.CategoryRequest;
-import learn.java.billingsoftware.io.CustomerRequest;
+import learn.java.billingsoftware.entity.DiscountType;
+import learn.java.billingsoftware.entity.PromotionType;
+import learn.java.billingsoftware.io.*;
+import learn.java.billingsoftware.repository.ActivityLogRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,14 +12,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -32,6 +36,9 @@ public class ActivityLogIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ActivityLogRepository activityLogRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
@@ -181,5 +188,162 @@ public class ActivityLogIntegrationTest {
                         .with(user("staff@billing.com").roles("USER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray());
+    }
+
+    @Test
+    @DisplayName("User creation and deletion emit CREATE and DELETE activity logs")
+    void testUserMutationsEmitActivityLogs() throws Exception {
+        String uniqueEmail = "testuser." + UUID.randomUUID().toString().substring(0, 8) + "@billing.com";
+        UserRequest userRequest = UserRequest.builder()
+                .name("Audit Test User")
+                .email(uniqueEmail)
+                .password("Password123!")
+                .role("ROLE_STAFF")
+                .build();
+
+        // 1. Create User via POST /admin/register
+        MvcResult createResult = mockMvc.perform(post("/admin/register")
+                        .with(user("admin@billing.com").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userRequest)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String responseBody = createResult.getResponse().getContentAsString();
+        String userId = objectMapper.readTree(responseBody).get("userId").asText();
+
+        // Verify CREATE log
+        boolean createLogged = activityLogRepository.findAll().stream().anyMatch(l ->
+                "CREATE".equalsIgnoreCase(l.getAction()) &&
+                "USER".equalsIgnoreCase(l.getEntityType()) &&
+                userId.equals(l.getEntityId()) &&
+                "admin@billing.com".equals(l.getUserEmail()));
+        assertThat(createLogged).isTrue();
+
+        // 2. Delete User via DELETE /admin/users/{id}
+        mockMvc.perform(delete("/admin/users/" + userId)
+                        .with(user("superadmin@billing.com").roles("ADMIN")))
+                .andExpect(status().isNoContent());
+
+        // Verify DELETE log
+        boolean deleteLogged = activityLogRepository.findAll().stream().anyMatch(l ->
+                "DELETE".equalsIgnoreCase(l.getAction()) &&
+                "USER".equalsIgnoreCase(l.getEntityType()) &&
+                userId.equals(l.getEntityId()) &&
+                "superadmin@billing.com".equals(l.getUserEmail()));
+        assertThat(deleteLogged).isTrue();
+    }
+
+    @Test
+    @DisplayName("Promotion mutations emit CREATE, UPDATE, and DELETE activity logs")
+    void testPromotionMutationsEmitActivityLogs() throws Exception {
+        String promoCode = "PROMO_" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        PromotionRequest promoRequest = PromotionRequest.builder()
+                .name("Summer Sale")
+                .type(PromotionType.COUPON)
+                .code(promoCode)
+                .discountType(DiscountType.PERCENTAGE)
+                .discountValue(BigDecimal.valueOf(15))
+                .minOrderAmount(BigDecimal.valueOf(50000))
+                .build();
+
+        // 1. Create promotion
+        MvcResult createResult = mockMvc.perform(post("/admin/promotions")
+                        .with(user("promo.admin@billing.com").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(promoRequest)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String promoId = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("promotionId").asText();
+
+        boolean createLogged = activityLogRepository.findAll().stream().anyMatch(l ->
+                "CREATE".equalsIgnoreCase(l.getAction()) &&
+                "PROMOTION".equalsIgnoreCase(l.getEntityType()) &&
+                promoId.equals(l.getEntityId()) &&
+                "promo.admin@billing.com".equals(l.getUserEmail()));
+        assertThat(createLogged).isTrue();
+
+        // 2. Update promotion
+        promoRequest.setName("Summer Sale Updated");
+        mockMvc.perform(put("/admin/promotions/" + promoId)
+                        .with(user("promo.admin@billing.com").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(promoRequest)))
+                .andExpect(status().isOk());
+
+        boolean updateLogged = activityLogRepository.findAll().stream().anyMatch(l ->
+                "UPDATE".equalsIgnoreCase(l.getAction()) &&
+                "PROMOTION".equalsIgnoreCase(l.getEntityType()) &&
+                promoId.equals(l.getEntityId()) &&
+                "promo.admin@billing.com".equals(l.getUserEmail()));
+        assertThat(updateLogged).isTrue();
+
+        // 3. Delete promotion
+        mockMvc.perform(delete("/admin/promotions/" + promoId)
+                        .with(user("promo.admin@billing.com").roles("ADMIN")))
+                .andExpect(status().isNoContent());
+
+        boolean deleteLogged = activityLogRepository.findAll().stream().anyMatch(l ->
+                "DELETE".equalsIgnoreCase(l.getAction()) &&
+                "PROMOTION".equalsIgnoreCase(l.getEntityType()) &&
+                promoId.equals(l.getEntityId()) &&
+                "promo.admin@billing.com".equals(l.getUserEmail()));
+        assertThat(deleteLogged).isTrue();
+    }
+
+    @Test
+    @DisplayName("Modifier group mutations emit CREATE, UPDATE, and DELETE activity logs")
+    void testModifierGroupMutationsEmitActivityLogs() throws Exception {
+        ModifierGroupRequest mgRequest = ModifierGroupRequest.builder()
+                .name("Sugar Level")
+                .description("Choose sweetness")
+                .minSelections(0)
+                .maxSelections(1)
+                .build();
+
+        // 1. Create modifier group
+        MvcResult createResult = mockMvc.perform(post("/admin/modifier-groups")
+                        .with(user("mg.admin@billing.com").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mgRequest)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String groupId = objectMapper.readTree(createResult.getResponse().getContentAsString()).get("groupId").asText();
+
+        boolean createLogged = activityLogRepository.findAll().stream().anyMatch(l ->
+                "CREATE".equalsIgnoreCase(l.getAction()) &&
+                "MODIFIER_GROUP".equalsIgnoreCase(l.getEntityType()) &&
+                groupId.equals(l.getEntityId()) &&
+                "mg.admin@billing.com".equals(l.getUserEmail()));
+        assertThat(createLogged).isTrue();
+
+        // 2. Update modifier group
+        mgRequest.setName("Sugar Level Updated");
+        mockMvc.perform(put("/admin/modifier-groups/" + groupId)
+                        .with(user("mg.admin@billing.com").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mgRequest)))
+                .andExpect(status().isOk());
+
+        boolean updateLogged = activityLogRepository.findAll().stream().anyMatch(l ->
+                "UPDATE".equalsIgnoreCase(l.getAction()) &&
+                "MODIFIER_GROUP".equalsIgnoreCase(l.getEntityType()) &&
+                groupId.equals(l.getEntityId()) &&
+                "mg.admin@billing.com".equals(l.getUserEmail()));
+        assertThat(updateLogged).isTrue();
+
+        // 3. Delete modifier group
+        mockMvc.perform(delete("/admin/modifier-groups/" + groupId)
+                        .with(user("mg.admin@billing.com").roles("ADMIN")))
+                .andExpect(status().isNoContent());
+
+        boolean deleteLogged = activityLogRepository.findAll().stream().anyMatch(l ->
+                "DELETE".equalsIgnoreCase(l.getAction()) &&
+                "MODIFIER_GROUP".equalsIgnoreCase(l.getEntityType()) &&
+                groupId.equals(l.getEntityId()) &&
+                "mg.admin@billing.com".equals(l.getUserEmail()));
+        assertThat(deleteLogged).isTrue();
     }
 }
