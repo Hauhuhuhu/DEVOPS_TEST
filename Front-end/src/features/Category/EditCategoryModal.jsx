@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
 import { X, Edit3, Image as ImageIcon, Loader2 } from "lucide-react";
 import { useUpdateCategory } from "./useUpdateCategory";
@@ -21,29 +21,29 @@ const COLOR_PRESETS = [
 
 export default function EditCategoryModal({ isOpen, onClose, category }) {
   const { isUpdating, updateCategory } = useUpdateCategory();
-  const [previewUrl, setPreviewUrl] = useState(DEFAULT_PREVIEW);
+  const [previewUrl, setPreviewUrl] = useState(
+    () => category?.imgUrl || DEFAULT_PREVIEW
+  );
 
   const {
     register,
+    control,
     handleSubmit,
-    reset,
-    watch,
     setValue,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      name: category?.name || "",
+      description: category?.description || "",
+      bgColor: category?.bgColor || "#2563EB",
+    },
+  });
 
-  const selectedColor = watch("bgColor", category?.bgColor || "#2563EB");
-
-  useEffect(() => {
-    if (isOpen && category) {
-      reset({
-        name: category.name || "",
-        description: category.description || "",
-        bgColor: category.bgColor || "#2563EB",
-      });
-      setPreviewUrl(category.imgUrl || DEFAULT_PREVIEW);
-    }
-  }, [isOpen, category, reset]);
+  const selectedColor = useWatch({
+    control,
+    name: "bgColor",
+    defaultValue: category?.bgColor || "#2563EB",
+  });
 
   useEffect(() => {
     if (!isOpen) return;

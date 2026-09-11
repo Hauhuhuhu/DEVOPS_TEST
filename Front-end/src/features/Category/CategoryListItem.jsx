@@ -65,11 +65,13 @@ function CategoryListItem({ category }) {
         isLoading={isDeleting}
       />
 
-      <EditCategoryModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        category={category}
-      />
+      {isEditModalOpen && (
+        <EditCategoryModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          category={category}
+        />
+      )}
     </div>
   );
 }

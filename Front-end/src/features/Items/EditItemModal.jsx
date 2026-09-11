@@ -79,23 +79,38 @@ export default function EditItemModal({ isOpen, onClose, item }) {
   const { isLoading: isCategoriesLoading, categories } = useCategories();
   const { modifierGroups } = useModifierGroups();
   const { isUpdating, updateItem } = useUpdateItem();
-  const [previewUrl, setPreviewUrl] = useState(DEFAULT_PREVIEW);
-  const [selectedModifierGroupIds, setSelectedModifierGroupIds] = useState([]);
+  const [previewUrl, setPreviewUrl] = useState(
+    () => item?.imgUrl || DEFAULT_PREVIEW
+  );
+  const [selectedModifierGroupIds, setSelectedModifierGroupIds] = useState(
+    () => (item?.modifierGroups || []).map((g) => g.groupId)
+  );
+
+  const initialHasVariants = Boolean(item?.variants && item.variants.length > 0);
+  const initialVariants = initialHasVariants
+    ? item.variants.map((v) => ({
+        sku: v.sku || "",
+        basePrice: v.basePrice !== undefined ? String(v.basePrice) : "",
+        attributes: Object.entries(v.attributes || {}).map(([key, value]) => ({
+          key,
+          value,
+        })),
+      }))
+    : [createDefaultVariant()];
 
   const {
     register,
     control,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm({
     defaultValues: {
-      name: "",
-      description: "",
-      price: "",
-      categoryId: "",
-      hasVariants: false,
-      variants: [createDefaultVariant()],
+      name: item?.name || "",
+      description: item?.description || "",
+      price: item?.price !== undefined ? String(item.price) : "",
+      categoryId: item?.categoryId || "",
+      hasVariants: initialHasVariants,
+      variants: initialVariants,
     },
   });
 
@@ -109,40 +124,6 @@ export default function EditItemModal({ isOpen, onClose, item }) {
     control,
     name: "variants",
   });
-
-  useEffect(() => {
-    if (isOpen && item) {
-      const hasItemVariants = item.variants && item.variants.length > 0;
-      let mappedVariants = [createDefaultVariant()];
-
-      if (hasItemVariants) {
-        mappedVariants = item.variants.map((v) => ({
-          sku: v.sku || "",
-          basePrice: v.basePrice !== undefined ? String(v.basePrice) : "",
-          attributes: Object.entries(v.attributes || {}).map(([key, value]) => ({
-            key,
-            value,
-          })),
-        }));
-      }
-
-      reset({
-        name: item.name || "",
-        description: item.description || "",
-        price: item.price !== undefined ? String(item.price) : "",
-        categoryId: item.categoryId || "",
-        hasVariants: hasItemVariants,
-        variants: mappedVariants,
-      });
-
-      setPreviewUrl(item.imgUrl || DEFAULT_PREVIEW);
-
-      const initialModGroupIds = (item.modifierGroups || []).map(
-        (g) => g.groupId
-      );
-      setSelectedModifierGroupIds(initialModGroupIds);
-    }
-  }, [isOpen, item, reset]);
 
   useEffect(() => {
     if (!isOpen) return;

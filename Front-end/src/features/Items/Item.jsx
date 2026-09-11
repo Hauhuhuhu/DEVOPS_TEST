@@ -188,11 +188,13 @@ function Item({ item }) {
         />
       )}
 
-      <EditItemModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        item={item}
-      />
+      {isEditModalOpen && (
+        <EditItemModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          item={item}
+        />
+      )}
 
       <ConfirmDeleteModal
         isOpen={isDeleteModalOpen}
