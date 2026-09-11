@@ -29,7 +29,7 @@ function CustomerForm({
         setCustomerName(data.name);
         if (setCustomerId) setCustomerId(data.customerId);
         setIsNewCustomer(false);
-        toast.success(`Found customer: ${data.name}`);
+        toast.success(`Đã tìm thấy khách hàng: ${data.name}`);
       }
     } catch (err) {
       if (err.response?.status === 404) {
@@ -44,11 +44,11 @@ function CustomerForm({
 
   async function handleQuickSaveCustomer() {
     if (!customerName.trim()) {
-      toast.error("Please enter a customer name first");
+      toast.error("Vui lòng nhập tên khách hàng");
       return;
     }
     if (!mobileNumber.trim()) {
-      toast.error("Please enter a phone number");
+      toast.error("Vui lòng nhập số điện thoại");
       return;
     }
 
@@ -61,9 +61,9 @@ function CustomerForm({
       setCustomerInfo(newCustomer);
       if (setCustomerId) setCustomerId(newCustomer.customerId);
       setIsNewCustomer(false);
-      toast.success("Saved new customer to CRM!");
-    } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Failed to save customer");
+      toast.success("Đã lưu khách hàng mới vào CRM");
+    } catch {
+      toast.error("Không thể lưu khách hàng");
     } finally {
       setIsSaving(false);
     }
@@ -77,7 +77,7 @@ function CustomerForm({
           <input
             type="tel"
             id="mobileNumber"
-            placeholder="Phone number..."
+            placeholder="Số điện thoại..."
             value={mobileNumber}
             onChange={(e) => {
               setMobileNumber(e.target.value);
@@ -96,7 +96,7 @@ function CustomerForm({
             type="button"
             onClick={() => handlePhoneSearch()}
             disabled={isSearching || !mobileNumber.trim()}
-            title="Lookup Customer"
+            title="Tìm khách hàng"
             className="p-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-600 disabled:opacity-40 cursor-pointer"
           >
             {isSearching ? <Spinner size={14} /> : <Search size={14} />}
@@ -109,7 +109,7 @@ function CustomerForm({
         <input
           type="text"
           id="customerName"
-          placeholder="Customer name..."
+          placeholder="Tên khách hàng..."
           value={customerName}
           onChange={(e) => setCustomerName(e.target.value)}
           className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -121,14 +121,14 @@ function CustomerForm({
           <div>
             <div className="inline-flex items-center gap-1 font-semibold text-emerald-900">
               <Star size={12} className="text-amber-500 fill-amber-500" />
-              <span>Returning Customer</span>
+              <span>Khách hàng cũ</span>
             </div>
             <div className="text-[11px] text-emerald-700">
-              {customerInfo.orderCount} orders • {formatCurrency(customerInfo.totalSpent || 0)}
+              {customerInfo.orderCount} đơn hàng • {formatCurrency(customerInfo.totalSpent || 0)}
             </div>
           </div>
           <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-200 text-emerald-900">
-            Verified
+            Đã xác minh
           </span>
         </div>
       )}
@@ -136,7 +136,7 @@ function CustomerForm({
       {isNewCustomer && (
         <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-xs flex justify-between items-center">
           <div className="text-amber-800 text-[11px]">
-            New customer not in CRM.
+            Khách hàng mới chưa có trong CRM.
           </div>
           <button
             type="button"
@@ -145,7 +145,7 @@ function CustomerForm({
             className="inline-flex items-center gap-1 px-2 py-0.8 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-medium transition-colors disabled:opacity-50 cursor-pointer"
           >
             <UserPlus size={12} />
-            <span>{isSaving ? "Saving..." : "Save"}</span>
+            <span>{isSaving ? "Đang lưu..." : "Lưu"}</span>
           </button>
         </div>
       )}

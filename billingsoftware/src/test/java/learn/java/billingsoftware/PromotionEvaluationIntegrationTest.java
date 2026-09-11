@@ -22,7 +22,8 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -225,7 +226,75 @@ public class PromotionEvaluationIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(status().reason(containsString("không tồn tại")));
+                .andExpect(jsonPath("$.code", is("PROMOTION_NOT_FOUND")))
+                .andExpect(jsonPath("$.message", is("Mã giảm giá không tồn tại")));
+    }
+
+    @Test
+    void evaluate_inactiveCoupon_throwsBadRequest() throws Exception {
+        promotionRepository.save(PromotionEntity.builder()
+                .promotionId(UUID.randomUUID().toString())
+                .name("Inactive Promo")
+                .type(PromotionType.COUPON)
+                .code("INACTIVE")
+                .discountType(DiscountType.FIXED_AMOUNT)
+                .discountValue(BigDecimal.valueOf(10000.0))
+                .isActive(false)
+                .build());
+
+        EvaluationCartItem item = EvaluationCartItem.builder()
+                .itemId("item-1")
+                .name("Tea")
+                .price(BigDecimal.valueOf(50000.0))
+                .quantity(1)
+                .build();
+
+        PromotionEvaluationRequest request = PromotionEvaluationRequest.builder()
+                .couponCode("INACTIVE")
+                .cartItems(List.of(item))
+                .build();
+
+        mockMvc.perform(post("/promotions/evaluate")
+                        .with(user("cashier").roles("USER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code", is("PROMOTION_INACTIVE")))
+                .andExpect(jsonPath("$.message", is("Mã giảm giá đang tạm ngưng hoạt động")));
+    }
+
+    @Test
+    void evaluate_notStartedCoupon_throwsBadRequest() throws Exception {
+        promotionRepository.save(PromotionEntity.builder()
+                .promotionId(UUID.randomUUID().toString())
+                .name("Future Promo")
+                .type(PromotionType.COUPON)
+                .code("FUTURE")
+                .discountType(DiscountType.FIXED_AMOUNT)
+                .discountValue(BigDecimal.valueOf(10000.0))
+                .startDate(LocalDate.now().plusDays(1))
+                .isActive(true)
+                .build());
+
+        EvaluationCartItem item = EvaluationCartItem.builder()
+                .itemId("item-1")
+                .name("Tea")
+                .price(BigDecimal.valueOf(50000.0))
+                .quantity(1)
+                .build();
+
+        PromotionEvaluationRequest request = PromotionEvaluationRequest.builder()
+                .couponCode("FUTURE")
+                .cartItems(List.of(item))
+                .build();
+
+        mockMvc.perform(post("/promotions/evaluate")
+                        .with(user("cashier").roles("USER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code", is("PROMOTION_NOT_STARTED")))
+                .andExpect(jsonPath("$.message", is("Mã giảm giá chưa đến ngày áp dụng")));
     }
 
     @Test
@@ -259,7 +328,8 @@ public class PromotionEvaluationIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(status().reason(containsString("hết hạn")));
+                .andExpect(jsonPath("$.code", is("PROMOTION_EXPIRED")))
+                .andExpect(jsonPath("$.message", is("Mã giảm giá đã hết hạn sử dụng")));
     }
 
     @Test
@@ -293,7 +363,8 @@ public class PromotionEvaluationIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(status().reason(containsString("hết lượt")));
+                .andExpect(jsonPath("$.code", is("PROMOTION_USAGE_EXHAUSTED")))
+                .andExpect(jsonPath("$.message", is("Mã giảm giá đã hết lượt sử dụng")));
     }
 
     @Test
@@ -316,7 +387,8 @@ public class PromotionEvaluationIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(status().reason(containsString("tối thiểu")));
+                .andExpect(jsonPath("$.code", is("PROMOTION_MIN_ORDER_NOT_MET")))
+                .andExpect(jsonPath("$.message", is("Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã này")));
     }
 
     @Test

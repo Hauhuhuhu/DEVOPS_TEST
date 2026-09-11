@@ -12,12 +12,12 @@ function ConfirmDeleteModal({
   isOpen,
   onClose,
   onConfirm,
-  title = "Confirm Deletion",
+  title = "Xác nhận xóa",
   entityName = "",
   message,
   isLoading = false,
-  confirmText = "Delete",
-  cancelText = "Cancel",
+  confirmText = "Xóa",
+  cancelText = "Hủy",
 }) {
   // Prevent background body scrolling while modal is open
   useEffect(() => {
@@ -56,9 +56,7 @@ function ConfirmDeleteModal({
   const resolvedMessage =
     message !== undefined
       ? message
-      : entityName
-      ? "Are you sure you want to delete this item? This action cannot be undone."
-      : "Are you sure you want to delete this item? This action cannot be undone.";
+      : "Bạn có chắc muốn xóa mục này không? Thao tác này không thể hoàn tác.";
 
   return createPortal(
     <div
@@ -80,7 +78,7 @@ function ConfirmDeleteModal({
           onClick={onClose}
           disabled={isLoading}
           className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-          aria-label="Close modal"
+          aria-label="Đóng hộp thoại"
         >
           <X size={18} />
         </button>
@@ -103,11 +101,11 @@ function ConfirmDeleteModal({
             <div id="confirm-delete-message" className="mt-2 text-sm text-slate-600 leading-relaxed">
               {entityName ? (
                 <p>
-                  Are you sure you want to delete{" "}
+                  Bạn có chắc muốn xóa{" "}
                   <span className="font-semibold text-slate-900 break-words">
                     &ldquo;{entityName}&rdquo;
                   </span>
-                  ?
+                  không?
                 </p>
               ) : null}
               {resolvedMessage && (
@@ -139,7 +137,7 @@ function ConfirmDeleteModal({
             {isLoading ? (
               <>
                 <Loader2 size={16} className="animate-spin text-white" />
-                <span>Deleting...</span>
+                <span>Đang xóa...</span>
               </>
             ) : (
               <>

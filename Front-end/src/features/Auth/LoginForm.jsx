@@ -30,26 +30,26 @@ function LoginForm() {
 
   function onError(errors) {
     const firstError = Object.values(errors)[0];
-    if (firstError) toast.error(firstError.message || "Please check the required fields");
+    if (firstError) toast.error(firstError.message || "Vui lòng kiểm tra lại các trường bắt buộc");
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
-          Email address
+          Địa chỉ email
         </label>
         <input
           type="email"
           id="email"
-          placeholder="Enter your email"
+          placeholder="Nhập email của bạn"
           autoComplete="username"
           disabled={isLoading}
           {...register("email", {
-            required: "Email is required",
+            required: "Email là bắt buộc",
             pattern: {
               value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: "Invalid email address",
+              message: "Địa chỉ email không hợp lệ",
             },
           })}
           className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 disabled:opacity-60 disabled:bg-slate-50 transition-colors ${
@@ -65,16 +65,16 @@ function LoginForm() {
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
-          Password
+          Mật khẩu
         </label>
         <input
           type="password"
           id="password"
-          placeholder="Enter your password"
+          placeholder="Nhập mật khẩu của bạn"
           autoComplete="current-password"
           disabled={isLoading}
           {...register("password", {
-            required: "Password is required",
+            required: "Mật khẩu là bắt buộc",
           })}
           className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 disabled:opacity-60 disabled:bg-slate-50 transition-colors ${
             errors.password
@@ -93,7 +93,7 @@ function LoginForm() {
           disabled={isLoading}
           className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors cursor-pointer"
         >
-          {isLoading ? <Spinner className="text-white" /> : "Sign in"}
+          {isLoading ? <Spinner className="text-white" /> : "Đăng nhập"}
         </button>
       </div>
     </form>

@@ -8,12 +8,11 @@ export function useCreateModifierGroup() {
   const { mutate: createModifierGroup, isPending: isCreating } = useMutation({
     mutationFn: createModifierGroupApi,
     onSuccess: () => {
-      toast.success("Modifier group successfully created");
+      toast.success("Tạo nhóm tùy chọn thành công");
       queryClient.invalidateQueries({ queryKey: ["modifierGroups"] });
     },
-    onError: (err) => {
-      const msg = err.response?.data?.message || err.message;
-      toast.error(msg);
+    onError: () => {
+      toast.error("Không thể tạo nhóm tùy chọn");
     },
   });
 

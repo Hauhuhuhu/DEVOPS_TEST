@@ -8,13 +8,12 @@ export function useUpdateModifierGroup() {
   const { mutate: updateModifierGroup, isPending: isUpdating } = useMutation({
     mutationFn: ({ groupId, data }) => updateModifierGroupApi(groupId, data),
     onSuccess: () => {
-      toast.success("Modifier group successfully updated");
+      toast.success("Cập nhật nhóm tùy chọn thành công");
       queryClient.invalidateQueries({ queryKey: ["modifierGroups"] });
       queryClient.invalidateQueries({ queryKey: ["items"] });
     },
-    onError: (err) => {
-      const msg = err.response?.data?.message || err.message;
-      toast.error(msg);
+    onError: () => {
+      toast.error("Không thể cập nhật nhóm tùy chọn");
     },
   });
 

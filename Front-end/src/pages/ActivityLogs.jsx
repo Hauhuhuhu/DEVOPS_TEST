@@ -86,25 +86,25 @@ function ActivityLogs() {
       case "CREATE":
         return (
           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-            CREATE
+            Tạo mới
           </span>
         );
       case "UPDATE":
         return (
           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-            UPDATE
+            Cập nhật
           </span>
         );
       case "DELETE":
         return (
           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
-            DELETE
+            Xóa
           </span>
         );
       case "LOGIN":
         return (
           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
-            LOGIN
+            Đăng nhập
           </span>
         );
       default:
@@ -222,10 +222,10 @@ function ActivityLogs() {
                 className="px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs"
               >
                 <option value="">Tất cả hành động</option>
-                <option value="LOGIN">LOGIN (Đăng nhập)</option>
-                <option value="CREATE">CREATE (Tạo mới)</option>
-                <option value="UPDATE">UPDATE (Cập nhật)</option>
-                <option value="DELETE">DELETE (Xóa)</option>
+                <option value="LOGIN">Đăng nhập</option>
+                <option value="CREATE">Tạo mới</option>
+                <option value="UPDATE">Cập nhật</option>
+                <option value="DELETE">Xóa</option>
               </select>
             </div>
 

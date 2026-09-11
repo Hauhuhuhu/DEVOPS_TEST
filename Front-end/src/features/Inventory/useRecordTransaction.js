@@ -19,15 +19,11 @@ export const useRecordTransaction = () => {
         queryKey: ["inventory-transactions"],
       });
       toast.success(
-        `Stock ${data?.transactionType === "IN" ? "received" : "deducted"} successfully! New stock: ${data?.balanceAfter}`
+        `${data?.transactionType === "IN" ? "Nhập kho" : "Xuất kho"} thành công. Tồn kho mới: ${data?.balanceAfter}`
       );
     },
-    onError: (err) => {
-      const message =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        "Failed to record inventory transaction";
-      toast.error(message);
+    onError: () => {
+      toast.error("Không thể ghi nhận giao dịch tồn kho");
     },
   });
 
@@ -49,18 +45,13 @@ export const useStockCheck = () => {
       });
       const diffSign = data?.quantity > 0 ? `+${data?.quantity}` : data?.quantity;
       toast.success(
-        `Stock check recorded! New stock: ${data?.balanceAfter} (Adjustment: ${diffSign})`
+        `Đã ghi nhận kiểm kê. Tồn kho mới: ${data?.balanceAfter} (điều chỉnh: ${diffSign})`
       );
     },
-    onError: (err) => {
-      const message =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        "Failed to record stock check";
-      toast.error(message);
+    onError: () => {
+      toast.error("Không thể ghi nhận kết quả kiểm kê");
     },
   });
 
   return { executeStockCheck, isChecking };
 };
-

@@ -94,7 +94,7 @@ public class OrderPaginationIntegrationTest {
     @DisplayName("Unauthenticated request to GET /orders should be rejected with 401 or 403")
     void testUnauthenticatedAccessToOrdersIsRejected() throws Exception {
         mockMvc.perform(get("/orders"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

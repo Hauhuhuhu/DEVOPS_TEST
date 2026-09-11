@@ -8,12 +8,12 @@ export function useCreatePromotion() {
   const { mutate: addPromotion, isPending: isCreating } = useMutation({
     mutationFn: createPromotion,
     onSuccess: async () => {
-      toast.success("Promotion successfully created");
+      toast.success("Tạo khuyến mãi thành công");
       await queryClient.invalidateQueries({ queryKey: ["promotions"] });
       await queryClient.invalidateQueries({ queryKey: ["active-promotions"] });
     },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || err.message || "Failed to create promotion");
+    onError: () => {
+      toast.error("Không thể tạo khuyến mãi");
     },
   });
 

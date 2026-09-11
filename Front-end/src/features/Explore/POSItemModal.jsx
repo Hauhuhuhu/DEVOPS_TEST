@@ -140,7 +140,7 @@ function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
                 {item.name}
               </h3>
               <span className="text-xs text-slate-500">
-                Category: {item.categoryName || "General"}
+                Danh mục: {item.categoryName || "Chung"}
               </span>
             </div>
           </div>
@@ -159,7 +159,7 @@ function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
           {hasVariants && (
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                Select Variant / Size:
+                Chọn biến thể / kích thước:
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {item.variants.map((variant) => {
@@ -198,7 +198,7 @@ function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
                                 : "bg-red-100 text-red-800"
                             }`}
                           >
-                            Stock: {variant.cachedStockQuantity ?? 0}
+                            Tồn kho: {variant.cachedStockQuantity ?? 0}
                           </span>
                         </div>
                       </div>
@@ -216,7 +216,7 @@ function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
           {hasModifiers && (
             <div className="space-y-3">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Customize Options & Add-ons:
+                Tùy chỉnh lựa chọn & món thêm:
               </label>
               {item.modifierGroups.map((group) => {
                 const selectedSet =
@@ -234,8 +234,8 @@ function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
                       </span>
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-200 text-slate-700">
                         {isSingleSelect
-                          ? "Choose 1"
-                          : `Max ${group.maxSelections || "unlimited"}`}
+                          ? "Chọn 1"
+                          : `Tối đa ${group.maxSelections || "không giới hạn"}`}
                       </span>
                     </div>
                     {group.description && (
@@ -276,7 +276,7 @@ function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
 
           {/* 3. Quantity Selector */}
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <span className="text-xs font-bold text-slate-800">Quantity:</span>
+            <span className="text-xs font-bold text-slate-800">Số lượng:</span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -302,15 +302,15 @@ function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
           {/* Price Breakdown */}
           <div className="flex justify-between items-center text-xs text-slate-500 pt-1">
             <span>
-              Unit: <strong className="text-slate-700">{formatCurrency(unitPrice)}</strong>
+              Đơn giá: <strong className="text-slate-700">{formatCurrency(unitPrice)}</strong>
               {selectedModifiersList.length > 0 && (
                 <span className="ml-1 text-[11px]">
-                  ({formatCurrency(basePrice)} + {selectedModifiersList.length} modifiers)
+                  ({formatCurrency(basePrice)} + {selectedModifiersList.length} tùy chọn)
                 </span>
               )}
             </span>
             <span className="text-base font-bold text-blue-600">
-              Total: {formatCurrency(totalLinePrice)}
+              Tổng: {formatCurrency(totalLinePrice)}
             </span>
           </div>
         </div>
@@ -322,7 +322,7 @@ function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
             className="px-4 py-2 text-xs font-medium text-slate-700 rounded-lg border border-slate-300 hover:bg-white transition-colors cursor-pointer"
             onClick={onClose}
           >
-            Cancel
+            Hủy
           </button>
           <button
             type="button"
@@ -330,7 +330,7 @@ function POSItemModal({ item, isOpen, onClose, onAddToCart }) {
             onClick={handleAdd}
           >
             <Plus size={14} />
-            <span>Add to Cart - {formatCurrency(totalLinePrice)}</span>
+            <span>Thêm vào giỏ - {formatCurrency(totalLinePrice)}</span>
           </button>
         </div>
       </div>

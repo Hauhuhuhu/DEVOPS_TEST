@@ -8,9 +8,9 @@ function Login() {
           <div className="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-2xl mx-auto shadow-md mb-3">
             B
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Sign in to BillingApp</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Đăng nhập BillingApp</h1>
           <p className="text-sm text-slate-600 mt-1">
-            Please enter your credentials to access your account
+            Nhập thông tin đăng nhập để truy cập tài khoản
           </p>
         </div>
 

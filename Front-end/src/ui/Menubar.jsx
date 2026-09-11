@@ -38,12 +38,12 @@ function Menubar() {
     }`;
 
   const adminLinks = [
-    { to: "/items", icon: Package, label: "Items" },
-    { to: "/categories", icon: Tags, label: "Categories" },
-    { to: "/modifiers", icon: SlidersHorizontal, label: "Modifiers" },
-    { to: "/users", icon: Users, label: "Users" },
-    { to: "/promotions", icon: Percent, label: "Promotions" },
-    { to: "/customers", icon: UserCircle, label: "Customers" },
+    { to: "/items", icon: Package, label: "Mặt hàng" },
+    { to: "/categories", icon: Tags, label: "Danh mục" },
+    { to: "/modifiers", icon: SlidersHorizontal, label: "Tùy chọn" },
+    { to: "/users", icon: Users, label: "Người dùng" },
+    { to: "/promotions", icon: Percent, label: "Khuyến mãi" },
+    { to: "/customers", icon: UserCircle, label: "Khách hàng" },
   ];
 
   return (
@@ -62,16 +62,16 @@ function Menubar() {
             <div className="hidden md:ml-8 md:flex md:space-x-2 md:items-center">
               <NavLink className={navLinkClass} to="/dashboard">
                 <LayoutDashboard size={18} />
-                <span>Dashboard</span>
+                <span>Tổng quan</span>
               </NavLink>
               <NavLink className={navLinkClass} to="/explore">
                 <Compass size={18} />
-                <span>Explore</span>
+                <span>Bán hàng</span>
               </NavLink>
               
               <NavLink className={navLinkClass} to="/orders">
                 <History size={18} />
-                <span>Orders</span>
+                <span>Đơn hàng</span>
               </NavLink>
 
               {isAdmin && (
@@ -86,7 +86,7 @@ function Menubar() {
                     }`}
                   >
                     <Settings size={18} />
-                    <span>Manage</span>
+                    <span>Quản lý</span>
                     <ChevronDown size={14} className={`transition-transform duration-200 ${isManageOpen ? "rotate-180" : ""}`} />
                   </button>
 
@@ -123,7 +123,7 @@ function Menubar() {
                   className="flex rounded-full bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 p-1 border border-slate-200 transition-shadow"
                   onClick={() => setIsProfileOpen((prev) => !prev)}
                 >
-                  <span className="sr-only">Open user menu</span>
+                  <span className="sr-only">Mở menu người dùng</span>
                   <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold">
                     {isAdmin ? 'A' : 'U'}
                   </div>
@@ -133,22 +133,22 @@ function Menubar() {
               {isProfileOpen && (
                 <div className="absolute right-0 z-50 mt-2 w-52 origin-top-right rounded-lg bg-white py-1 shadow-lg border border-slate-200 focus:outline-none">
                   <div className="px-4 py-2.5 border-b border-slate-100">
-                    <p className="text-sm font-semibold text-slate-900">{isAdmin ? 'Admin User' : 'Staff User'}</p>
-                    <p className="text-xs text-slate-500">{isAdmin ? 'Administrator' : 'Standard Access'}</p>
+                    <p className="text-sm font-semibold text-slate-900">{isAdmin ? 'Quản trị viên' : 'Nhân viên'}</p>
+                    <p className="text-xs text-slate-500">{isAdmin ? 'Toàn quyền quản trị' : 'Quyền truy cập tiêu chuẩn'}</p>
                   </div>
                   <NavLink
                     to="/activity-logs"
                     onClick={() => setIsProfileOpen(false)}
                     className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
                   >
-                    <Activity size={16} /> Activity Log
+                    <Activity size={16} /> Nhật ký hoạt động
                   </NavLink>
                   <button
                     type="button"
                     onClick={() => setIsProfileOpen(false)}
                     className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
                   >
-                    <Settings size={16} /> Settings
+                    <Settings size={16} /> Cài đặt
                   </button>
                   <button
                     onClick={(e) => {
@@ -157,7 +157,7 @@ function Menubar() {
                     }}
                     className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-t border-slate-100 transition-colors"
                   >
-                    <LogOut size={16} /> Logout
+                      <LogOut size={16} /> Đăng xuất
                   </button>
                 </div>
               )}
@@ -170,7 +170,7 @@ function Menubar() {
                 className="inline-flex items-center justify-center rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
                 onClick={() => setIsMobileMenuOpen((prev) => !prev)}
               >
-                <span className="sr-only">Open main menu</span>
+                <span className="sr-only">Mở menu chính</span>
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
             </div>
@@ -187,34 +187,34 @@ function Menubar() {
               to="/dashboard"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <LayoutDashboard size={18} /> Dashboard
+              <LayoutDashboard size={18} /> Tổng quan
             </NavLink>
             <NavLink 
               className={navLinkClass} 
               to="/explore"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <Compass size={18} /> Explore
+              <Compass size={18} /> Bán hàng
             </NavLink>
             <NavLink 
               className={navLinkClass} 
               to="/orders"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <History size={18} /> Orders
+              <History size={18} /> Đơn hàng
             </NavLink>
             <NavLink 
               className={navLinkClass} 
               to="/activity-logs"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <Activity size={18} /> Activity Log
+              <Activity size={18} /> Nhật ký hoạt động
             </NavLink>
             
             {isAdmin && (
               <>
                 <div className="px-3 pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Management
+                  Quản lý
                 </div>
                 {adminLinks.map((link) => (
                   <NavLink 

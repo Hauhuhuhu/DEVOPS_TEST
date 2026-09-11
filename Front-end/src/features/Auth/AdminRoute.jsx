@@ -1,23 +1,28 @@
 import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
+import RouteLoading from "../../ui/RouteLoading";
 
 function AdminRoute() {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const { user, isAdmin, isLoading } = useCurrentUser();
 
   useEffect(() => {
-    if (token && role !== "ROLE_ADMIN") {
+    if (user && !isAdmin) {
       toast.error("Bạn không có quyền truy cập trang này!");
     }
-  }, [token, role]);
+  }, [user, isAdmin]);
 
-  if (!token) {
+  if (isLoading) {
+    return <RouteLoading />;
+  }
+
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
   // Nếu có token nhưng role không phải admin
-  if (role !== "ROLE_ADMIN") {
+  if (!isAdmin) {
     // Đẩy về trang chủ hoặc dashboard
     return <Navigate to="/dashboard" replace />;
   }

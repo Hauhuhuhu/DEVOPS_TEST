@@ -8,13 +8,13 @@ export function useDeleteUser() {
   const { isPending: isDeleting, mutate: deleteUser } = useMutation({
     mutationFn: deleteCategoryApi,
     onSuccess: () => {
-      toast.success("User successfully deleted");
+      toast.success("Xóa người dùng thành công");
 
       queryClient.invalidateQueries({
         queryKey: ["users"],
       });
     },
-    onError: (err) => toast.error(err.message),
+    onError: () => toast.error("Không thể xóa người dùng"),
   });
 
   return { isDeleting, deleteUser };

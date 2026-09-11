@@ -64,9 +64,9 @@ function ManageCustomers() {
   function onError(errors) {
     const firstError = Object.values(errors)[0];
     if (firstError) {
-      toast.error(firstError.message || "Please check the required fields");
+      toast.error(firstError.message || "Vui lòng kiểm tra lại các trường bắt buộc");
     } else {
-      toast.error("Please check the required fields");
+      toast.error("Vui lòng kiểm tra lại các trường bắt buộc");
     }
   }
 
@@ -79,19 +79,19 @@ function ManageCustomers() {
             <UserPlus size={18} />
           </div>
           <h2 className="text-base font-semibold text-slate-900">
-            {editingCustomer ? "Edit Customer" : "Add New Customer"}
+            {editingCustomer ? "Sửa khách hàng" : "Thêm khách hàng mới"}
           </h2>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Customer Name *
+              Tên khách hàng *
             </label>
             <input
               type="text"
-              placeholder="e.g. Nguyen Van A"
-              {...register("name", { required: "Name is required" })}
+              placeholder="Ví dụ: Nguyễn Văn A"
+              {...register("name", { required: "Tên là bắt buộc" })}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                 errors.name ? "border-red-500 focus:ring-red-500 bg-red-50/10" : "border-slate-300 focus:border-blue-500"
               }`}
@@ -103,16 +103,16 @@ function ManageCustomers() {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Phone Number *
+              Số điện thoại *
             </label>
             <input
               type="tel"
-              placeholder="e.g. 0912345678"
+              placeholder="Ví dụ: 0912345678"
               {...register("phoneNumber", {
-                required: "Phone number is required",
+                required: "Số điện thoại là bắt buộc",
                 pattern: {
                   value: /^[0-9+ ]{8,15}$/,
-                  message: "Invalid phone number format",
+                  message: "Định dạng số điện thoại không hợp lệ",
                 },
               })}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
@@ -126,11 +126,11 @@ function ManageCustomers() {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Email (Optional)
+              Email (không bắt buộc)
             </label>
             <input
               type="email"
-              placeholder="e.g. customer@example.com"
+              placeholder="Ví dụ: khachhang@example.com"
               {...register("email")}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
@@ -146,11 +146,11 @@ function ManageCustomers() {
                 <Spinner className="text-white" />
               ) : editingCustomer ? (
                 <>
-                  <Check size={16} /> Update
+                  <Check size={16} /> Cập nhật
                 </>
               ) : (
                 <>
-                  <UserPlus size={16} /> Save Customer
+                  <UserPlus size={16} /> Lưu khách hàng
                 </>
               )}
             </button>
@@ -160,7 +160,7 @@ function ManageCustomers() {
                 onClick={cancelEdit}
                 className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium transition-colors cursor-pointer"
               >
-                Cancel
+                Hủy
               </button>
             )}
           </div>
@@ -174,7 +174,7 @@ function ManageCustomers() {
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by name or phone..."
+              placeholder="Tìm theo tên hoặc số điện thoại..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-slate-300 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -190,7 +190,7 @@ function ManageCustomers() {
           </div>
 
           <span className="bg-blue-100 text-blue-700 rounded-full px-3 py-1 text-sm font-medium">
-            Total: {customers?.length || 0} Customers
+            Tổng: {customers?.length || 0} khách hàng
           </span>
         </div>
 
@@ -203,12 +203,12 @@ function ManageCustomers() {
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-slate-50 sticky top-0">
                 <tr>
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Phone Number</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Khách hàng</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Số điện thoại</th>
                   <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
-                  <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Orders</th>
-                  <th className="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Spent</th>
-                  <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Đơn hàng</th>
+                  <th className="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng chi tiêu</th>
+                  <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -216,7 +216,7 @@ function ManageCustomers() {
                   <tr>
                     <td colSpan="6" className="text-center py-12 text-slate-400">
                       <Users size={36} className="mx-auto mb-2 text-slate-300" />
-                      <p className="text-sm">No customers found</p>
+                      <p className="text-sm">Không tìm thấy khách hàng</p>
                     </td>
                   </tr>
                 ) : (
@@ -239,7 +239,7 @@ function ManageCustomers() {
                       </td>
                       <td className="px-5 py-3.5 whitespace-nowrap text-center">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                          {customer.orderCount} orders
+                          {customer.orderCount} đơn hàng
                         </span>
                       </td>
                       <td className="px-5 py-3.5 whitespace-nowrap text-right text-sm font-semibold text-emerald-600">
@@ -250,7 +250,7 @@ function ManageCustomers() {
                           <button
                             className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors cursor-pointer"
                             onClick={() => startEdit(customer)}
-                            title="Edit Customer"
+                            title="Sửa khách hàng"
                           >
                             <Pencil size={15} />
                           </button>
@@ -258,7 +258,7 @@ function ManageCustomers() {
                             className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
                             onClick={() => setCustomerToDelete(customer)}
                             disabled={isDeleting}
-                            title="Delete Customer"
+                            title="Xóa khách hàng"
                           >
                             <Trash2 size={15} />
                           </button>
@@ -283,9 +283,9 @@ function ManageCustomers() {
             });
           }
         }}
-        title="Delete Customer"
+        title="Xóa khách hàng"
         entityName={customerToDelete?.name || ""}
-        message="Are you sure you want to delete this customer? Loyalty points and order history linkages will be removed."
+        message="Bạn có chắc muốn xóa khách hàng này không? Điểm tích lũy và liên kết lịch sử đơn hàng sẽ bị xóa."
         isLoading={isDeleting}
       />
     </div>

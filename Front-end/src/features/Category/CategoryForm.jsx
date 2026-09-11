@@ -39,7 +39,7 @@ function CategoryForm() {
     const imageFile = data.imgUrl?.[0];
     if (imageFile) {
       if (imageFile.size > 5 * 1024 * 1024) {
-        toast.error("Image size should not exceed 5MB");
+        toast.error("Dung lượng hình ảnh không được vượt quá 5MB");
         return;
       }
       formData.append("file", imageFile);
@@ -58,7 +58,7 @@ function CategoryForm() {
 
   function onError(errors) {
     const firstError = Object.values(errors)[0];
-    if (firstError) toast.error(firstError.message || "Please check the required fields");
+    if (firstError) toast.error(firstError.message || "Vui lòng kiểm tra lại các trường bắt buộc");
   }
 
   const handleImageChange = (e) => {
@@ -78,7 +78,7 @@ function CategoryForm() {
         <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
           <FolderPlus size={18} />
         </div>
-        <h2 className="text-base font-semibold text-slate-900">Add Category</h2>
+        <h2 className="text-base font-semibold text-slate-900">Thêm danh mục</h2>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
@@ -105,9 +105,9 @@ function CategoryForm() {
                 </div>
               )}
               <span className="text-xs font-medium text-slate-600 mt-2">
-                Click to upload image
+                Nhấn để tải hình ảnh lên
               </span>
-              <span className="text-[11px] text-slate-400">PNG, JPG up to 5MB</span>
+              <span className="text-[11px] text-slate-400">PNG, JPG tối đa 5MB</span>
             </div>
           </label>
           <input
@@ -124,15 +124,15 @@ function CategoryForm() {
 
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">
-            Category Name *
+            Tên danh mục *
           </label>
           <input
             type="text"
             id="name"
             disabled={isCreating}
-            placeholder="Enter category name"
+            placeholder="Nhập tên danh mục"
             {...register("name", {
-              required: "Category name is required",
+              required: "Tên danh mục là bắt buộc",
             })}
             className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
               errors.name
@@ -147,14 +147,14 @@ function CategoryForm() {
 
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-1">
-            Category Description *
+            Mô tả danh mục *
           </label>
           <textarea
             rows={3}
             id="description"
-            placeholder="Enter category description"
+            placeholder="Nhập mô tả danh mục"
             {...register("description", {
-              required: "Category description is required",
+              required: "Mô tả danh mục là bắt buộc",
             })}
             disabled={isCreating}
             className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
@@ -170,20 +170,20 @@ function CategoryForm() {
 
         <div>
           <label htmlFor="bgColor" className="block text-sm font-medium text-slate-700 mb-1">
-            Background Color *
+            Màu nền *
           </label>
           <div className="flex items-center gap-3">
             <input
               type="color"
               id="bgColor"
-              title="Choose theme color"
+              title="Chọn màu chủ đề"
               {...register("bgColor", {
-                required: "Background color is required",
+                required: "Màu nền là bắt buộc",
               })}
               disabled={isCreating}
               className="w-10 h-10 p-0.5 rounded-lg border border-slate-300 cursor-pointer disabled:opacity-50"
             />
-            <span className="text-xs text-slate-500">Pick a badge accent color</span>
+            <span className="text-xs text-slate-500">Chọn màu nhấn cho nhãn</span>
           </div>
         </div>
 
@@ -192,7 +192,7 @@ function CategoryForm() {
           disabled={isCreating}
           className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
         >
-          {isCreating ? <Spinner className="text-white" /> : "Submit Category"}
+          {isCreating ? <Spinner className="text-white" /> : "Lưu danh mục"}
         </button>
       </form>
     </div>

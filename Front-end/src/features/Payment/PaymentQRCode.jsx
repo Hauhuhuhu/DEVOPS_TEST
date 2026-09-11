@@ -11,7 +11,6 @@ function PaymentQRCode({ orderData, onCancelSuccess, onSwitchToCashSuccess }) {
   const rawOrder = orderData?.data || orderData;
   const orderId = rawOrder?.orderId;
   const [isConfirmCancelOpen, setIsConfirmCancelOpen] = useState(false);
-  const [isConfirmSwitchOpen, setIsConfirmSwitchOpen] = useState(false);
 
   // 1. Trích xuất dữ liệu từ cache kết hợp dữ liệu gốc
   const cachedData = queryClient.getQueryData(["order", orderId]);
@@ -34,7 +33,6 @@ function PaymentQRCode({ orderData, onCancelSuccess, onSwitchToCashSuccess }) {
       onCancelSuccess?.();
     },
     onSwitchToCashSuccess: (data) => {
-      setIsConfirmSwitchOpen(false);
       onSwitchToCashSuccess?.(data);
     },
   });

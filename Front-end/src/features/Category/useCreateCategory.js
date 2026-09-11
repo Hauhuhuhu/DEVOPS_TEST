@@ -8,10 +8,10 @@ export function useCreateCategory() {
   const { mutate: createCategory, isPending: isCreating } = useMutation({
     mutationFn: addCategory,
     onSuccess: () => {
-      toast.success("New category successfully created");
+      toast.success("Tạo danh mục thành công");
       queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
-    onError: (err) => toast.error(err.message),
+    onError: () => toast.error("Không thể tạo danh mục"),
   });
 
   return { isCreating, createCategory };

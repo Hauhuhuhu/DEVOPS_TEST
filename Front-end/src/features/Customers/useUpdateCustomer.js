@@ -8,11 +8,11 @@ export function useUpdateCustomer() {
   const { mutate: editCustomer, isPending: isUpdating } = useMutation({
     mutationFn: updateCustomer,
     onSuccess: async () => {
-      toast.success("Customer successfully updated");
+      toast.success("Cập nhật khách hàng thành công");
       await queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || err.message || "Failed to update customer");
+    onError: () => {
+      toast.error("Không thể cập nhật khách hàng");
     },
   });
 

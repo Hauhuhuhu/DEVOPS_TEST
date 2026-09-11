@@ -8,12 +8,12 @@ export function useUpdatePromotion() {
   const { mutate: editPromotion, isPending: isUpdating } = useMutation({
     mutationFn: updatePromotion,
     onSuccess: async () => {
-      toast.success("Promotion successfully updated");
+      toast.success("Cập nhật khuyến mãi thành công");
       await queryClient.invalidateQueries({ queryKey: ["promotions"] });
       await queryClient.invalidateQueries({ queryKey: ["active-promotions"] });
     },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || err.message || "Failed to update promotion");
+    onError: () => {
+      toast.error("Không thể cập nhật khuyến mãi");
     },
   });
 

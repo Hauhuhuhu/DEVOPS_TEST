@@ -6,6 +6,7 @@ import ReceiptPopup from "./ReceiptPopup";
 import toast from "react-hot-toast";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { evaluatePromotion } from "../../services/PromotionService";
+import { getPromotionErrorMessage } from "../../utils/promotionErrorMessages";
 import { Tag, Banknote, CreditCard, X } from "lucide-react";
 
 function CartSummary({
@@ -62,10 +63,7 @@ function CartSummary({
       .catch((err) => {
         if (isMounted) {
           if (appliedCoupon) {
-            toast.error(
-              err.response?.data?.message ||
-                "Mã giảm giá không còn khả dụng với giỏ hàng hiện tại",
-            );
+            toast.error(getPromotionErrorMessage(err));
             setAppliedCoupon("");
             evaluatePromotion({ cartItems: formattedCartItems })
               .then((fallback) => {
@@ -110,13 +108,9 @@ function CartSummary({
       });
       setAppliedCoupon(code);
       setEvaluation(res);
-      toast.success(res.message || "Áp dụng mã giảm giá thành công!");
+      toast.success("Áp dụng mã giảm giá thành công");
     } catch (err) {
-      const msg =
-        err.response?.data?.message ||
-        err.message ||
-        "Mã giảm giá không hợp lệ";
-      toast.error(msg);
+      toast.error(getPromotionErrorMessage(err));
     } finally {
       setIsEvaluating(false);
     }
@@ -197,7 +191,7 @@ function CartSummary({
       <div className="flex gap-1.5">
         <input
           type="text"
-          placeholder="Mã giảm giá (Coupon)"
+          placeholder="Mã giảm giá"
           value={couponInput}
           onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
           disabled={isEvaluating || Boolean(appliedCoupon)}
@@ -352,7 +346,7 @@ function CartSummary({
                   handleClearCart();
                 }
               }}
-              aria-label="Close"
+              aria-label="Đóng"
             >
               <X size={18} />
             </button>

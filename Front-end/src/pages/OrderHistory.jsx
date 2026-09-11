@@ -16,6 +16,18 @@ import {
   Banknote,
 } from "lucide-react";
 
+const ORDER_STATUS_LABELS = {
+  COMPLETED: "Hoàn thành",
+  PENDING: "Chờ xử lý",
+  CANCELLED: "Đã hủy",
+};
+
+const PAYMENT_METHOD_LABELS = {
+  CASH: "Tiền mặt",
+  PAYOS: "PayOS",
+  QR_CODE: "Mã QR",
+};
+
 function OrderHistory() {
   // Filter & Pagination States
   const [searchTerm, setSearchTerm] = useState("");
@@ -186,10 +198,10 @@ function OrderHistory() {
               onChange={handleStatusChange}
               className="w-full px-3 py-2 text-sm bg-slate-50/50 border border-slate-200 rounded-lg text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-colors shadow-2xs cursor-pointer"
             >
-              <option value="">Tất cả trạng thái (All)</option>
-              <option value="COMPLETED">Hoàn thành (COMPLETED)</option>
-              <option value="PENDING">Chờ xử lý (PENDING)</option>
-              <option value="CANCELLED">Đã hủy (CANCELLED)</option>
+              <option value="">Tất cả trạng thái</option>
+              <option value="COMPLETED">Hoàn thành</option>
+              <option value="PENDING">Chờ xử lý</option>
+              <option value="CANCELLED">Đã hủy</option>
             </select>
           </div>
         </div>
@@ -286,7 +298,7 @@ function OrderHistory() {
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap text-sm">
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
-                          {order.paymentMethod}
+                          {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod || "Chưa xác định"}
                         </span>
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap text-sm">
@@ -299,7 +311,7 @@ function OrderHistory() {
                               : "bg-red-100 text-red-800"
                           }`}
                         >
-                          {status}
+                          {ORDER_STATUS_LABELS[status] || status}
                         </span>
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap text-xs text-slate-500">
@@ -351,24 +363,24 @@ function OrderHistory() {
         <div className="shrink-0 border-t border-slate-200 bg-slate-50/70 px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
           {/* Left: Showing X to Y of Z orders */}
           <div className="text-xs sm:text-sm text-slate-600">
-            Showing{" "}
+            Hiển thị{" "}
             <span className="font-semibold text-slate-900">
               {totalElements === 0 ? 0 : page * pageSize + 1}
             </span>{" "}
-            to{" "}
+            đến{" "}
             <span className="font-semibold text-slate-900">
               {Math.min((page + 1) * pageSize, totalElements)}
             </span>{" "}
-            of{" "}
+            trên tổng số{" "}
             <span className="font-semibold text-slate-900">{totalElements}</span>{" "}
-            orders
+            đơn hàng
           </div>
 
           {/* Right: Page Size Selector + Pagination Controls */}
           <div className="flex items-center gap-4">
             {/* Page size selector */}
             <div className="flex items-center gap-2 text-xs text-slate-600">
-              <span className="hidden sm:inline">Rows per page:</span>
+              <span className="hidden sm:inline">Số dòng mỗi trang:</span>
               <select
                 value={pageSize}
                 onChange={(e) => {
@@ -392,7 +404,7 @@ function OrderHistory() {
                 className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-2xs cursor-pointer"
               >
                 <ChevronLeft size={14} />
-                <span className="hidden sm:inline">Previous</span>
+                <span className="hidden sm:inline">Trang trước</span>
               </button>
 
               {/* Page numbers */}
@@ -425,7 +437,7 @@ function OrderHistory() {
                 disabled={page >= totalPages - 1 || isLoading}
                 className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-2xs cursor-pointer"
               >
-                <span className="hidden sm:inline">Next</span>
+                <span className="hidden sm:inline">Trang sau</span>
                 <ChevronRight size={14} />
               </button>
             </div>

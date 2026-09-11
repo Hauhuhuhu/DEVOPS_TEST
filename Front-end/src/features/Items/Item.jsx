@@ -18,7 +18,7 @@ function Item({ item }) {
     <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-xs hover:shadow-sm transition-all">
       <div className="flex items-center gap-3">
         <img
-          src={item.imgUrl || "https://placehold.co/60x60?text=Item"}
+          src={item.imgUrl || "https://placehold.co/60x60?text=MH"}
           alt={item.name}
           className="w-14 h-14 rounded-lg object-cover border border-slate-200 bg-slate-50 flex-shrink-0"
         />
@@ -26,7 +26,7 @@ function Item({ item }) {
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-semibold text-slate-900 truncate">{item.name}</h4>
           <p className="text-xs text-slate-500 mt-0.5">
-            Category: <span className="font-medium text-slate-700">{item.categoryName}</span>
+            Danh mục: <span className="font-medium text-slate-700">{item.categoryName}</span>
           </p>
           <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
@@ -34,12 +34,12 @@ function Item({ item }) {
             </span>
             {hasVariants && (
               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
-                {item.variants.length} {item.variants.length === 1 ? "variant" : "variants"}
+                {item.variants.length} {item.variants.length === 1 ? "biến thể" : "biến thể"}
               </span>
             )}
             {hasModifiers && (
               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
-                {item.modifierGroups.length} modifiers
+                {item.modifierGroups.length} tùy chọn
               </span>
             )}
           </div>
@@ -51,7 +51,7 @@ function Item({ item }) {
               type="button"
               className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
               onClick={() => setShowDetails(!showDetails)}
-              title="Toggle details"
+              title="Hiện/ẩn chi tiết"
             >
               {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
@@ -61,7 +61,7 @@ function Item({ item }) {
             className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
             onClick={() => setIsDeleteModalOpen(true)}
             disabled={isDeleting}
-            title="Delete item"
+            title="Xóa mặt hàng"
           >
             <Trash2 size={16} />
           </button>
@@ -75,7 +75,7 @@ function Item({ item }) {
           {hasVariants && (
             <div>
               <span className="text-xs font-semibold text-slate-700 block mb-1.5">
-                Physical Variants (SKUs):
+                Biến thể vật lý (SKU):
               </span>
               <div className="space-y-1.5">
                 {item.variants.map((v) => {
@@ -98,7 +98,7 @@ function Item({ item }) {
                             </span>
                           ))
                         ) : (
-                          <span className="text-slate-400">Standard</span>
+                          <span className="text-slate-400">Tiêu chuẩn</span>
                         )}
                       </div>
 
@@ -109,9 +109,9 @@ function Item({ item }) {
                               ? "bg-emerald-100 text-emerald-800"
                               : "bg-red-100 text-red-800"
                           }`}
-                          title="Current Cached Stock"
+                          title="Tồn kho hiện tại"
                         >
-                          Stock: {v.cachedStockQuantity ?? 0}
+                          Tồn kho: {v.cachedStockQuantity ?? 0}
                         </span>
                         <span className="font-bold text-slate-900">
                           {formatCurrency(v.basePrice)}
@@ -120,10 +120,10 @@ function Item({ item }) {
                           type="button"
                           className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-slate-300 hover:bg-white text-slate-700 text-xs font-medium transition-colors cursor-pointer"
                           onClick={() => setSelectedVariantForStock(v)}
-                          title="Inventory Operations (Nhập kho / Xuất huỷ / Kiểm kê)"
+                          title="Quản lý tồn kho (nhập kho / xuất hủy / kiểm kê)"
                         >
                           <Package size={13} className="text-blue-600" />
-                          <span>Inventory</span>
+                          <span>Kho hàng</span>
                         </button>
                       </div>
                     </div>
@@ -137,7 +137,7 @@ function Item({ item }) {
           {hasModifiers && (
             <div>
               <span className="text-xs font-semibold text-slate-700 block mb-1.5">
-                Attached Modifier Groups:
+                Nhóm tùy chọn đi kèm:
               </span>
               <div className="flex flex-wrap gap-2">
                 {item.modifierGroups.map((g) => (
@@ -186,9 +186,9 @@ function Item({ item }) {
             onSettled: () => setIsDeleteModalOpen(false),
           });
         }}
-        title="Delete Item"
+        title="Xóa mặt hàng"
         entityName={item.name}
-        message="Are you sure you want to delete this item? All associated variants, attributes, and modifier bindings will also be removed."
+        message="Bạn có chắc muốn xóa mặt hàng này không? Tất cả biến thể, thuộc tính và liên kết tùy chọn đi kèm cũng sẽ bị xóa."
         isLoading={isDeleting}
       />
     </div>
