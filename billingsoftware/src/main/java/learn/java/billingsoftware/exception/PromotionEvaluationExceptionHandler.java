@@ -10,7 +10,7 @@ public class PromotionEvaluationExceptionHandler {
 
     @ExceptionHandler(PromotionEvaluationException.class)
     public ResponseEntity<ApiErrorResponse> handle(PromotionEvaluationException exception) {
-        return ResponseEntity.status(exception.getStatus())
-                .body(new ApiErrorResponse(exception.getCode(), exception.getMessage()));
+        return ResponseEntity.status(exception.getStatusCode())
+                .body(new ApiErrorResponse(exception.getCode(), exception.getReason()));
     }
 }

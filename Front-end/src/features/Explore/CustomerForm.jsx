@@ -124,11 +124,11 @@ function CustomerForm({
               <span>Khách hàng cũ</span>
             </div>
             <div className="text-[11px] text-emerald-700">
-              {customerInfo.orderCount} orders • {formatCurrency(customerInfo.totalSpent || 0)}
+              {customerInfo.orderCount} đơn hàng • {formatCurrency(customerInfo.totalSpent || 0)}
             </div>
           </div>
           <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-200 text-emerald-900">
-            Verified
+            Đã xác minh
           </span>
         </div>
       )}

@@ -1,12 +1,12 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
-import Spinner from '../../ui/Spinner';
+import RouteLoading from '../../ui/RouteLoading';
 
 function ProtectedRoute() {
   const { user, isLoading } = useCurrentUser();
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center"><Spinner /></div>;
+    return <RouteLoading />;
   }
 
   if (!user) {

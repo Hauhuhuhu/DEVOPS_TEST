@@ -2,6 +2,8 @@
 
 Phiên đăng nhập dùng Access Token JWT ngắn hạn trong bộ nhớ trình duyệt và Refresh Token dạng opaque được lưu dưới cookie HttpOnly. Mỗi lần refresh sẽ thu hồi token cũ và phát hành token mới trong cùng một Refresh Token Family; token được lưu dưới dạng hash trong database để hỗ trợ đăng xuất, phát hiện replay và thu hồi phiên mà không để credential dài hạn trong localStorage.
 
+Việc xoay token khóa pessimistic trên bản ghi Refresh Token hiện tại trong cùng transaction. Vì vậy, hai request refresh đồng thời không thể cùng xác nhận một token đang hoạt động và phát hành hai token kế tiếp.
+
 ## Consequences
 
 - Access Token không còn được giữ qua reload; frontend phải khôi phục phiên bằng endpoint refresh khi khởi động.

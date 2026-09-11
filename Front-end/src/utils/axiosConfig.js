@@ -1,10 +1,11 @@
 import axios from "axios";
 import { queryClient } from "./queryClient"; // Import queryClient gốc của bạn
 import { clearSession, getAccessToken, setSession } from "./authSession";
+import { API_BASE_URL, requestRefreshSession } from "./authRefresh";
+import { shouldRefreshRequest } from "./authRetryPolicy";
 
 const api = axios.create({
-  // baseURL: "/api/v1.0",
-  baseURL: "http://localhost:8080/api/v1.0",
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
@@ -21,8 +22,7 @@ let refreshPromise = null;
 
 async function refreshAccessToken() {
   if (!refreshPromise) {
-    refreshPromise = api.post("/auth/refresh", null, { skipAuthRefresh: true })
-      .then((response) => response.data)
+    refreshPromise = requestRefreshSession()
       .then((authResponse) => {
         const session = setSession(authResponse);
         queryClient.setQueryData(["user"], session);
@@ -46,11 +46,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    const shouldRefresh =
-      error.response?.status === 401 &&
-      originalRequest &&
-      !originalRequest._retry &&
-      !originalRequest.skipAuthRefresh;
+    const shouldRefresh = shouldRefreshRequest(error);
 
     if (shouldRefresh) {
       originalRequest._retry = true;

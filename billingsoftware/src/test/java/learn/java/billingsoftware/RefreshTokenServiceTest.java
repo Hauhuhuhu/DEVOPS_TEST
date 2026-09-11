@@ -48,12 +48,13 @@ class RefreshTokenServiceTest {
         ArgumentCaptor<RefreshTokenEntity> savedTokens = ArgumentCaptor.forClass(RefreshTokenEntity.class);
         verify(refreshTokenRepository).save(savedTokens.capture());
         RefreshTokenEntity storedToken = savedTokens.getValue();
-        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(storedToken));
+        when(refreshTokenRepository.findByTokenHashForUpdate(anyString())).thenReturn(Optional.of(storedToken));
 
         RefreshTokenService.IssuedRefreshToken rotated = refreshTokenService.rotate(issued.getRawToken());
 
         assertThat(storedToken.getRevokedAt()).isNotNull();
         assertThat(rotated.getUserEmail()).isEqualTo("cashier@example.com");
+        verify(refreshTokenRepository).findByTokenHashForUpdate(anyString());
         verify(refreshTokenRepository, times(3)).save(any(RefreshTokenEntity.class));
         verify(refreshTokenRepository).save(org.mockito.ArgumentMatchers.argThat(token ->
                 storedToken.getFamilyId().equals(token.getFamilyId())
@@ -70,7 +71,7 @@ class RefreshTokenServiceTest {
                 .expiresAt(Timestamp.from(Instant.now().plusSeconds(60)))
                 .revokedAt(Timestamp.from(Instant.now().minusSeconds(1)))
                 .build();
-        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(revokedToken));
+        when(refreshTokenRepository.findByTokenHashForUpdate(anyString())).thenReturn(Optional.of(revokedToken));
 
         assertThatThrownBy(() -> refreshTokenService.rotate("replayed-token"))
                 .isInstanceOf(ResponseStatusException.class)

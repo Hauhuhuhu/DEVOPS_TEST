@@ -231,6 +231,73 @@ public class PromotionEvaluationIntegrationTest {
     }
 
     @Test
+    void evaluate_inactiveCoupon_throwsBadRequest() throws Exception {
+        promotionRepository.save(PromotionEntity.builder()
+                .promotionId(UUID.randomUUID().toString())
+                .name("Inactive Promo")
+                .type(PromotionType.COUPON)
+                .code("INACTIVE")
+                .discountType(DiscountType.FIXED_AMOUNT)
+                .discountValue(BigDecimal.valueOf(10000.0))
+                .isActive(false)
+                .build());
+
+        EvaluationCartItem item = EvaluationCartItem.builder()
+                .itemId("item-1")
+                .name("Tea")
+                .price(BigDecimal.valueOf(50000.0))
+                .quantity(1)
+                .build();
+
+        PromotionEvaluationRequest request = PromotionEvaluationRequest.builder()
+                .couponCode("INACTIVE")
+                .cartItems(List.of(item))
+                .build();
+
+        mockMvc.perform(post("/promotions/evaluate")
+                        .with(user("cashier").roles("USER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code", is("PROMOTION_INACTIVE")))
+                .andExpect(jsonPath("$.message", is("Mã giảm giá đang tạm ngưng hoạt động")));
+    }
+
+    @Test
+    void evaluate_notStartedCoupon_throwsBadRequest() throws Exception {
+        promotionRepository.save(PromotionEntity.builder()
+                .promotionId(UUID.randomUUID().toString())
+                .name("Future Promo")
+                .type(PromotionType.COUPON)
+                .code("FUTURE")
+                .discountType(DiscountType.FIXED_AMOUNT)
+                .discountValue(BigDecimal.valueOf(10000.0))
+                .startDate(LocalDate.now().plusDays(1))
+                .isActive(true)
+                .build());
+
+        EvaluationCartItem item = EvaluationCartItem.builder()
+                .itemId("item-1")
+                .name("Tea")
+                .price(BigDecimal.valueOf(50000.0))
+                .quantity(1)
+                .build();
+
+        PromotionEvaluationRequest request = PromotionEvaluationRequest.builder()
+                .couponCode("FUTURE")
+                .cartItems(List.of(item))
+                .build();
+
+        mockMvc.perform(post("/promotions/evaluate")
+                        .with(user("cashier").roles("USER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code", is("PROMOTION_NOT_STARTED")))
+                .andExpect(jsonPath("$.message", is("Mã giảm giá chưa đến ngày áp dụng")));
+    }
+
+    @Test
     void evaluate_expiredCoupon_throwsBadRequest() throws Exception {
         PromotionEntity expired = promotionRepository.save(PromotionEntity.builder()
                 .promotionId(UUID.randomUUID().toString())

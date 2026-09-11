@@ -9,6 +9,7 @@ Xác nhận các vertical slice của Phase 6 cùng tồn tại mà không làm 
 Completed: true
 
 - [x] Frontend lint đạt.
+- [x] Frontend contract tests đạt (8 test cho session memory, 401 retry policy, Promotion toast và Variant defaults).
 - [x] Frontend production build đạt; chỉ còn cảnh báo kích thước chunk của Vite.
 - [x] Backend compile đạt.
 - [x] Test vòng đời Refresh Token, Promotion evaluation và order checkout đạt.

@@ -5,6 +5,7 @@ import { useCreateItem } from "./useCreateItem";
 import Spinner from "../../ui/Spinner";
 import { useCategories } from "../Category/useCategories";
 import { useModifierGroups } from "../Modifiers/useModifierGroups";
+import { createDefaultVariant } from "../../utils/variantDefaults";
 import { PackagePlus, Image as ImageIcon, PlusCircle, Trash2, CheckSquare, Square, X } from "lucide-react";
 
 const DEFAULT_PREVIEW = "https://placehold.co/60x60?text=Upload";
@@ -81,16 +82,7 @@ function ItemForm() {
       price: "",
       categoryId: "",
       hasVariants: false,
-      variants: [
-        {
-          sku: "",
-          basePrice: "",
-          attributes: [
-            { key: "Màu sắc", value: "" },
-            { key: "Kích thước", value: "" },
-          ],
-        },
-      ],
+      variants: [createDefaultVariant()],
     },
   });
 
@@ -192,16 +184,7 @@ function ItemForm() {
           price: "",
           categoryId: "",
           hasVariants: false,
-          variants: [
-            {
-              sku: "",
-              basePrice: "",
-              attributes: [
-                { key: "Màu sắc", value: "" },
-                { key: "Kích thước", value: "" },
-              ],
-            },
-          ],
+          variants: [createDefaultVariant()],
         });
         setPreviewUrl(DEFAULT_PREVIEW);
         setSelectedModifierGroupIds([]);
@@ -415,16 +398,7 @@ function ItemForm() {
                 </span>
                 <button
                   type="button"
-                  onClick={() =>
-                    appendVariant({
-                      sku: "",
-                      basePrice: "",
-                      attributes: [
-                        { key: "Màu sắc", value: "" },
-                        { key: "Kích thước", value: "" },
-                      ],
-                    })
-                  }
+                  onClick={() => appendVariant(createDefaultVariant())}
                   disabled={isCreating}
                   className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
                 >
@@ -454,7 +428,7 @@ function ItemForm() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mb-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
                     <div>
                       <input
                         type="text"
@@ -463,7 +437,7 @@ function ItemForm() {
                           required: hasVariants ? "Mã SKU của biến thể là bắt buộc" : false,
                         })}
                         disabled={isCreating}
-                        className={`w-full rounded-md border px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 transition-colors ${
+                        className={`min-w-0 w-full rounded-md border px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 transition-colors ${
                           errors.variants?.[vIndex]?.sku
                             ? "border-red-500 focus:ring-red-500 bg-red-50/10"
                             : "border-slate-300 focus:ring-blue-500"
@@ -488,7 +462,7 @@ function ItemForm() {
                           },
                         })}
                         disabled={isCreating}
-                        className={`w-full rounded-md border px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 transition-colors ${
+                        className={`min-w-0 w-full rounded-md border px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 transition-colors ${
                           errors.variants?.[vIndex]?.basePrice
                             ? "border-red-500 focus:ring-red-500 bg-red-50/10"
                             : "border-slate-300 focus:ring-blue-500"

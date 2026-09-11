@@ -61,9 +61,9 @@ Chuẩn hóa lỗi đánh giá Promotion thành các mã lỗi nghiệp vụ v�
 
 - Test phải kiểm tra hành vi bên ngoài: vòng đời session, status code, mã lỗi JSON, toast, bố cục có thể sử dụng và chuỗi hiển thị; không khóa vào tên class, interceptor nội bộ hay chi tiết lưu trữ không tạo ra hành vi observable.
 - Backend test seam là service/integration boundary: kiểm tra issue, rotate, revoke, expiry và replay của Refresh Token; kiểm tra hợp đồng 401/403; kiểm tra mã và message của các lỗi đánh giá Promotion.
-- Frontend test seam là flow/component boundary: kiểm tra khôi phục session, retry sau 401, logout, mapping Promotion error thành toast và render Variant form ở kích thước hẹp/rộng. Các kiểm tra lint/build là regression gate cho toàn bộ chuỗi giao diện.
+- Frontend test seam là flow/component/pure-contract boundary: kiểm tra session memory, policy retry sau 401, mapping Promotion error thành toast và factory dữ liệu Variant; các kiểm tra lint/build là regression gate cho toàn bộ chuỗi giao diện. Kiểm thử render trực tiếp ở nhiều viewport vẫn là việc cần bổ sung nếu repo thêm browser test runner.
 - Prior art là các integration test hiện có cho authentication, order checkout, promotion evaluation, activity log và dashboard; test unit mới cho RefreshTokenService bổ sung coverage cho vòng đời session.
-- Kết quả hồi quy đã ghi nhận: `npm run lint`, `npm run build`, backend compile, `PromotionEvaluationIntegrationTest`, `RefreshTokenServiceTest` và toàn bộ `mvn test` đều đạt; build frontend chỉ còn cảnh báo chunk lớn của Vite.
+- Kết quả hồi quy đã ghi nhận: `npm test` (8 test), `npm run lint`, `npm run build`, backend compile, `PromotionEvaluationIntegrationTest`, `RefreshTokenServiceTest` và toàn bộ `mvn test` (88 test) đều đạt; build frontend chỉ còn cảnh báo chunk lớn của Vite.
 
 ## Out of Scope
 

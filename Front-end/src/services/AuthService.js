@@ -1,13 +1,11 @@
 import api from "../utils/axiosConfig";
+import { requestRefreshSession } from "../utils/authRefresh";
 
 export const login = async (data) => {
   return await api.post("/login", data);
 };
 
-export const refreshSession = async () => {
-  const response = await api.post("/auth/refresh", null, { skipAuthRefresh: true });
-  return response.data;
-};
+export const refreshSession = requestRefreshSession;
 
 export const logout = async () => {
   return await api.post("/auth/logout", null, { skipAuthRefresh: true });

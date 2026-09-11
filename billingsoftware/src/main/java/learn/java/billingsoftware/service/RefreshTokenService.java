@@ -42,7 +42,7 @@ public class RefreshTokenService {
         }
 
         Timestamp now = Timestamp.from(Instant.now());
-        RefreshTokenEntity existing = refreshTokenRepository.findByTokenHash(hash(rawToken))
+        RefreshTokenEntity existing = refreshTokenRepository.findByTokenHashForUpdate(hash(rawToken))
                 .orElseThrow(this::invalidRefreshToken);
 
         if (existing.getRevokedAt() != null) {
@@ -68,7 +68,7 @@ public class RefreshTokenService {
             return;
         }
 
-        refreshTokenRepository.findByTokenHash(hash(rawToken)).ifPresent(token -> {
+        refreshTokenRepository.findByTokenHashForUpdate(hash(rawToken)).ifPresent(token -> {
             if (token.getRevokedAt() == null) {
                 token.setRevokedAt(Timestamp.from(Instant.now()));
                 refreshTokenRepository.save(token);

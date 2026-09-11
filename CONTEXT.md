@@ -49,11 +49,11 @@
 
 ## 4. System Invariants & Strict Rules (RẤT QUAN TRỌNG)
 - **Auth & Security:** 
-  - Dùng **JWT Token**. Token được Spring Security sinh ra, Frontend lưu vào `localStorage` (key: `"token"` hoặc `"user"`).
+  - Dùng **JWT Access Token** ngắn hạn do Spring Security sinh ra; Frontend chỉ giữ Access Token trong memory. Refresh Token dài hạn được backend lưu dưới dạng hash và gửi qua cookie HttpOnly theo ADR-0007.
   - Mọi request từ Frontend được đính kèm header `Authorization: Bearer <token>` thông qua Axios Interceptor (`src/utils/axiosConfig.js`).
 - **Error Handling Pattern:** 
-  - Backend sử dụng `ResponseStatusException` của Spring Boot để ném lỗi (trả về HTTP Status code 4xx/5xx).
-  - Frontend tự động bắt lỗi toàn cục 401 qua Axios Interceptor: xóa dữ liệu `localStorage`, clear cache của TanStack Query và tự động redirect về trang `/login`.
+  - Backend sử dụng `ResponseStatusException` hoặc subclass/domain handler tương thích để trả HTTP Status code 4xx/5xx; các lỗi nghiệp vụ có thể trả thêm mã lỗi ổn định trong JSON.
+  - Frontend tự động bắt lỗi toàn cục 401 qua Axios Interceptor: clear session trong memory, clear cache của TanStack Query và tự động redirect về trang `/login` sau khi refresh thất bại.
 - **API Response Wrapping:** 
   - Trả về dữ liệu thô (**Raw DTO/List**), **KHÔNG** dùng wrapper class chung (ví dụ: không có cấu trúc `{ data, status, message }` cố định ở mức global). 
   - Agent cần gọi thẳng `response.data` và lấy array/object JSON trả về từ backend.
@@ -63,7 +63,7 @@
 
 ## 5. Known Technical Debt & Fragile Areas
 1. **Database Migration Strategy:** Sử dụng `ddl-auto=update` trên production rất nguy hiểm, dễ gây lỗi mất schema/dữ liệu khi refactor cấu trúc DB. (Cần triển khai Flyway hoặc Liquibase).
-2. **Lưu trữ JWT trong LocalStorage:** Có rủi ro bị tấn công XSS. Một hướng đi an toàn hơn về lâu dài là chuyển sang dùng HttpOnly Cookie cho Token.
+2. **Cấu hình Refresh Token Cookie:** Cần bảo đảm `Secure`, `SameSite`, `Path` và domain của cookie được cấu hình đúng theo môi trường triển khai; Access Token không được đưa trở lại localStorage.
 3. **API Response Standardization:** Việc trả về trực tiếp DTO không qua wrapper có thể gây khó khăn trong tương lai khi cần metadata (như pagination, status messages). Cần chú ý khi mở rộng API mới không làm vỡ logic parse data hiện tại trên FE.
 4. **Environment Variables Security:** Config như `AWS_ACCESS`, `PAYOS_API` đang được inject từ `.env`. Cần đảm bảo các file này luôn nằm trong `.gitignore` và không bị vô tình hardcode lên source code trong quá trình thêm tính năng.
 

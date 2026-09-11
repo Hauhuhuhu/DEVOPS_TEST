@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
-import Spinner from "../../ui/Spinner";
+import RouteLoading from "../../ui/RouteLoading";
 
 function AdminRoute() {
   const { user, isAdmin, isLoading } = useCurrentUser();
@@ -14,7 +14,7 @@ function AdminRoute() {
   }, [user, isAdmin]);
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center"><Spinner /></div>;
+    return <RouteLoading />;
   }
 
   if (!user) {
