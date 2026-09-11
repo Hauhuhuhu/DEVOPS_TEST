@@ -11,4 +11,5 @@ public interface UserService {
     UserResponse findByEmail(String email);
     List<UserResponse> readUsers();
     void deleteUser(String id);
+    UserResponse updateUser(String userId, UserRequest request);
 }
