@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface ItemService {
     ItemResponse add(ItemRequest request, MultipartFile file) throws IOException;
+    ItemResponse updateItem(String itemId, ItemRequest request, MultipartFile file) throws IOException;
     List<ItemResponse> fetchItems();
     ItemResponse fetchItem(String itemId);
     void deleteItem(String id);

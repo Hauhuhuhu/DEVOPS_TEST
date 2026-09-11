@@ -3,11 +3,13 @@ import ConfirmDeleteModal from "../../ui/ConfirmDeleteModal";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { useDeleteItem } from "./useDeleteItem";
 import StockOperationModal from "../Inventory/StockOperationModal";
-import { ChevronDown, ChevronUp, Trash2, Package } from "lucide-react";
+import EditItemModal from "./EditItemModal";
+import { ChevronDown, ChevronUp, Trash2, Package, Edit3 } from "lucide-react";
 
 function Item({ item }) {
   const { isDeleting, deleteItem } = useDeleteItem();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedVariantForStock, setSelectedVariantForStock] = useState(null);
 
@@ -56,6 +58,14 @@ function Item({ item }) {
               {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
           )}
+          <button
+            type="button"
+            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+            onClick={() => setIsEditModalOpen(true)}
+            title="Chỉnh sửa mặt hàng"
+          >
+            <Edit3 size={16} />
+          </button>
           <button
             type="button"
             className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
@@ -177,6 +187,12 @@ function Item({ item }) {
           onClose={() => setSelectedVariantForStock(null)}
         />
       )}
+
+      <EditItemModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        item={item}
+      />
 
       <ConfirmDeleteModal
         isOpen={isDeleteModalOpen}

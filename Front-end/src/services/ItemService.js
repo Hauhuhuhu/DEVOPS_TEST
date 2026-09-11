@@ -3,6 +3,16 @@ import api from "../utils/axiosConfig";
 export const addItem = async (item) => {
   return await api.post("/admin/items", item);
 };
+
+export const updateItem = async (itemId, itemData) => {
+  const isFormData = itemData instanceof FormData;
+  const config = isFormData
+    ? { headers: { "Content-Type": "multipart/form-data" } }
+    : { headers: { "Content-Type": "application/json" } };
+  const response = await api.put(`/admin/items/${itemId}`, itemData, config);
+  return response.data;
+};
+
 export const deleteItem = async (itemId) => {
   return await api.delete(`/admin/items/${itemId}`);
 };
