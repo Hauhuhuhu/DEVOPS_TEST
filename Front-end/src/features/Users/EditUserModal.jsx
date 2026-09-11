@@ -147,6 +147,7 @@ export default function EditUserModal({ isOpen, onClose, user }) {
                   required: "Vai trò là bắt buộc",
                 })}
               >
+                <option value="ROLE_STAFF">Nhân viên (ROLE_STAFF)</option>
                 <option value="ROLE_USER">Nhân viên (ROLE_USER)</option>
                 <option value="ROLE_ADMIN">Quản trị viên (ROLE_ADMIN)</option>
               </select>

@@ -8,7 +8,8 @@ export const deleteCategory = async (categoryId) => {
 };
 
 export const updateCategory = async (categoryId, formData) => {
-  return await api.put(`/admin/categories/${categoryId}`, formData);
+  const response = await api.put(`/admin/categories/${categoryId}`, formData);
+  return response.data;
 };
 
 export const fetchCategories = async () => {

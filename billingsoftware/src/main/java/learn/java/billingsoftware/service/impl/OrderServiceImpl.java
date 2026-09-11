@@ -302,64 +302,19 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng #" + orderId));
 
         PaymentDetails paymentDetails = existingOrder.getPaymentDetails();
-        if (paymentDetails != null && paymentDetails.getStatus() == PaymentDetails.PaymentStatus.COMPLETED) {
+        PaymentDetails.PaymentStatus status = paymentDetails != null ? paymentDetails.getStatus() : null;
+
+        if (status == PaymentDetails.PaymentStatus.COMPLETED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể xóa đơn hàng đã hoàn tất (COMPLETED). Vui lòng kiểm tra lại lịch sử kế toán.");
         }
 
-        // Bù trừ nếu đơn đang ở trạng thái PENDING
-        if (paymentDetails != null && paymentDetails.getStatus() == PaymentDetails.PaymentStatus.PENDING) {
-            // 1. Bù trừ tồn kho qua giao dịch IN
-            if (existingOrder.getItems() != null) {
-                for (OrderItemEntity item : existingOrder.getItems()) {
-                    VariantEntity variant = null;
-                    if (item.getVariantId() != null && !item.getVariantId().trim().isEmpty()) {
-                        variant = variantRepository.findByVariantId(item.getVariantId()).orElse(null);
-                    } else if (item.getItemId() != null) {
-                        List<VariantEntity> variants = variantRepository.findByItem_ItemId(item.getItemId());
-                        if (!variants.isEmpty()) {
-                            variant = variants.get(0);
-                        }
-                    }
+        if (status != PaymentDetails.PaymentStatus.PENDING && status != PaymentDetails.PaymentStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ cho phép xóa các đơn hàng ở trạng thái PENDING hoặc CANCELLED.");
+        }
 
-                    if (variant != null) {
-                        int quantityToRevert = item.getQuantity() != null ? Math.abs(item.getQuantity()) : 1;
-                        InventoryTransactionEntity transaction = InventoryTransactionEntity.builder()
-                                .transactionId(UUID.randomUUID().toString())
-                                .variant(variant)
-                                .transactionType(TransactionType.IN)
-                                .quantity(quantityToRevert)
-                                .referenceId(existingOrder.getOrderId())
-                                .note("Deleted Order #" + existingOrder.getOrderId() + " - Stock Reversal")
-                                .build();
-                        inventoryTransactionRepository.saveAndFlush(transaction);
-
-                        Integer updatedStock = inventoryTransactionRepository.calculateStockByVariantId(variant.getVariantId());
-                        variant.setCachedStockQuantity(updatedStock != null ? updatedStock : 0);
-                        variantRepository.save(variant);
-                    }
-                }
-            }
-
-            // 2. Hoàn lại quota Promotion nếu có áp dụng
-            if (existingOrder.getPromotionId() != null && !existingOrder.getPromotionId().trim().isEmpty()) {
-                PromotionEntity promo = promotionRepository.findByPromotionId(existingOrder.getPromotionId()).orElse(null);
-                if (promo != null && promo.getTimesUsed() != null && promo.getTimesUsed() > 0) {
-                    promo.setTimesUsed(promo.getTimesUsed() - 1);
-                    promotionRepository.save(promo);
-                }
-            }
-
-            // 3. Hoàn lại số liệu CRM của khách hàng nếu có
-            if (existingOrder.getCustomerId() != null && !existingOrder.getCustomerId().trim().isEmpty()) {
-                CustomerEntity customer = customerRepository.findByCustomerId(existingOrder.getCustomerId()).orElse(null);
-                if (customer != null) {
-                    customer.revertOrderSpending(existingOrder.getGrandTotal());
-                    customerRepository.save(customer);
-                }
-            }
-
-            // 4. Hủy liên kết PayOS từ xa nếu là PAYOS
-            cancelRemotePayOSPayment(existingOrder, "Đơn hàng đã bị xóa");
+        // Bù trừ nếu đơn đang ở trạng thái PENDING (chưa hủy)
+        if (status == PaymentDetails.PaymentStatus.PENDING) {
+            compensatePendingOrder(existingOrder, "Deleted Order #" + existingOrder.getOrderId(), "Đơn hàng đã bị xóa");
         }
 
         orderEntityRepository.delete(existingOrder);
@@ -442,58 +397,8 @@ public class OrderServiceImpl implements OrderService {
         paymentDetails.setStatus(PaymentDetails.PaymentStatus.CANCELLED);
         order.setPaymentDetails(paymentDetails);
 
-        // 2. Bù trừ tồn kho qua giao dịch IN
-        if (order.getItems() != null) {
-            for (OrderItemEntity item : order.getItems()) {
-                VariantEntity variant = null;
-                if (item.getVariantId() != null && !item.getVariantId().trim().isEmpty()) {
-                    variant = variantRepository.findByVariantId(item.getVariantId()).orElse(null);
-                } else if (item.getItemId() != null) {
-                    List<VariantEntity> variants = variantRepository.findByItem_ItemId(item.getItemId());
-                    if (!variants.isEmpty()) {
-                        variant = variants.get(0);
-                    }
-                }
-
-                if (variant != null) {
-                    int quantityToRevert = item.getQuantity() != null ? Math.abs(item.getQuantity()) : 1;
-                    InventoryTransactionEntity transaction = InventoryTransactionEntity.builder()
-                            .transactionId(UUID.randomUUID().toString())
-                            .variant(variant)
-                            .transactionType(TransactionType.IN)
-                            .quantity(quantityToRevert)
-                            .referenceId(order.getOrderId())
-                            .note("Cancelled Order #" + order.getOrderId() + " - Stock Reversal")
-                            .build();
-                    inventoryTransactionRepository.saveAndFlush(transaction);
-
-                    Integer updatedStock = inventoryTransactionRepository.calculateStockByVariantId(variant.getVariantId());
-                    variant.setCachedStockQuantity(updatedStock != null ? updatedStock : 0);
-                    variantRepository.save(variant);
-                }
-            }
-        }
-
-        // 3. Hoàn lại quota Promotion nếu có áp dụng
-        if (order.getPromotionId() != null && !order.getPromotionId().trim().isEmpty()) {
-            PromotionEntity promo = promotionRepository.findByPromotionId(order.getPromotionId()).orElse(null);
-            if (promo != null && promo.getTimesUsed() != null && promo.getTimesUsed() > 0) {
-                promo.setTimesUsed(promo.getTimesUsed() - 1);
-                promotionRepository.save(promo);
-            }
-        }
-
-        // 4. Hoàn lại số liệu CRM của khách hàng nếu có
-        if (order.getCustomerId() != null && !order.getCustomerId().trim().isEmpty()) {
-            CustomerEntity customer = customerRepository.findByCustomerId(order.getCustomerId()).orElse(null);
-            if (customer != null) {
-                customer.revertOrderSpending(order.getGrandTotal());
-                customerRepository.save(customer);
-            }
-        }
-
-        // 5. Hủy liên kết PayOS từ xa nếu là PAYOS
-        cancelRemotePayOSPayment(order, "Khách hàng hủy đơn hàng");
+        // 2. Bù trừ toàn diện (Kho, Promotion, CRM, PayOS)
+        compensatePendingOrder(order, "Cancelled Order #" + order.getOrderId(), "Khách hàng hủy đơn hàng");
 
         order = orderEntityRepository.save(order);
         activityLogService.logActivity("CANCEL", "ORDER", order.getOrderId(), "Cancelled order #" + order.getOrderId());
@@ -526,6 +431,61 @@ public class OrderServiceImpl implements OrderService {
         return convertToResponse(order);
     }
 
+    private void compensatePendingOrder(OrderEntity order, String ledgerNotePrefix, String payosCancelReason) {
+        // 1. Bù trừ tồn kho qua giao dịch IN
+        if (order.getItems() != null) {
+            for (OrderItemEntity item : order.getItems()) {
+                VariantEntity variant = null;
+                if (item.getVariantId() != null && !item.getVariantId().trim().isEmpty()) {
+                    variant = variantRepository.findByVariantId(item.getVariantId()).orElse(null);
+                } else if (item.getItemId() != null) {
+                    List<VariantEntity> variants = variantRepository.findByItem_ItemId(item.getItemId());
+                    if (!variants.isEmpty()) {
+                        variant = variants.get(0);
+                    }
+                }
+
+                if (variant != null) {
+                    int quantityToRevert = item.getQuantity() != null ? Math.abs(item.getQuantity()) : 1;
+                    InventoryTransactionEntity transaction = InventoryTransactionEntity.builder()
+                            .transactionId(UUID.randomUUID().toString())
+                            .variant(variant)
+                            .transactionType(TransactionType.IN)
+                            .quantity(quantityToRevert)
+                            .referenceId(order.getOrderId())
+                            .note(ledgerNotePrefix + " - Stock Reversal")
+                            .build();
+                    inventoryTransactionRepository.saveAndFlush(transaction);
+
+                    Integer updatedStock = inventoryTransactionRepository.calculateStockByVariantId(variant.getVariantId());
+                    variant.setCachedStockQuantity(updatedStock != null ? updatedStock : 0);
+                    variantRepository.save(variant);
+                }
+            }
+        }
+
+        // 2. Hoàn lại quota Promotion nếu có áp dụng
+        if (order.getPromotionId() != null && !order.getPromotionId().trim().isEmpty()) {
+            PromotionEntity promo = promotionRepository.findByPromotionId(order.getPromotionId()).orElse(null);
+            if (promo != null && promo.getTimesUsed() != null && promo.getTimesUsed() > 0) {
+                promo.setTimesUsed(promo.getTimesUsed() - 1);
+                promotionRepository.save(promo);
+            }
+        }
+
+        // 3. Hoàn lại số liệu CRM của khách hàng nếu có
+        if (order.getCustomerId() != null && !order.getCustomerId().trim().isEmpty()) {
+            CustomerEntity customer = customerRepository.findByCustomerId(order.getCustomerId()).orElse(null);
+            if (customer != null) {
+                customer.revertOrderSpending(order.getGrandTotal());
+                customerRepository.save(customer);
+            }
+        }
+
+        // 4. Hủy liên kết PayOS từ xa nếu là PAYOS
+        cancelRemotePayOSPayment(order, payosCancelReason);
+    }
+
     private void cancelRemotePayOSPayment(OrderEntity order, String reason) {
         if (order.getPaymentMethod() == PaymentMethod.PAYOS) {
             try {
@@ -536,183 +496,3 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 }
-//package learn.java.billingsoftware.service.impl;
-//
-//import learn.java.billingsoftware.entity.OrderEntity;
-//import learn.java.billingsoftware.entity.OrderItemEntity;
-//import learn.java.billingsoftware.io.OrderRequest;
-//import learn.java.billingsoftware.io.OrderResponse;
-//import learn.java.billingsoftware.io.PaymentDetails;
-//import learn.java.billingsoftware.io.PaymentMethod;
-//import learn.java.billingsoftware.repository.OrderEntityRepository;
-//import learn.java.billingsoftware.service.OrderService;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.stereotype.Service;
-//import vn.payos.PayOS;
-//import vn.payos.exception.PayOSException;
-//import vn.payos.model.v2.paymentRequests.CreatePaymentLinkRequest;
-//import vn.payos.model.v2.paymentRequests.CreatePaymentLinkResponse;
-//import vn.payos.model.v2.paymentRequests.PaymentLinkItem;
-//
-//import java.util.List;
-//import java.util.stream.Collectors;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class OrderServiceImpl implements OrderService {
-//    private final OrderEntityRepository orderEntityRepository;
-//    private final PayOS payOS;
-//
-//    @Override
-//    public OrderResponse createOrder(OrderRequest request) {
-//        OrderEntity newOrder = convertToOrderEntity(request);
-//
-//        PaymentDetails paymentDetails = new PaymentDetails();
-//        paymentDetails.setStatus(newOrder.getPaymentMethod() == PaymentMethod.CASH ?
-//                PaymentDetails.PaymentStatus.COMPLETED : PaymentDetails.PaymentStatus.PENDING);
-//        newOrder.setPaymentDetails(paymentDetails);
-//
-//        List<OrderItemEntity> orderItems = request.getCartItems().stream()
-//                .map(this::convertToOrderItemEntity)
-//                .collect(Collectors.toList());
-//
-//        OrderEntity finalNewOrder = newOrder;
-//        orderItems.forEach(item -> item.setOrder(finalNewOrder));
-//        newOrder.setItems(orderItems);
-//
-//        // Lưu lần 1 để lấy ID (dùng làm orderCode cho PayOS)
-//        newOrder = orderEntityRepository.save(newOrder);
-//
-//        String checkoutUrl = null;
-//        String qrCode = null;
-//
-//        // Xử lý tạo link PayOS nếu là thanh toán chuyển khoản
-//        // Trong createOrder(...)
-//        if (newOrder.getPaymentMethod() == PaymentMethod.PAYOS) {
-//            try {
-//                long orderCode = newOrder.getId();
-//
-//                List<PaymentLinkItem> payOSItems = newOrder.getItems().stream()
-//                        .map(item -> PaymentLinkItem.builder()
-//                                .name(item.getName())
-//                                .price(item.getPrice().longValue())
-//                                .quantity(item.getQuantity())
-//                                .build())
-//                        .collect(Collectors.toList());
-//
-//                CreatePaymentLinkRequest paymentRequest = CreatePaymentLinkRequest.builder()
-//                        .orderCode(orderCode)
-//                        .amount(newOrder.getGrandTotal().longValue())
-//                        .description("Thanh toan don " + orderCode)
-//                        .returnUrl("http://localhost:5173/payment/success")
-//                        .cancelUrl("http://localhost:5173/payment/cancel")
-//                        .items(payOSItems)
-//                        .build();
-//
-//                CreatePaymentLinkResponse payOSResponse = payOS.paymentRequests().create(paymentRequest);
-//
-//                checkoutUrl = payOSResponse.getCheckoutUrl();
-//                qrCode = payOSResponse.getQrCode();
-//
-//                newOrder.getPaymentDetails().setPaymentLinkId(payOSResponse.getPaymentLinkId());
-//                orderEntityRepository.save(newOrder);
-//
-//
-//            } catch (PayOSException e) {
-//                throw new RuntimeException("Lỗi khi tạo mã thanh toán PayOS: " + e.getMessage(), e);
-//            } catch (Exception e) {
-//                throw new RuntimeException("Lỗi khi tạo mã thanh toán PayOS: " + e.getMessage(), e);
-//            }
-//        }
-//
-//
-//        OrderResponse response = convertToResponse(newOrder);
-//        response.setCheckoutUrl(checkoutUrl);
-//        response.setQrCode(qrCode);
-//
-//        return response;
-//    }
-//
-////    @Override
-////    public OrderResponse createOrder(OrderRequest request) {
-////        OrderEntity newOrder = convertToOrderEntity(request);
-////
-////        PaymentDetails paymentDetails = new PaymentDetails();
-////        paymentDetails.setStatus(newOrder.getPaymentMethod() == PaymentMethod.CASH ?
-////                PaymentDetails.PaymentStatus.COMPLETED : PaymentDetails.PaymentStatus.PENDING);
-////        newOrder.setPaymentDetails(paymentDetails);
-////
-////        List<OrderItemEntity> orderItems = request.getCartItems().stream()
-////                .map(this::convertToOrderItemEntity)
-////                .collect(Collectors.toList());
-////
-////        OrderEntity finalNewOrder = newOrder;
-////        orderItems.forEach(item -> item.setOrder(finalNewOrder));
-////
-////        newOrder.setItems(orderItems);
-////        newOrder = orderEntityRepository.save(newOrder);
-////        return convertToResponse(newOrder);
-////    }
-//
-//
-//    private OrderItemEntity convertToOrderItemEntity(OrderRequest.OrderItemRequest orderItemRequest) {
-//        return OrderItemEntity.builder()
-//                .itemId(orderItemRequest.getItemId())
-//                .name(orderItemRequest.getName())
-//                .price(orderItemRequest.getPrice())
-//                .quantity(orderItemRequest.getQuantity())
-//                .build();
-//    }
-//
-//    private OrderResponse convertToResponse(OrderEntity newOrder) {
-//        return OrderResponse.builder()
-//                .orderId(newOrder.getOrderId())
-//                .customerName(newOrder.getCustomerName())
-//                .phoneNumber(newOrder.getPhoneNumber())
-//                .subtotal(newOrder.getSubtotal())
-//                .tax(newOrder.getTax())
-//                .grandTotal(newOrder.getGrandTotal())
-//                .paymentMethod(newOrder.getPaymentMethod())
-//                .items(newOrder.getItems().stream()
-//                        .map(this::convertToItemResponse)
-//                        .collect(Collectors.toList()))
-//                .paymentDetails(newOrder.getPaymentDetails())
-//                .createdAt(newOrder.getCreatedAt())
-//                .build();
-//    }
-//
-//    private OrderResponse.OrderItemResponse convertToItemResponse(OrderItemEntity orderItemEntity) {
-//        return OrderResponse.OrderItemResponse.builder()
-//                .itemId(orderItemEntity.getItemId())
-//                .name(orderItemEntity.getName())
-//                .price(orderItemEntity.getPrice())
-//                .quantity(orderItemEntity.getQuantity())
-//                .build();
-//    }
-//
-//    private OrderEntity convertToOrderEntity(OrderRequest request) {
-//        return OrderEntity.builder()
-//                .customerName(request.getCustomerName())
-//                .phoneNumber(request.getPhoneNumber())
-//                .subtotal(request.getSubtotal())
-//                .tax(request.getTax())
-//                .grandTotal(request.getGrandTotal())
-//                .paymentMethod(PaymentMethod.valueOf(request.getPaymentMethod()))
-//                .build();
-//    }
-//
-//    @Override
-//    public void deleteOrder(String orderId) {
-//        OrderEntity existingOrder = orderEntityRepository.findByOrderId(orderId)
-//                .orElseThrow(()-> new RuntimeException("Order Not Found"));
-//        orderEntityRepository.delete(existingOrder);
-//    }
-//
-//    @Override
-//    public List<OrderResponse> getLatestOrders() {
-//        return orderEntityRepository.findAllByOrderByCreatedAtDesc()
-//                .stream()
-//                .map(this::convertToResponse)
-//                .collect(Collectors.toList());
-//    }
-//}

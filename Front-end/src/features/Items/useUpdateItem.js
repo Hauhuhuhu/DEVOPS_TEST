@@ -10,6 +10,7 @@ export function useUpdateItem() {
     onSuccess: () => {
       toast.success("Cập nhật mặt hàng thành công");
       queryClient.invalidateQueries({ queryKey: ["items"] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
     onError: (err) => {
       const msg = err.response?.data?.message || "Không thể cập nhật mặt hàng";
