@@ -17,10 +17,6 @@ export function useLogin() {
       navigate("/dashboard", { replace: true });
       toast.success("Đăng nhập thành công");
     },
-    onError: (err) => {
-      const message = err?.response?.data?.message || err?.message || "Email hoặc mật khẩu không chính xác";
-      toast.error(message);
-    },
   });
 
   return { login, isLoading };

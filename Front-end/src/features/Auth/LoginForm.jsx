@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { useLogin } from "./useLogin";
 import Spinner from "../../ui/Spinner";
 import { AlertCircle } from "lucide-react";
+import { getLoginErrorMessage } from "../../utils/authErrorMessages";
 
 function LoginForm() {
   const { login, isLoading } = useLogin();
@@ -26,11 +27,7 @@ function LoginForm() {
       { email: data.email, password: data.password },
       {
         onError: (err) => {
-          const message =
-            err?.response?.data?.message ||
-            err?.message ||
-            "Email hoặc mật khẩu không chính xác";
-          setServerError(message);
+          setServerError(getLoginErrorMessage(err));
         },
         onSuccess: () => {
           reset();

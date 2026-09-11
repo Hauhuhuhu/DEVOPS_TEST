@@ -194,7 +194,7 @@ export default function EditCategoryModal({ isOpen, onClose, category }) {
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              MÔLta danh mục
+              Mô tả danh mục
             </label>
             <textarea
               rows={2}
