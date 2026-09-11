@@ -16,6 +16,7 @@ export function setSession(authResponse) {
         token: accessToken,
         email: authResponse.email,
         role: authResponse.role,
+        name: authResponse.name || null,
       }
     : null;
   return session;

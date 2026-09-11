@@ -6,6 +6,7 @@ import learn.java.billingsoftware.entity.PromotionType;
 import learn.java.billingsoftware.exception.PromotionEvaluationException;
 import learn.java.billingsoftware.io.*;
 import learn.java.billingsoftware.repository.PromotionRepository;
+import learn.java.billingsoftware.service.ActivityLogService;
 import learn.java.billingsoftware.service.PromotionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 public class PromotionServiceImpl implements PromotionService {
 
     private final PromotionRepository promotionRepository;
+    private final ActivityLogService activityLogService;
 
     @Override
     @Transactional
@@ -81,6 +83,7 @@ public class PromotionServiceImpl implements PromotionService {
                 .build();
 
         PromotionEntity saved = promotionRepository.save(entity);
+        activityLogService.logActivity("CREATE", "PROMOTION", saved.getPromotionId(), "Created promotion: " + saved.getName() + " (" + saved.getType() + ")");
         return convertToResponse(saved);
     }
 
@@ -162,6 +165,7 @@ public class PromotionServiceImpl implements PromotionService {
         }
 
         PromotionEntity saved = promotionRepository.save(entity);
+        activityLogService.logActivity("UPDATE", "PROMOTION", saved.getPromotionId(), "Updated promotion: " + saved.getName());
         return convertToResponse(saved);
     }
 
@@ -172,6 +176,7 @@ public class PromotionServiceImpl implements PromotionService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Promotion not found: " + promotionId));
         entity.setIsActive(!Boolean.TRUE.equals(entity.getIsActive()));
         PromotionEntity saved = promotionRepository.save(entity);
+        activityLogService.logActivity("UPDATE", "PROMOTION", saved.getPromotionId(), (Boolean.TRUE.equals(saved.getIsActive()) ? "Activated" : "Deactivated") + " promotion: " + saved.getName());
         return convertToResponse(saved);
     }
 
@@ -181,6 +186,7 @@ public class PromotionServiceImpl implements PromotionService {
         PromotionEntity entity = promotionRepository.findByPromotionId(promotionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Promotion not found: " + promotionId));
         promotionRepository.delete(entity);
+        activityLogService.logActivity("DELETE", "PROMOTION", entity.getPromotionId(), "Deleted promotion: " + entity.getName());
     }
 
     @Override

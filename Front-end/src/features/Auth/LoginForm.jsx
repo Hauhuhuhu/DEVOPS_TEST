@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useLogin } from "./useLogin";
 import Spinner from "../../ui/Spinner";
+import { AlertCircle } from "lucide-react";
 
 function LoginForm() {
   const { login, isLoading } = useLogin();
+  const [serverError, setServerError] = useState(null);
   const {
     register,
     handleSubmit,
@@ -18,10 +21,18 @@ function LoginForm() {
   });
 
   function onSubmit(data) {
+    setServerError(null);
     login(
       { email: data.email, password: data.password },
       {
-        onSettled: () => {
+        onError: (err) => {
+          const message =
+            err?.response?.data?.message ||
+            err?.message ||
+            "Email hoặc mật khẩu không chính xác";
+          setServerError(message);
+        },
+        onSuccess: () => {
           reset();
         },
       },
@@ -35,6 +46,15 @@ function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
+      {serverError && (
+        <div
+          className="flex items-start gap-2.5 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm animate-fade-in"
+          role="alert"
+        >
+          <AlertCircle size={18} className="text-red-500 shrink-0 mt-0.5" />
+          <div className="flex-1 font-medium">{serverError}</div>
+        </div>
+      )}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
           Địa chỉ email

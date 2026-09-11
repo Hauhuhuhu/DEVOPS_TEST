@@ -74,6 +74,37 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
+    @Override
+    public CategoryResponse update(String categoryId, CategoryRequest request, MultipartFile file) throws IOException {
+        CategoryEntity existingCategory = categoryRepository.findByCategoryId(categoryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found: " + categoryId));
+
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            existingCategory.setName(request.getName().trim());
+        }
+        if (request.getDescription() != null) {
+            existingCategory.setDescription(request.getDescription());
+        }
+        if (request.getBgColor() != null) {
+            existingCategory.setBgColor(request.getBgColor());
+        }
+
+        if (file != null && !file.isEmpty()) {
+            if (existingCategory.getImgUrl() != null && !existingCategory.getImgUrl().trim().isEmpty()) {
+                try {
+                    fileUploadService.deleteFile(existingCategory.getImgUrl());
+                } catch (Exception ignored) {
+                }
+            }
+            String newImgUrl = fileUploadService.uploadFile(file);
+            existingCategory.setImgUrl(newImgUrl);
+        }
+
+        existingCategory = categoryRepository.save(existingCategory);
+        activityLogService.logActivity("UPDATE", "CATEGORY", existingCategory.getCategoryId(), "Updated category: " + existingCategory.getName());
+        return convertToResponse(existingCategory);
+    }
+
     private CategoryResponse convertToResponse(CategoryEntity newCategory) {
         Integer itemCount = itemRepository.countByCategoryId(newCategory.getId());
         return CategoryResponse.builder()
