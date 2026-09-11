@@ -2,6 +2,7 @@ package learn.java.billingsoftware.controller;
 
 import learn.java.billingsoftware.io.AuthRequest;
 import learn.java.billingsoftware.io.AuthResponse;
+import learn.java.billingsoftware.io.UserResponse;
 import learn.java.billingsoftware.service.ActivityLogService;
 import learn.java.billingsoftware.service.RefreshTokenService;
 import learn.java.billingsoftware.service.UserService;
@@ -53,16 +54,15 @@ public class AuthController {
     private String refreshTokenCookiePath;
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody AuthRequest request, HttpServletResponse response) throws Exception {
+    public AuthResponse login(@RequestBody AuthRequest request, HttpServletResponse response) {
         authenticate(request.getEmail(), request.getPassword());
         final UserDetails userDetails = appUserDetailsService.loadUserByUsername(request.getEmail());
         final String jwtToken = jwtUtil.generateToken(userDetails);
         final RefreshTokenService.IssuedRefreshToken refreshToken = refreshTokenService.issue(userDetails.getUsername());
-        //TODO: fetch the role from repository
-        String role = userService.getUserRole(request.getEmail());
+        UserResponse user = userService.findByEmail(request.getEmail());
         activityLogService.logActivity(request.getEmail(), "LOGIN", "USER", request.getEmail(), "User logged in successfully");
         addRefreshTokenCookie(response, refreshToken.getRawToken());
-        return new AuthResponse(request.getEmail(), jwtToken, role);
+        return new AuthResponse(request.getEmail(), jwtToken, user.getRole(), user.getName());
     }
 
     @PostMapping("/auth/refresh")
@@ -73,9 +73,9 @@ public class AuthController {
         try {
             RefreshTokenService.IssuedRefreshToken rotated = refreshTokenService.rotate(rawRefreshToken);
             UserDetails userDetails = appUserDetailsService.loadUserByUsername(rotated.getUserEmail());
-            String role = userService.getUserRole(userDetails.getUsername());
+            UserResponse user = userService.findByEmail(userDetails.getUsername());
             addRefreshTokenCookie(response, rotated.getRawToken());
-            return new AuthResponse(userDetails.getUsername(), jwtUtil.generateToken(userDetails), role);
+            return new AuthResponse(userDetails.getUsername(), jwtUtil.generateToken(userDetails), user.getRole(), user.getName());
         } catch (ResponseStatusException exception) {
             clearRefreshTokenCookie(response);
             throw exception;
@@ -113,14 +113,13 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    private void authenticate(String email, String password) throws Exception {
+    private void authenticate(String email, String password) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-
         } catch (DisabledException e) {
-            throw new Exception("User disable");
-        } catch (BadCredentialsException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email or password is incorrect");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Tài khoản đã bị vô hiệu hóa");
+        } catch (BadCredentialsException | org.springframework.security.core.userdetails.UsernameNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email hoặc mật khẩu không chính xác");
         }
     }
 

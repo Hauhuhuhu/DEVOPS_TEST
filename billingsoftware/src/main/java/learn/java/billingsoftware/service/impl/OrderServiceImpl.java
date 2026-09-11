@@ -296,10 +296,73 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public void deleteOrder(String orderId) {
-        OrderEntity existingOrder = orderEntityRepository.findByOrderId(orderId) 
-                .orElseThrow(()-> new RuntimeException("Order Not Found")); 
-        orderEntityRepository.delete(existingOrder); 
+        OrderEntity existingOrder = orderEntityRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng #" + orderId));
+
+        PaymentDetails paymentDetails = existingOrder.getPaymentDetails();
+        if (paymentDetails != null && paymentDetails.getStatus() == PaymentDetails.PaymentStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể xóa đơn hàng đã hoàn tất (COMPLETED). Vui lòng kiểm tra lại lịch sử kế toán.");
+        }
+
+        // Bù trừ nếu đơn đang ở trạng thái PENDING
+        if (paymentDetails != null && paymentDetails.getStatus() == PaymentDetails.PaymentStatus.PENDING) {
+            // 1. Bù trừ tồn kho qua giao dịch IN
+            if (existingOrder.getItems() != null) {
+                for (OrderItemEntity item : existingOrder.getItems()) {
+                    VariantEntity variant = null;
+                    if (item.getVariantId() != null && !item.getVariantId().trim().isEmpty()) {
+                        variant = variantRepository.findByVariantId(item.getVariantId()).orElse(null);
+                    } else if (item.getItemId() != null) {
+                        List<VariantEntity> variants = variantRepository.findByItem_ItemId(item.getItemId());
+                        if (!variants.isEmpty()) {
+                            variant = variants.get(0);
+                        }
+                    }
+
+                    if (variant != null) {
+                        int quantityToRevert = item.getQuantity() != null ? Math.abs(item.getQuantity()) : 1;
+                        InventoryTransactionEntity transaction = InventoryTransactionEntity.builder()
+                                .transactionId(UUID.randomUUID().toString())
+                                .variant(variant)
+                                .transactionType(TransactionType.IN)
+                                .quantity(quantityToRevert)
+                                .referenceId(existingOrder.getOrderId())
+                                .note("Deleted Order #" + existingOrder.getOrderId() + " - Stock Reversal")
+                                .build();
+                        inventoryTransactionRepository.saveAndFlush(transaction);
+
+                        Integer updatedStock = inventoryTransactionRepository.calculateStockByVariantId(variant.getVariantId());
+                        variant.setCachedStockQuantity(updatedStock != null ? updatedStock : 0);
+                        variantRepository.save(variant);
+                    }
+                }
+            }
+
+            // 2. Hoàn lại quota Promotion nếu có áp dụng
+            if (existingOrder.getPromotionId() != null && !existingOrder.getPromotionId().trim().isEmpty()) {
+                PromotionEntity promo = promotionRepository.findByPromotionId(existingOrder.getPromotionId()).orElse(null);
+                if (promo != null && promo.getTimesUsed() != null && promo.getTimesUsed() > 0) {
+                    promo.setTimesUsed(promo.getTimesUsed() - 1);
+                    promotionRepository.save(promo);
+                }
+            }
+
+            // 3. Hoàn lại số liệu CRM của khách hàng nếu có
+            if (existingOrder.getCustomerId() != null && !existingOrder.getCustomerId().trim().isEmpty()) {
+                CustomerEntity customer = customerRepository.findByCustomerId(existingOrder.getCustomerId()).orElse(null);
+                if (customer != null) {
+                    customer.revertOrderSpending(existingOrder.getGrandTotal());
+                    customerRepository.save(customer);
+                }
+            }
+
+            // 4. Hủy liên kết PayOS từ xa nếu là PAYOS
+            cancelRemotePayOSPayment(existingOrder, "Đơn hàng đã bị xóa");
+        }
+
+        orderEntityRepository.delete(existingOrder);
         activityLogService.logActivity("DELETE", "ORDER", existingOrder.getOrderId(), "Deleted order #" + existingOrder.getOrderId());
     }
 

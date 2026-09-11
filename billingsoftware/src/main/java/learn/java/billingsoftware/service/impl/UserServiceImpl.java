@@ -4,6 +4,7 @@ import learn.java.billingsoftware.entity.UserEntity;
 import learn.java.billingsoftware.io.UserRequest;
 import learn.java.billingsoftware.io.UserResponse;
 import learn.java.billingsoftware.repository.UserRepository;
+import learn.java.billingsoftware.service.ActivityLogService;
 import learn.java.billingsoftware.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,11 +20,13 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ActivityLogService activityLogService;
 
     @Override
     public UserResponse createUser(UserRequest request) {
         UserEntity newUser = convertToEntity(request);
         newUser = userRepository.save(newUser);
+        activityLogService.logActivity("CREATE", "USER", newUser.getUserId(), "Created user: " + newUser.getEmail() + " (" + newUser.getRole() + ")");
         return convertToResponse(newUser);
     }
 
@@ -56,6 +59,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponse findByEmail(String email) {
+        UserEntity existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found for the email: " + email));
+        return convertToResponse(existingUser);
+    }
+
+    @Override
     public List<UserResponse> readUsers() {
         return userRepository.findAll()
                 .stream()
@@ -68,5 +78,6 @@ public class UserServiceImpl implements UserService {
         UserEntity existingUser= userRepository.findByUserId(id)
                 .orElseThrow(()-> new UsernameNotFoundException("User not found"));
         userRepository.delete(existingUser);
+        activityLogService.logActivity("DELETE", "USER", existingUser.getUserId(), "Deleted user: " + existingUser.getEmail());
     }
 }

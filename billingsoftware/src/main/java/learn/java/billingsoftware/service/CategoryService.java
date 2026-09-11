@@ -13,4 +13,5 @@ public interface CategoryService {
     List<CategoryResponse> read();
     void delete(String categoryId);
     CategoryResponse create(CategoryRequest request);
+    CategoryResponse update(String categoryId, CategoryRequest request, MultipartFile file) throws IOException;
 }

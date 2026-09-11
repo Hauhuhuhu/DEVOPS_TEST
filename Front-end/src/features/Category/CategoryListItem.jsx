@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useDeleteCategory } from "./useDeleteCategory";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pencil } from "lucide-react";
 import ConfirmDeleteModal from "../../ui/ConfirmDeleteModal";
+import EditCategoryModal from "./EditCategoryModal";
 
 function CategoryListItem({ category }) {
   const { isDeleting, deleteCategory } = useDeleteCategory();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   return (
     <div
@@ -28,15 +30,26 @@ function CategoryListItem({ category }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        disabled={isDeleting}
-        onClick={() => setIsDeleteModalOpen(true)}
-        className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
-        title="Xóa danh mục"
-      >
-        <Trash2 size={16} />
-      </button>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => setIsEditModalOpen(true)}
+          className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+          title="Chỉnh sửa danh mục"
+        >
+          <Pencil size={16} />
+        </button>
+
+        <button
+          type="button"
+          disabled={isDeleting}
+          onClick={() => setIsDeleteModalOpen(true)}
+          className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
+          title="Xóa danh mục"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
 
       <ConfirmDeleteModal
         isOpen={isDeleteModalOpen}
@@ -50,6 +63,12 @@ function CategoryListItem({ category }) {
         entityName={category.name}
         message="Bạn có chắc muốn xóa danh mục này không? Các mặt hàng thuộc danh mục sẽ không còn được nhóm tại đây."
         isLoading={isDeleting}
+      />
+
+      <EditCategoryModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        category={category}
       />
     </div>
   );

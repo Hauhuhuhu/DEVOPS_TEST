@@ -60,6 +60,16 @@
 - **State Management Pattern (Frontend):** 
   - Fetching, Caching và Server State Sync BẮT BUỘC dùng **TanStack React Query** (`queryClient`). 
   - API call logic được tách riêng ra các file `Service` trong thư mục `src/services/` (VD: `ItemService.js`), sau đó sử dụng trong React Component bằng các custom hooks của React Query (`useQuery`, `useMutation`).
+- **Order Deletion & Compensation:** 
+  - API `DELETE /orders/{orderId}` chỉ cho phép xóa các đơn ở trạng thái `PENDING` hoặc `CANCELLED`.
+  - Nghiêm cấm xóa đơn đã hoàn thành (`COMPLETED`) để bảo toàn tính toàn vẹn kế toán.
+  - Nếu đơn hàng đang `PENDING` (chưa hủy), khi xóa bắt buộc phải kích hoạt toàn bộ quy trình bù trừ (Compensating Ledger Transaction IN hoàn kho, hoàn số lần dùng khuyến mãi, hoàn lại số liệu CRM khách hàng, hủy link PayOS) trước khi xóa bản ghi.
+  - Nếu đơn hàng đã `CANCELLED` (đã bù trừ), hệ thống tiến hành xóa bản ghi mà không thực hiện bù trừ trùng lặp.
+- **Unified Activity Logging (Audit Trail):** 
+  - Mọi thao tác làm thay đổi dữ liệu nghiệp vụ (CREATE, UPDATE, DELETE) trên tất cả thực thể quản trị (`CATEGORY`, `ITEM`, `USER`, `PROMOTION`, `MODIFIER`, `CUSTOMER`, `ORDER`) đều phải ghi log thống nhất vào `tbl_activity_logs`.
+  - Tự động phân giải email người thực hiện từ `SecurityContextHolder` khi không truyền tham số tường minh.
+- **User Identity & Menubar Representation:** 
+  - `AuthResponse` trả về đầy đủ `name`, `email`, `role`, và `token`. Menubar hiển thị tên người dùng kèm huy hiệu phân biệt vai trò (`ROLE_ADMIN` vs `ROLE_STAFF`).
 
 ## 5. Known Technical Debt & Fragile Areas
 1. **Database Migration Strategy:** Sử dụng `ddl-auto=update` trên production rất nguy hiểm, dễ gây lỗi mất schema/dữ liệu khi refactor cấu trúc DB. (Cần triển khai Flyway hoặc Liquibase).
