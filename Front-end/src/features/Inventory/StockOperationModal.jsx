@@ -156,12 +156,12 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900">
-                Stock Operations: {itemName}
+                 Quản lý tồn kho: {itemName}
               </h3>
               <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                 <span>SKU: <strong className="text-slate-800 font-mono">{variant.sku}</strong></span>
                 <span>•</span>
-                <span>Current Stock:</span>
+                 <span>Tồn kho hiện tại:</span>
                 <span
                   className={`inline-flex items-center px-2 py-0.5 rounded-full font-semibold ${
                     (variant.cachedStockQuantity ?? 0) > 0
@@ -197,7 +197,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
               }`}
               onClick={() => setActiveTab("quick")}
             >
-              <ArrowLeftRight size={14} /> Stock IN / OUT
+               <ArrowLeftRight size={14} /> Nhập / xuất kho
             </button>
             <button
               type="button"
@@ -208,7 +208,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
               }`}
               onClick={() => setActiveTab("check")}
             >
-              <ClipboardCheck size={14} /> Stock Check (Kiểm kê)
+               <ClipboardCheck size={14} /> Kiểm kê kho
             </button>
             <button
               type="button"
@@ -219,7 +219,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
               }`}
               onClick={() => setActiveTab("history")}
             >
-              <History size={14} /> Ledger History ({transactions?.length || 0})
+               <History size={14} /> Lịch sử kho ({transactions?.length || 0})
             </button>
           </div>
         </div>
@@ -230,7 +230,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
             <form onSubmit={handleSubmit(onSubmitQuick, onErrorQuick)} noValidate className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-2">
-                  Transaction Type:
+                   Loại giao dịch:
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <label
@@ -248,7 +248,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                     />
                     <ArrowDownCircle size={18} className="text-emerald-600 shrink-0" />
                     <div>
-                      <div className="text-xs font-bold">Stock IN</div>
+                       <div className="text-xs font-bold">Nhập kho</div>
                       <div className="text-[11px] text-slate-500">Nhập kho hàng mới</div>
                     </div>
                   </label>
@@ -268,7 +268,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                     />
                     <ArrowUpCircle size={18} className="text-red-600 shrink-0" />
                     <div>
-                      <div className="text-xs font-bold">Stock OUT</div>
+                       <div className="text-xs font-bold">Xuất kho</div>
                       <div className="text-[11px] text-slate-500">Xuất huỷ / Hao hụt</div>
                     </div>
                   </label>
@@ -277,7 +277,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Quantity:
+                   Số lượng:
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-500 text-sm">
@@ -286,10 +286,10 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                   <input
                     type="number"
                     min="1"
-                    placeholder="e.g. 10"
+                     placeholder="Ví dụ: 10"
                     {...register("quantity", {
-                      required: "Quantity is required",
-                      min: { value: 1, message: "Quantity must be at least 1" },
+                       required: "Số lượng là bắt buộc",
+                       min: { value: 1, message: "Số lượng phải từ 1 trở lên" },
                       valueAsNumber: true,
                     })}
                     className={`w-full pl-8 pr-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 transition-colors ${
@@ -306,26 +306,26 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Reference ID (Optional):
+                   Mã tham chiếu (không bắt buộc):
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. PO-2026-001, WASTAGE-TICKET-5"
+                   placeholder="Ví dụ: PO-2026-001, WASTAGE-TICKET-5"
                   {...register("referenceId")}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <span className="text-[11px] text-slate-400 block mt-1">
-                  Source document tracking ID (Purchase order, wastage ticket, etc.)
+                   Mã theo dõi chứng từ (đơn nhập hàng, phiếu hao hụt...)
                 </span>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Reason / Note (Optional):
+                   Lý do / ghi chú (không bắt buộc):
                 </label>
                 <textarea
                   rows="2"
-                  placeholder="e.g. Nhập hàng từ nhà cung cấp XYZ..."
+                   placeholder="Ví dụ: Nhập hàng từ nhà cung cấp XYZ..."
                   {...register("note")}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -338,7 +338,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                   onClick={onClose}
                   disabled={isSubmitting}
                 >
-                  Cancel
+                   Hủy
                 </button>
                 <button
                   type="submit"
@@ -352,7 +352,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                   ) : (
                     <>
                       {transactionType === "IN" ? <ArrowDownCircle size={14} /> : <ArrowUpCircle size={14} />}
-                      <span>Submit {transactionType === "IN" ? "Stock IN" : "Stock OUT"}</span>
+                       <span>{transactionType === "IN" ? "Xác nhận nhập kho" : "Xác nhận xuất kho"}</span>
                     </>
                   )}
                 </button>
@@ -366,13 +366,13 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
               <div className="grid grid-cols-3 gap-2 p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
                 <div>
                   <div className="text-[11px] text-slate-500 flex items-center justify-center gap-1 mb-1">
-                    <HardDrive size={13} /> System Stock
+                    <HardDrive size={13} /> Tồn kho hệ thống
                   </div>
                   <div className="text-lg font-bold text-slate-900">{currentStock}</div>
                 </div>
                 <div className="border-x border-slate-200">
                   <div className="text-[11px] text-slate-500 flex items-center justify-center gap-1 mb-1">
-                    <ClipboardList size={13} /> Physical Count
+                    <ClipboardList size={13} /> Số lượng thực tế
                   </div>
                   <div className="text-lg font-bold text-blue-600">
                     {countedNum != null ? countedNum : "—"}
@@ -380,17 +380,17 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                 </div>
                 <div>
                   <div className="text-[11px] text-slate-500 flex items-center justify-center gap-1 mb-1">
-                    <Calculator size={13} /> Discrepancy (Adj)
+                    <Calculator size={13} /> Chênh lệch
                   </div>
                   <div className="text-lg font-bold">
                     {discrepancy == null ? (
                       "—"
                     ) : discrepancy > 0 ? (
-                      <span className="text-emerald-600">+{discrepancy} (Surplus)</span>
+                      <span className="text-emerald-600">+{discrepancy} (dư)</span>
                     ) : discrepancy < 0 ? (
-                      <span className="text-red-600">{discrepancy} (Shortage)</span>
+                      <span className="text-red-600">{discrepancy} (thiếu)</span>
                     ) : (
-                      <span className="text-slate-600">0 (Match)</span>
+                      <span className="text-slate-600">0 (khớp)</span>
                     )}
                   </div>
                 </div>
@@ -398,15 +398,15 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Actual Physical Count (Số lượng thực tế kiểm đếm) *:
+                  Số lượng thực tế kiểm đếm *:
                 </label>
                 <input
                   type="number"
                   min="0"
-                  placeholder="Enter actual counted stock..."
+                   placeholder="Nhập số lượng thực tế đã kiểm đếm..."
                   {...registerCheck("actualCount", {
-                    required: "Physical count is required",
-                    min: { value: 0, message: "Count cannot be negative" },
+                     required: "Số lượng kiểm đếm là bắt buộc",
+                     min: { value: 0, message: "Số lượng không được âm" },
                     valueAsNumber: true,
                   })}
                   className={`w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 transition-colors ${
@@ -419,17 +419,17 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                   <p className="text-xs text-red-600 mt-1">{errorsCheck.actualCount.message}</p>
                 )}
                 <span className="text-[11px] text-slate-400 block mt-1">
-                  The ledger will automatically record an ADJUSTMENT transaction for the discrepancy.
+                   Hệ thống sẽ tự ghi nhận giao dịch điều chỉnh theo phần chênh lệch.
                 </span>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Audit Reference (Mã đợt kiểm kê / Biên bản - Optional):
+                   Mã đợt kiểm kê / biên bản (không bắt buộc):
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. AUDIT-2026-03, KIEM-KE-T3"
+                   placeholder="Ví dụ: AUDIT-2026-03, KIEM-KE-T3"
                   {...registerCheck("referenceId")}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -437,11 +437,11 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Audit Reason / Note (Ghi chú lý do chênh lệch - Optional):
+                   Lý do / ghi chú chênh lệch (không bắt buộc):
                 </label>
                 <textarea
                   rows="2"
-                  placeholder="e.g. Định kỳ kiểm kê cuối tháng, phát hiện hao hụt do vỡ..."
+                   placeholder="Ví dụ: Định kỳ kiểm kê cuối tháng, phát hiện hao hụt do vỡ..."
                   {...registerCheck("note")}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -454,7 +454,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                   onClick={onClose}
                   disabled={isSubmitting}
                 >
-                  Cancel
+                   Hủy
                 </button>
                 <button
                   type="submit"
@@ -466,7 +466,7 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                   ) : (
                     <>
                       <CheckCircle2 size={14} />
-                      <span>Confirm Stock Check & Adjust</span>
+                       <span>Xác nhận kiểm kê và điều chỉnh</span>
                     </>
                   )}
                 </button>
@@ -483,19 +483,19 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
               ) : transactions?.length === 0 ? (
                 <div className="text-center py-12 text-slate-400">
                   <FileX size={36} className="mx-auto mb-2 text-slate-300" />
-                  <p className="text-sm">No inventory transactions found for this variant yet.</p>
+                  <p className="text-sm">Chưa có giao dịch tồn kho cho biến thể này.</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto rounded-lg border border-slate-200">
                   <table className="min-w-full divide-y divide-slate-200 text-xs">
                     <thead className="bg-slate-50 sticky top-0">
                       <tr>
-                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Type</th>
-                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Qty</th>
-                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Balance</th>
-                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Reference</th>
-                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Note</th>
-                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Timestamp</th>
+                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Loại</th>
+                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Số lượng</th>
+                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Số dư</th>
+                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Tham chiếu</th>
+                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Ghi chú</th>
+                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Thời gian</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white">
@@ -512,7 +512,11 @@ function StockOperationModal({ variant, itemName, isOpen, onClose }) {
                               }`}
                             >
                               {tx.transactionType === "ADJUSTMENT"
-                                ? "ADJUSTMENT (Audit)"
+                                ? "Điều chỉnh (kiểm kê)"
+                                : tx.transactionType === "IN"
+                                ? "Nhập kho"
+                                : tx.transactionType === "OUT"
+                                ? "Xuất kho"
                                 : tx.transactionType}
                             </span>
                           </td>

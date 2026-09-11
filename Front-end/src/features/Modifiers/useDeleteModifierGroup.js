@@ -8,13 +8,12 @@ export function useDeleteModifierGroup() {
   const { mutate: deleteModifierGroup, isPending: isDeleting } = useMutation({
     mutationFn: deleteModifierGroupApi,
     onSuccess: () => {
-      toast.success("Modifier group successfully deleted");
+      toast.success("Xóa nhóm tùy chọn thành công");
       queryClient.invalidateQueries({ queryKey: ["modifierGroups"] });
       queryClient.invalidateQueries({ queryKey: ["items"] });
     },
-    onError: (err) => {
-      const msg = err.response?.data?.message || err.message;
-      toast.error(msg);
+    onError: () => {
+      toast.error("Không thể xóa nhóm tùy chọn");
     },
   });
 

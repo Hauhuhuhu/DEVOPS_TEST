@@ -22,7 +22,8 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -225,7 +226,8 @@ public class PromotionEvaluationIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(status().reason(containsString("không tồn tại")));
+                .andExpect(jsonPath("$.code", is("PROMOTION_NOT_FOUND")))
+                .andExpect(jsonPath("$.message", is("Mã giảm giá không tồn tại")));
     }
 
     @Test
@@ -259,7 +261,8 @@ public class PromotionEvaluationIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(status().reason(containsString("hết hạn")));
+                .andExpect(jsonPath("$.code", is("PROMOTION_EXPIRED")))
+                .andExpect(jsonPath("$.message", is("Mã giảm giá đã hết hạn sử dụng")));
     }
 
     @Test
@@ -293,7 +296,8 @@ public class PromotionEvaluationIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(status().reason(containsString("hết lượt")));
+                .andExpect(jsonPath("$.code", is("PROMOTION_USAGE_EXHAUSTED")))
+                .andExpect(jsonPath("$.message", is("Mã giảm giá đã hết lượt sử dụng")));
     }
 
     @Test
@@ -316,7 +320,8 @@ public class PromotionEvaluationIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(status().reason(containsString("tối thiểu")));
+                .andExpect(jsonPath("$.code", is("PROMOTION_MIN_ORDER_NOT_MET")))
+                .andExpect(jsonPath("$.message", is("Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã này")));
     }
 
     @Test

@@ -8,12 +8,12 @@ export function useTogglePromotion() {
   const { mutate: toggleActive, isPending: isToggling } = useMutation({
     mutationFn: togglePromotionActive,
     onSuccess: async () => {
-      toast.success("Promotion status toggled");
+      toast.success("Đã cập nhật trạng thái khuyến mãi");
       await queryClient.invalidateQueries({ queryKey: ["promotions"] });
       await queryClient.invalidateQueries({ queryKey: ["active-promotions"] });
     },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || err.message || "Failed to toggle status");
+    onError: () => {
+      toast.error("Không thể cập nhật trạng thái khuyến mãi");
     },
   });
 

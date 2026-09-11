@@ -19,7 +19,7 @@ function VariantAttributes({ control, vIndex, register, disabled }) {
     <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 mt-2">
       <div className="flex justify-between items-center mb-1.5">
         <span className="text-xs font-semibold text-slate-500">
-          Attributes (JSON)
+          Thuộc tính (JSON)
         </span>
         <button
           type="button"
@@ -27,25 +27,25 @@ function VariantAttributes({ control, vIndex, register, disabled }) {
           onClick={() => append({ key: "", value: "" })}
           disabled={disabled}
         >
-          + Add Attribute
+          + Thêm thuộc tính
         </button>
       </div>
       <div className="space-y-1.5">
         {fields.map((field, aIndex) => (
-          <div key={field.id} className="flex gap-1.5 items-center">
+          <div key={field.id} className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-1.5 items-center">
             <input
               type="text"
-              placeholder="Key (e.g. Size)"
+              placeholder="Tên (ví dụ: Kích thước)"
               {...register(`variants.${vIndex}.attributes.${aIndex}.key`)}
               disabled={disabled}
-              className="flex-1 rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-900 placeholder-slate-400 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="min-w-0 w-full rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-900 placeholder-slate-400 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             <input
               type="text"
-              placeholder="Value (e.g. M)"
+              placeholder="Giá trị (ví dụ: M)"
               {...register(`variants.${vIndex}.attributes.${aIndex}.value`)}
               disabled={disabled}
-              className="flex-1 rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-900 placeholder-slate-400 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="min-w-0 w-full rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-900 placeholder-slate-400 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             <button
               type="button"
@@ -86,8 +86,8 @@ function ItemForm() {
           sku: "",
           basePrice: "",
           attributes: [
-            { key: "Color", value: "" },
-            { key: "Size", value: "" },
+            { key: "Màu sắc", value: "" },
+            { key: "Kích thước", value: "" },
           ],
         },
       ],
@@ -128,18 +128,18 @@ function ItemForm() {
     let itemVariants = null;
     if (data.hasVariants) {
       if (!data.variants || data.variants.length === 0) {
-        toast.error("At least one variant is required when variants are enabled");
+        toast.error("Cần có ít nhất một biến thể khi bật tùy chọn biến thể");
         return;
       }
 
       for (let i = 0; i < data.variants.length; i++) {
         const v = data.variants[i];
         if (!v.sku || !v.sku.trim()) {
-          toast.error(`Variant #${i + 1} requires a SKU`);
+          toast.error(`Biến thể số ${i + 1} cần có mã SKU`);
           return;
         }
         if (!v.basePrice || parseFloat(v.basePrice) < 0) {
-          toast.error(`Variant #${i + 1} requires a valid base price`);
+          toast.error(`Biến thể số ${i + 1} cần có giá cơ bản hợp lệ`);
           return;
         }
       }
@@ -175,12 +175,12 @@ function ItemForm() {
     const imageFile = data.imgUrl?.[0];
     if (imageFile) {
       if (imageFile.size > 5 * 1024 * 1024) {
-        toast.error("Image size should not exceed 5MB");
+        toast.error("Dung lượng hình ảnh không được vượt quá 5MB");
         return;
       }
       formData.append("file", imageFile);
     } else {
-      toast.error("Image is required");
+      toast.error("Vui lòng chọn hình ảnh");
       return;
     }
 
@@ -197,8 +197,8 @@ function ItemForm() {
               sku: "",
               basePrice: "",
               attributes: [
-                { key: "Color", value: "" },
-                { key: "Size", value: "" },
+                { key: "Màu sắc", value: "" },
+                { key: "Kích thước", value: "" },
               ],
             },
           ],
@@ -221,7 +221,7 @@ function ItemForm() {
       }
       return null;
     }
-    const message = getFirstMessage(errors) || "Please check the required fields";
+    const message = getFirstMessage(errors) || "Vui lòng kiểm tra lại các trường bắt buộc";
     toast.error(message);
   }
 
@@ -242,7 +242,7 @@ function ItemForm() {
         <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
           <PackagePlus size={18} />
         </div>
-        <h2 className="text-base font-semibold text-slate-900">Add Item</h2>
+        <h2 className="text-base font-semibold text-slate-900">Thêm mặt hàng</h2>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
@@ -269,9 +269,9 @@ function ItemForm() {
                 </div>
               )}
               <span className="text-xs font-medium text-slate-600 mt-2">
-                Click to upload image
+                Nhấn để tải hình ảnh lên
               </span>
-              <span className="text-[11px] text-slate-400">PNG, JPG up to 5MB</span>
+              <span className="text-[11px] text-slate-400">PNG, JPG tối đa 5MB</span>
             </div>
           </label>
           <input
@@ -289,13 +289,13 @@ function ItemForm() {
 
         <div>
           <label htmlFor="itemName" className="block text-sm font-medium text-slate-700 mb-1">
-            Item Name *
+            Tên mặt hàng *
           </label>
           <input
             type="text"
             id="itemName"
-            placeholder="Enter item name"
-            {...register("name", { required: "Item name is required" })}
+            placeholder="Nhập tên mặt hàng"
+            {...register("name", { required: "Tên mặt hàng là bắt buộc" })}
             disabled={isCreating}
             className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
               errors.name
@@ -310,12 +310,12 @@ function ItemForm() {
 
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-1">
-            Category *
+            Danh mục *
           </label>
           <select
             id="category"
             {...register("categoryId", {
-              required: "Category is required",
+              required: "Danh mục là bắt buộc",
             })}
             disabled={isCreating}
             className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 transition-colors ${
@@ -324,9 +324,9 @@ function ItemForm() {
                 : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
             }`}
           >
-            <option value="">--Select category--</option>
+            <option value="">-- Chọn danh mục --</option>
             {isCategoriesLoading ? (
-              <option disabled>Loading categories...</option>
+              <option disabled>Đang tải danh mục...</option>
             ) : (
               categories?.map((category, index) => (
                 <option key={index} value={category.categoryId}>
@@ -342,14 +342,14 @@ function ItemForm() {
 
         <div>
           <label htmlFor="itemDescription" className="block text-sm font-medium text-slate-700 mb-1">
-            Item Description *
+            Mô tả mặt hàng *
           </label>
           <textarea
             rows={2}
             id="itemDescription"
-            placeholder="Enter item description"
+            placeholder="Nhập mô tả mặt hàng"
             {...register("description", {
-              required: "Item description is required",
+              required: "Mô tả mặt hàng là bắt buộc",
             })}
             disabled={isCreating}
             className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
@@ -375,14 +375,14 @@ function ItemForm() {
             />
             <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
             <span className="ml-2.5 text-xs font-semibold text-slate-800">
-              Multiple Physical Variants (SKUs, Colors, Sizes)
+              Nhiều biến thể vật lý (SKU, màu sắc, kích thước)
             </span>
           </label>
 
           {!hasVariants ? (
             <div className="mt-2">
               <label htmlFor="price" className="block text-xs font-medium text-slate-700 mb-1">
-                Price *
+                Giá bán *
               </label>
               <input
                 type="number"
@@ -390,10 +390,10 @@ function ItemForm() {
                 min={0}
                 placeholder="10000"
                 {...register("price", {
-                  required: !hasVariants ? "Price is required" : false,
+                  required: !hasVariants ? "Giá bán là bắt buộc" : false,
                   min: {
                     value: 0,
-                    message: "Price must be a positive number",
+                    message: "Giá bán phải là số không âm",
                   },
                 })}
                 disabled={isCreating}
@@ -411,7 +411,7 @@ function ItemForm() {
             <div className="mt-2 space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-semibold text-slate-600">
-                  Configure Variants ({variantFields.length})
+                  Cấu hình biến thể ({variantFields.length})
                 </span>
                 <button
                   type="button"
@@ -420,15 +420,15 @@ function ItemForm() {
                       sku: "",
                       basePrice: "",
                       attributes: [
-                        { key: "Color", value: "" },
-                        { key: "Size", value: "" },
+                        { key: "Màu sắc", value: "" },
+                        { key: "Kích thước", value: "" },
                       ],
                     })
                   }
                   disabled={isCreating}
                   className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
                 >
-                  <PlusCircle size={14} /> Add Variant
+                  <PlusCircle size={14} /> Thêm biến thể
                 </button>
               </div>
 
@@ -439,14 +439,14 @@ function ItemForm() {
                 >
                   <div className="flex justify-between items-center mb-2">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
-                      Variant #{vIndex + 1}
+                      Biến thể số {vIndex + 1}
                     </span>
                     {variantFields.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeVariant(vIndex)}
                         disabled={isCreating}
-                        title="Remove Variant"
+                        title="Xóa biến thể"
                         className="p-1 text-slate-400 hover:text-red-600 cursor-pointer"
                       >
                         <Trash2 size={14} />
@@ -458,9 +458,9 @@ function ItemForm() {
                     <div>
                       <input
                         type="text"
-                        placeholder="SKU (e.g., TS-RED-M)"
+                        placeholder="SKU (ví dụ: TS-RED-M)"
                         {...register(`variants.${vIndex}.sku`, {
-                          required: hasVariants ? "Variant SKU is required" : false,
+                          required: hasVariants ? "Mã SKU của biến thể là bắt buộc" : false,
                         })}
                         disabled={isCreating}
                         className={`w-full rounded-md border px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 transition-colors ${
@@ -478,13 +478,13 @@ function ItemForm() {
                     <div>
                       <input
                         type="number"
-                        placeholder="Base Price"
+                        placeholder="Giá cơ bản"
                         min={0}
                         {...register(`variants.${vIndex}.basePrice`, {
-                          required: hasVariants ? "Base price is required" : false,
+                          required: hasVariants ? "Giá cơ bản là bắt buộc" : false,
                           min: {
                             value: 0,
-                            message: "Base price must be a positive number",
+                            message: "Giá cơ bản phải là số không âm",
                           },
                         })}
                         disabled={isCreating}
@@ -517,11 +517,11 @@ function ItemForm() {
         {/* Modifier Groups Attachment */}
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
           <label className="block text-xs font-semibold text-slate-800 mb-1">
-            Attached Modifier Groups (F&B Add-ons)
+            Nhóm tùy chọn đi kèm (tùy chọn thêm)
           </label>
           {modifierGroups?.length === 0 ? (
             <p className="text-xs text-slate-400">
-              No modifier groups available. Create them in Manage Modifiers.
+              Chưa có nhóm tùy chọn. Hãy tạo trong mục Quản lý tùy chọn.
             </p>
           ) : (
             <div className="flex flex-wrap gap-1.5 mt-2">
@@ -556,7 +556,7 @@ function ItemForm() {
           disabled={isCreating}
           className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors disabled:opacity-50 cursor-pointer mt-2"
         >
-          {isCreating ? <Spinner className="text-white" /> : "Submit Item"}
+          {isCreating ? <Spinner className="text-white" /> : "Lưu mặt hàng"}
         </button>
       </form>
     </div>

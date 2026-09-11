@@ -1,13 +1,15 @@
 import { Navigate, Outlet } from 'react-router-dom';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import Spinner from '../../ui/Spinner';
 
 function ProtectedRoute() {
-  // Lấy token từ localStorage (nơi bạn đã lưu ở hook useLogin)
-  const token = localStorage.getItem('token');
+  const { user, isLoading } = useCurrentUser();
 
-  // Nếu không có token (chưa đăng nhập hoặc đã đăng xuất)
-  if (!token) {
-    // Điều hướng về trang login và dùng replace: true 
-    // để user không thể dùng nút "Back" trên trình duyệt quay lại route này
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center"><Spinner /></div>;
+  }
+
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 

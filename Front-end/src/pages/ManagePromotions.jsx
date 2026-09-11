@@ -12,14 +12,20 @@ import ConfirmDeleteModal from "../ui/ConfirmDeleteModal";
 import { Tag, Check, Plus, Clock, Pencil, Trash2 } from "lucide-react";
 
 const DAYS_OF_WEEK = [
-  { key: "MONDAY", label: "Mon" },
-  { key: "TUESDAY", label: "Tue" },
-  { key: "WEDNESDAY", label: "Wed" },
-  { key: "THURSDAY", label: "Thu" },
-  { key: "FRIDAY", label: "Fri" },
-  { key: "SATURDAY", label: "Sat" },
-  { key: "SUNDAY", label: "Sun" },
+  { key: "MONDAY", label: "T2" },
+  { key: "TUESDAY", label: "T3" },
+  { key: "WEDNESDAY", label: "T4" },
+  { key: "THURSDAY", label: "T5" },
+  { key: "FRIDAY", label: "T6" },
+  { key: "SATURDAY", label: "T7" },
+  { key: "SUNDAY", label: "CN" },
 ];
+
+const PROMOTION_TYPE_LABELS = {
+  COUPON: "Mã giảm giá",
+  HAPPY_HOUR: "Khung giờ vàng",
+  BOGO: "Mua 1 tặng 1",
+};
 
 function ManagePromotions() {
   const [filterType, setFilterType] = useState("ALL");
@@ -142,9 +148,9 @@ function ManagePromotions() {
   function onError(errors) {
     const firstError = Object.values(errors)[0];
     if (firstError) {
-      toast.error(firstError.message || "Please check the required fields");
+      toast.error(firstError.message || "Vui lòng kiểm tra lại các trường bắt buộc");
     } else {
-      toast.error("Please check the required fields");
+      toast.error("Vui lòng kiểm tra lại các trường bắt buộc");
     }
   }
 
@@ -162,33 +168,33 @@ function ManagePromotions() {
             <Tag size={18} />
           </div>
           <h2 className="text-base font-semibold text-slate-900">
-            {editingPromo ? "Edit Promotion" : "Create Promotion"}
+            {editingPromo ? "Sửa khuyến mãi" : "Tạo khuyến mãi"}
           </h2>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-3.5">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Promotion Type *
+              Loại khuyến mãi *
             </label>
             <select
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               {...register("type", { required: true })}
             >
-              <option value="COUPON">Coupon Code (Voucher)</option>
-              <option value="HAPPY_HOUR">Happy Hour (Time-Window)</option>
-              <option value="BOGO">Buy One Get One (BOGO)</option>
+              <option value="COUPON">Mã giảm giá</option>
+              <option value="HAPPY_HOUR">Khung giờ vàng</option>
+              <option value="BOGO">Mua 1 tặng 1</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Promotion Name *
+              Tên khuyến mãi *
             </label>
             <input
               type="text"
-              placeholder="e.g. Summer Mega Discount"
-              {...register("name", { required: "Promotion name is required" })}
+              placeholder="Ví dụ: Ưu đãi mùa hè"
+              {...register("name", { required: "Tên khuyến mãi là bắt buộc" })}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                 errors.name ? "border-red-500 focus:ring-red-500 bg-red-50/10" : "border-slate-300 focus:border-blue-500"
               }`}
@@ -200,11 +206,11 @@ function ManagePromotions() {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Description
+              Mô tả
             </label>
             <textarea
               rows={2}
-              placeholder="Details about this promo..."
+              placeholder="Nhập thông tin chi tiết về khuyến mãi..."
               {...register("description")}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
@@ -215,13 +221,13 @@ function ManagePromotions() {
             <div className="border border-slate-200 rounded-lg p-3 bg-slate-50 space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Coupon Code *
+                  Mã giảm giá *
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. SUMMER2026"
+                  placeholder="Ví dụ: SUMMER2026"
                   {...register("code", {
-                    required: selectedType === "COUPON" ? "Coupon code is required" : false,
+                    required: selectedType === "COUPON" ? "Mã giảm giá là bắt buộc" : false,
                   })}
                   className={`w-full rounded-lg border px-3 py-1.5 text-sm uppercase font-bold text-slate-900 placeholder-slate-400 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                     errors.code ? "border-red-500 focus:ring-red-500 bg-red-50/10" : "border-slate-300 focus:border-blue-500"
@@ -234,26 +240,26 @@ function ManagePromotions() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Discount Type</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Kiểu giảm giá</label>
                   <select
                     className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     {...register("discountType")}
                   >
-                    <option value="PERCENTAGE">Percentage (%)</option>
-                    <option value="FIXED_AMOUNT">Fixed Cash (VND)</option>
+                    <option value="PERCENTAGE">Phần trăm (%)</option>
+                    <option value="FIXED_AMOUNT">Số tiền cố định (VNĐ)</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Value ({discountType === "PERCENTAGE" ? "%" : "VND"}) *
+                    Giá trị ({discountType === "PERCENTAGE" ? "%" : "VNĐ"}) *
                   </label>
                   <input
                     type="number"
                     step="any"
-                    placeholder={discountType === "PERCENTAGE" ? "e.g. 15" : "e.g. 20000"}
+                    placeholder={discountType === "PERCENTAGE" ? "Ví dụ: 15" : "Ví dụ: 20000"}
                     {...register("discountValue", {
-                      required: "Discount value is required",
-                      min: { value: 0, message: "Discount value cannot be negative" },
+                      required: "Giá trị giảm là bắt buộc",
+                      min: { value: 0, message: "Giá trị giảm không được âm" },
                     })}
                     className={`w-full rounded-lg border px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 transition-colors ${
                       errors.discountValue
@@ -269,19 +275,19 @@ function ManagePromotions() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Min Order (VND)</label>
+                   <label className="block text-xs font-semibold text-slate-700 mb-1">Đơn tối thiểu (VNĐ)</label>
                   <input
                     type="number"
-                    placeholder="e.g. 50000"
+                     placeholder="Ví dụ: 50000"
                     {...register("minOrderAmount")}
                     className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Max Cap (VND)</label>
+                   <label className="block text-xs font-semibold text-slate-700 mb-1">Mức giảm tối đa (VNĐ)</label>
                   <input
                     type="number"
-                    placeholder="e.g. 100000"
+                     placeholder="Ví dụ: 100000"
                     {...register("maxDiscountAmount")}
                     className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -289,10 +295,10 @@ function ManagePromotions() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Usage Limit (Max Uses)</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Giới hạn lượt dùng</label>
                 <input
                   type="number"
-                  placeholder="Leave empty for unlimited"
+                  placeholder="Để trống nếu không giới hạn"
                   {...register("usageLimit")}
                   className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -304,26 +310,26 @@ function ManagePromotions() {
             <div className="border border-slate-200 rounded-lg p-3 bg-slate-50 space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Discount Type</label>
+                   <label className="block text-xs font-semibold text-slate-700 mb-1">Kiểu giảm giá</label>
                   <select
                     className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     {...register("discountType")}
                   >
-                    <option value="PERCENTAGE">Percentage (%)</option>
-                    <option value="FIXED_AMOUNT">Fixed Cash (VND)</option>
+                    <option value="PERCENTAGE">Phần trăm (%)</option>
+                    <option value="FIXED_AMOUNT">Số tiền cố định (VNĐ)</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Value *
+                     Giá trị *
                   </label>
                   <input
                     type="number"
                     step="any"
-                    placeholder={discountType === "PERCENTAGE" ? "e.g. 20" : "e.g. 15000"}
+                     placeholder={discountType === "PERCENTAGE" ? "Ví dụ: 20" : "Ví dụ: 15000"}
                     {...register("discountValue", {
-                      required: "Discount value is required",
-                      min: { value: 0, message: "Discount value cannot be negative" },
+                      required: "Giá trị giảm là bắt buộc",
+                      min: { value: 0, message: "Giá trị giảm không được âm" },
                     })}
                     className={`w-full rounded-lg border px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 transition-colors ${
                       errors.discountValue
@@ -339,7 +345,7 @@ function ManagePromotions() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Start Time</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Giờ bắt đầu</label>
                   <input
                     type="time"
                     {...register("startTime")}
@@ -347,7 +353,7 @@ function ManagePromotions() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">End Time</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Giờ kết thúc</label>
                   <input
                     type="time"
                     {...register("endTime")}
@@ -358,7 +364,7 @@ function ManagePromotions() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Active Days of Week
+                   Ngày áp dụng trong tuần
                 </label>
                 <div className="flex flex-wrap gap-2 pt-1">
                   {DAYS_OF_WEEK.map((day) => (
@@ -380,28 +386,28 @@ function ManagePromotions() {
           {selectedType === "BOGO" && (
             <div className="border border-slate-200 rounded-lg p-3 bg-slate-50 space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Buy Variant ID / Keyword</label>
+                 <label className="block text-xs font-semibold text-slate-700 mb-1">Mã/từ khóa biến thể mua</label>
                 <input
                   type="text"
-                  placeholder="Target variant ID"
+                   placeholder="Mã biến thể mục tiêu"
                   {...register("buyVariantId")}
                   className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Get Variant ID / Keyword</label>
+                 <label className="block text-xs font-semibold text-slate-700 mb-1">Mã/từ khóa biến thể tặng</label>
                 <input
                   type="text"
-                  placeholder="Free/discounted variant ID"
+                   placeholder="Mã biến thể được tặng/giảm giá"
                   {...register("getVariantId")}
                   className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Discount % on Gift Item</label>
+                 <label className="block text-xs font-semibold text-slate-700 mb-1">Phần trăm giảm trên món tặng</label>
                 <input
                   type="number"
-                  placeholder="100 for Free"
+                   placeholder="100 là miễn phí"
                   {...register("bogoDiscountPercent")}
                   className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -412,7 +418,7 @@ function ManagePromotions() {
           {/* Date Range */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Start Date</label>
+               <label className="block text-xs font-medium text-slate-700 mb-1">Ngày bắt đầu</label>
               <input
                 type="date"
                 {...register("startDate")}
@@ -420,7 +426,7 @@ function ManagePromotions() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">End Date</label>
+               <label className="block text-xs font-medium text-slate-700 mb-1">Ngày kết thúc</label>
               <input
                 type="date"
                 {...register("endDate")}
@@ -439,11 +445,11 @@ function ManagePromotions() {
                 <Spinner className="text-white" />
               ) : editingPromo ? (
                 <>
-                  <Check size={16} /> Update Promo
+                   <Check size={16} /> Cập nhật khuyến mãi
                 </>
               ) : (
                 <>
-                  <Plus size={16} /> Save Promo
+                   <Plus size={16} /> Lưu khuyến mãi
                 </>
               )}
             </button>
@@ -453,7 +459,7 @@ function ManagePromotions() {
                 onClick={cancelEdit}
                 className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium transition-colors cursor-pointer"
               >
-                Cancel
+                Hủy
               </button>
             )}
           </div>
@@ -474,7 +480,7 @@ function ManagePromotions() {
               }`}
               onClick={() => setFilterType("ALL")}
             >
-              All
+               Tất cả
             </button>
             <button
               type="button"
@@ -485,7 +491,7 @@ function ManagePromotions() {
               }`}
               onClick={() => setFilterType("COUPON")}
             >
-              Coupons
+               Mã giảm giá
             </button>
             <button
               type="button"
@@ -496,7 +502,7 @@ function ManagePromotions() {
               }`}
               onClick={() => setFilterType("HAPPY_HOUR")}
             >
-              Happy Hour
+               Khung giờ vàng
             </button>
             <button
               type="button"
@@ -507,12 +513,12 @@ function ManagePromotions() {
               }`}
               onClick={() => setFilterType("BOGO")}
             >
-              BOGO
+              Mua 1 tặng 1
             </button>
           </div>
 
           <span className="bg-blue-100 text-blue-700 rounded-full px-3 py-1 text-sm font-medium">
-            Total: {filteredPromotions?.length || 0} Promos
+             Tổng: {filteredPromotions?.length || 0} khuyến mãi
           </span>
         </div>
 
@@ -525,12 +531,12 @@ function ManagePromotions() {
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-slate-50 sticky top-0">
                 <tr>
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Type & Name</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Discount Rule</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Valid Window</th>
-                  <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Usage</th>
-                  <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                  <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                   <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Loại & tên</th>
+                   <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Quy tắc giảm</th>
+                   <th className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời gian áp dụng</th>
+                   <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Lượt dùng</th>
+                   <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng thái</th>
+                   <th className="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -538,7 +544,7 @@ function ManagePromotions() {
                   <tr>
                     <td colSpan="6" className="text-center py-12 text-slate-400">
                       <Tag size={36} className="mx-auto mb-2 text-slate-300" />
-                      <p className="text-sm">No promotions found</p>
+                       <p className="text-sm">Không tìm thấy khuyến mãi</p>
                     </td>
                   </tr>
                 ) : (
@@ -559,7 +565,7 @@ function ManagePromotions() {
                                   : "bg-emerald-100 text-emerald-800"
                               }`}
                             >
-                              {promo.type}
+                              {PROMOTION_TYPE_LABELS[promo.type] || promo.type}
                             </span>
                             <span className="text-sm font-semibold text-slate-900">{promo.name}</span>
                           </div>
@@ -573,7 +579,7 @@ function ManagePromotions() {
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm">
                           {promo.type === "BOGO" ? (
-                            <div className="text-slate-700">Buy 1 get 1 (-{promo.bogoDiscountPercent}%)</div>
+                             <div className="text-slate-700">Mua 1 tặng 1 (-{promo.bogoDiscountPercent}%)</div>
                           ) : (
                             <div>
                               <span className="font-semibold text-red-600">
@@ -583,7 +589,7 @@ function ManagePromotions() {
                               </span>
                               {promo.minOrderAmount > 0 && (
                                 <div className="text-xs text-slate-500 mt-0.5">
-                                  Min: {formatCurrency(promo.minOrderAmount)}
+                                   Tối thiểu: {formatCurrency(promo.minOrderAmount)}
                                 </div>
                               )}
                             </div>
@@ -598,15 +604,15 @@ function ManagePromotions() {
                           )}
                           {promo.startDate || promo.endDate ? (
                             <div className="text-xs text-slate-500">
-                              {promo.startDate || "Any"} to {promo.endDate || "Ongoing"}
+                               {promo.startDate || "Bất kỳ"} đến {promo.endDate || "Đang áp dụng"}
                             </div>
                           ) : (
-                            <div className="text-xs text-slate-400">Always active</div>
+                             <div className="text-xs text-slate-400">Luôn hoạt động</div>
                           )}
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-center text-xs">
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 font-medium">
-                            {promo.timesUsed} {promo.usageLimit ? `/ ${promo.usageLimit}` : "uses"}
+                             {promo.timesUsed} {promo.usageLimit ? `/ ${promo.usageLimit}` : "lượt"}
                           </span>
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-center">
@@ -626,7 +632,7 @@ function ManagePromotions() {
                             <button
                               className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors cursor-pointer"
                               onClick={() => startEdit(promo)}
-                              title="Edit Promotion"
+                              title="Sửa khuyến mãi"
                             >
                               <Pencil size={15} />
                             </button>
@@ -634,7 +640,7 @@ function ManagePromotions() {
                               className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
                               onClick={() => setPromoToDelete(promo)}
                               disabled={isDeleting}
-                              title="Delete Promotion"
+                              title="Xóa khuyến mãi"
                             >
                               <Trash2 size={15} />
                             </button>
@@ -660,9 +666,9 @@ function ManagePromotions() {
             });
           }
         }}
-        title="Delete Promotion"
+         title="Xóa khuyến mãi"
         entityName={promoToDelete?.name || ""}
-        message="Are you sure you want to delete this promotion? Active discounts and coupons will no longer apply to customer orders."
+         message="Bạn có chắc muốn xóa khuyến mãi này không? Các ưu đãi và mã giảm giá đang hoạt động sẽ không còn áp dụng cho đơn hàng."
         isLoading={isDeleting}
       />
     </div>

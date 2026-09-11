@@ -19,7 +19,7 @@ function UsersList() {
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
           type="text"
-          placeholder="Search users..."
+          placeholder="Tìm kiếm người dùng..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-300 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -35,7 +35,7 @@ function UsersList() {
         ) : filteredUsers?.length === 0 ? (
           <div className="text-center py-12 text-slate-400">
             <UsersIcon size={36} className="mx-auto mb-2 text-slate-300" />
-            <p className="text-sm">No users found</p>
+            <p className="text-sm">Không tìm thấy người dùng</p>
           </div>
         ) : (
           filteredUsers?.map((user, index) => (

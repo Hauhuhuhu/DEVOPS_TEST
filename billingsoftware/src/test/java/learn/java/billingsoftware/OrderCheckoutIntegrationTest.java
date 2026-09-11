@@ -258,7 +258,8 @@ public class OrderCheckoutIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(status().reason(containsString("hết lượt")));
+                .andExpect(jsonPath("$.code", is("PROMOTION_USAGE_EXHAUSTED")))
+                .andExpect(jsonPath("$.message", is("Mã giảm giá đã hết lượt sử dụng")));
     }
 
     @Test

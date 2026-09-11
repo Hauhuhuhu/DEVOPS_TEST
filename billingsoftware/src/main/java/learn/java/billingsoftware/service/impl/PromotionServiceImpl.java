@@ -3,6 +3,7 @@ package learn.java.billingsoftware.service.impl;
 import learn.java.billingsoftware.entity.DiscountType;
 import learn.java.billingsoftware.entity.PromotionEntity;
 import learn.java.billingsoftware.entity.PromotionType;
+import learn.java.billingsoftware.exception.PromotionEvaluationException;
 import learn.java.billingsoftware.io.*;
 import learn.java.billingsoftware.repository.PromotionRepository;
 import learn.java.billingsoftware.service.PromotionService;
@@ -201,7 +202,7 @@ public class PromotionServiceImpl implements PromotionService {
 
         if (subtotal.compareTo(BigDecimal.ZERO) <= 0) {
             if (request != null && request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giỏ hàng trống, không thể áp dụng mã giảm giá");
+                throw promotionError("PROMOTION_EMPTY_CART", "Giỏ hàng trống, không thể áp dụng mã giảm giá");
             }
             return PromotionEvaluationResponse.builder()
                     .subtotal(BigDecimal.ZERO)
@@ -320,22 +321,22 @@ public class PromotionServiceImpl implements PromotionService {
         if (request != null && request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
             String code = request.getCouponCode().trim().toUpperCase();
             PromotionEntity couponPromo = promotionRepository.findByCodeIgnoreCase(code)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá '" + code + "' không tồn tại"));
+                    .orElseThrow(() -> promotionError("PROMOTION_NOT_FOUND", "Mã giảm giá không tồn tại"));
 
             if (!Boolean.TRUE.equals(couponPromo.getIsActive())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá '" + code + "' đang tạm ngưng hoạt động");
+                throw promotionError("PROMOTION_INACTIVE", "Mã giảm giá đang tạm ngưng hoạt động");
             }
             if (couponPromo.getStartDate() != null && today.isBefore(couponPromo.getStartDate())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá chưa đến ngày áp dụng");
+                throw promotionError("PROMOTION_NOT_STARTED", "Mã giảm giá chưa đến ngày áp dụng");
             }
             if (couponPromo.getEndDate() != null && today.isAfter(couponPromo.getEndDate())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá đã hết hạn sử dụng");
+                throw promotionError("PROMOTION_EXPIRED", "Mã giảm giá đã hết hạn sử dụng");
             }
             if (couponPromo.getUsageLimit() != null && couponPromo.getTimesUsed() != null && couponPromo.getTimesUsed() >= couponPromo.getUsageLimit()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã giảm giá đã hết lượt sử dụng");
+                throw promotionError("PROMOTION_USAGE_EXHAUSTED", "Mã giảm giá đã hết lượt sử dụng");
             }
             if (couponPromo.getMinOrderAmount() != null && subtotal.compareTo(couponPromo.getMinOrderAmount()) < 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng tối thiểu phải đạt " + couponPromo.getMinOrderAmount().stripTrailingZeros().toPlainString() + "đ để áp dụng mã này");
+                throw promotionError("PROMOTION_MIN_ORDER_NOT_MET", "Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã này");
             }
 
             BigDecimal discount = BigDecimal.ZERO;
@@ -398,6 +399,10 @@ public class PromotionServiceImpl implements PromotionService {
                 .message(message)
                 .candidates(candidates)
                 .build();
+    }
+
+    private PromotionEvaluationException promotionError(String code, String message) {
+        return new PromotionEvaluationException(HttpStatus.BAD_REQUEST, code, message);
     }
 
     public PromotionResponse convertToResponse(PromotionEntity entity) {

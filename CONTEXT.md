@@ -68,6 +68,15 @@
 4. **Environment Variables Security:** Config như `AWS_ACCESS`, `PAYOS_API` đang được inject từ `.env`. Cần đảm bảo các file này luôn nằm trong `.gitignore` và không bị vô tình hardcode lên source code trong quá trình thêm tính năng.
 
 ## 6. Glossary (Domain Model)
+
+### Authentication & Session
+
+- **Access Token**: JWT ngắn hạn dùng để xác thực từng request tới API.
+- **Refresh Token**: Mã phiên dài hạn dùng để cấp lại Access Token khi phiên ngắn hạn hết hạn; không phải thông tin người dùng nhập vào giao diện.
+- **Refresh Token Family**: Nhóm các Refresh Token được xoay từ cùng một lần đăng nhập, dùng để phát hiện và thu hồi phiên khi token cũ bị dùng lại.
+
+- **Coupon Code**: Mã do người dùng nhập để yêu cầu áp dụng một Promotion kiểu COUPON cho Order; hệ thống chỉ áp dụng một Promotion tốt nhất và không cộng dồn.
+
 - **Item**: Sản phẩm cha (VD: Áo thun, Trà sữa). Không trực tiếp chứa tồn kho nếu có nhiều biến thể.
 - **Variant (SKU)**: Biến thể vật lý của một Item (VD: Áo màu Đỏ size L). Có mã SKU riêng và là đơn vị quản lý tồn kho. Các thuộc tính biến thể (Màu, Size, v.v.) được lưu linh hoạt dưới dạng **Dynamic Attributes (JSON)**.
 - **Modifier / ModifierGroup**: Tuỳ chọn thêm (VD: Topping trân châu, Lượng đường). Không có tồn kho, chỉ làm thay đổi giá bán hoặc ghi chú chế biến. Khi order, giá Modifier được tách biệt với giá base của Variant để in hóa đơn chi tiết.
@@ -77,4 +86,3 @@
 - **ActivityLog**: Bản ghi nhật ký hoạt động (Audit Trail) ghi nhận ai (user/email), làm gì (action: LOGIN, CREATE, UPDATE, DELETE), trên thực thể nào (Category, Item, Order, Customer, Promotion, Variant/Inventory), vào thời điểm nào (timestamp) và ghi chú tóm tắt.
 - **Order Cancellation**: Quy trình hủy đơn hàng đang ở trạng thái chờ (PENDING) hoặc lỗi thanh toán, bắt buộc thực hiện giao dịch bù trừ kho (Compensating Ledger Transaction - IN), hoàn lại lượt dùng mã khuyến mãi, điều chỉnh lại chỉ số CRM của khách hàng và hủy Payment Link trên cổng PayOS (ADR 0006).
 - **Switch Payment Method**: Quy trình chuyển đổi phương thức thanh toán trực tiếp tại quầy từ đơn PENDING (PayOS QR) sang Tiền mặt (CASH), chuyển trạng thái sang COMPLETED và hủy link PayOS mà không tạo mới đơn hay nhân đôi xuất kho (ADR 0006).
-

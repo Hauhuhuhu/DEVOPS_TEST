@@ -54,7 +54,7 @@ function Explore() {
                         key={p.id}
                         className="inline-flex items-center px-2 py-0.5 rounded bg-blue-600 text-white font-medium text-xs shadow-xs"
                       >
-                        🎁 BOGO: {p.name}
+                        🎁 Mua 1 tặng 1: {p.name}
                       </span>
                     );
                   }

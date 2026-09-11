@@ -8,11 +8,11 @@ export function useDeleteCustomer() {
   const { mutate: removeCustomer, isPending: isDeleting } = useMutation({
     mutationFn: deleteCustomer,
     onSuccess: async () => {
-      toast.success("Customer successfully deleted");
+      toast.success("Xóa khách hàng thành công");
       await queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || err.message || "Failed to delete customer");
+    onError: () => {
+      toast.error("Không thể xóa khách hàng");
     },
   });
 

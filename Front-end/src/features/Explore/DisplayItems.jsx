@@ -32,7 +32,7 @@ function DisplayItems({ addToCart, selectedCategory }) {
     <div className="py-2">
       <div className="flex justify-between items-center mb-4">
         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          Products ({filteredItems?.length || 0})
+          Mặt hàng ({filteredItems?.length || 0})
         </span>
         <SearchBox searchText={searchText} setSearchText={setSearchText} />
       </div>
@@ -40,7 +40,7 @@ function DisplayItems({ addToCart, selectedCategory }) {
       {filteredItems?.length === 0 ? (
         <div className="text-center py-16 text-slate-400">
           <PackageOpen size={40} className="mx-auto mb-2 text-slate-300" />
-          <p className="text-sm">No items found</p>
+          <p className="text-sm">Không tìm thấy mặt hàng</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">

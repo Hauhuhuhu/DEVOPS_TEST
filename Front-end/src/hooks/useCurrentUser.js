@@ -1,18 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
+import { refreshSession } from "../services/AuthService";
+import { getSession, setSession } from "../utils/authSession";
 
 export function useCurrentUser() {
   const { data: user, isLoading } = useQuery({
     queryKey: ["user"],
-    queryFn: () => {
-      const token = localStorage.getItem("token");
-      const role = localStorage.getItem("role");
-      return token ? { token, role } : null;
+    queryFn: async () => {
+      const currentSession = getSession();
+      if (currentSession) return currentSession;
+
+      try {
+        return setSession(await refreshSession());
+      } catch {
+        return null;
+      }
     },
-    initialData: () => {
-      const token = localStorage.getItem("token");
-      const role = localStorage.getItem("role");
-      return token ? { token, role } : null;
-    },
+    retry: false,
     staleTime: Infinity,
   });
 

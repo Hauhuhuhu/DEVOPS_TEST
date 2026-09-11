@@ -35,7 +35,7 @@ function ReceiptPopup({ order, isOpen, onClose }) {
             type="button"
             className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
             onClick={onClose}
-            aria-label="Close"
+            aria-label="Đóng"
           >
             <X size={16} />
           </button>
@@ -147,7 +147,7 @@ function ReceiptPopup({ order, isOpen, onClose }) {
           {/* Totals & Promotion Savings Itemization */}
           <div className="border-t border-dashed border-slate-300 pt-2.5 space-y-1">
             <div className="flex justify-between text-slate-500">
-              <span>Tạm tính (Subtotal):</span>
+              <span>Tạm tính:</span>
               <span className="font-medium text-slate-900">{formatCurrency(subtotal)}</span>
             </div>
 

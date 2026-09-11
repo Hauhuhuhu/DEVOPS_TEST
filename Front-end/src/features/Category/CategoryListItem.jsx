@@ -24,7 +24,7 @@ function CategoryListItem({ category }) {
         />
         <div>
           <h4 className="text-sm font-semibold text-slate-900">{category.name}</h4>
-          <p className="text-xs text-slate-500 mt-0.5">{category.items || 0} Items</p>
+          <p className="text-xs text-slate-500 mt-0.5">{category.items || 0} mặt hàng</p>
         </div>
       </div>
 
@@ -33,7 +33,7 @@ function CategoryListItem({ category }) {
         disabled={isDeleting}
         onClick={() => setIsDeleteModalOpen(true)}
         className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
-        title="Delete category"
+        title="Xóa danh mục"
       >
         <Trash2 size={16} />
       </button>
@@ -46,9 +46,9 @@ function CategoryListItem({ category }) {
             onSettled: () => setIsDeleteModalOpen(false),
           });
         }}
-        title="Delete Category"
+        title="Xóa danh mục"
         entityName={category.name}
-        message="Are you sure you want to delete this category? Items under this category will no longer be grouped."
+        message="Bạn có chắc muốn xóa danh mục này không? Các mặt hàng thuộc danh mục sẽ không còn được nhóm tại đây."
         isLoading={isDeleting}
       />
     </div>

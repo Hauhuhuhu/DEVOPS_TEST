@@ -8,10 +8,10 @@ export function useCreateUser() {
   const { mutate: createUser, isPending: isCreating } = useMutation({
     mutationFn: addUser,
     onSuccess: () => {
-      toast.success("New user successfully created");
+      toast.success("Tạo người dùng thành công");
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
-    onError: (err) => toast.error(err.message),
+    onError: () => toast.error("Không thể tạo người dùng"),
   });
 
   return { isCreating, createUser };

@@ -36,7 +36,7 @@ function ModifierGroupForm() {
       }));
 
     if (validModifiers.length === 0) {
-      toast.error("Please add at least one valid modifier option");
+      toast.error("Vui lòng thêm ít nhất một tùy chọn hợp lệ");
       return;
     }
 
@@ -93,19 +93,19 @@ function ModifierGroupForm() {
         <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
           <SlidersHorizontal size={18} />
         </div>
-        <h2 className="text-base font-semibold text-slate-900">Add Modifier Group</h2>
+        <h2 className="text-base font-semibold text-slate-900">Thêm nhóm tùy chọn</h2>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
         <div>
           <label htmlFor="groupName" className="block text-sm font-medium text-slate-700 mb-1">
-            Group Name *
+            Tên nhóm *
           </label>
           <input
             type="text"
             id="groupName"
-            placeholder="e.g., Sugar Level, Toppings"
-            {...register("name", { required: "Modifier group name is required" })}
+            placeholder="Ví dụ: Mức đường, Topping"
+            {...register("name", { required: "Tên nhóm tùy chọn là bắt buộc" })}
             disabled={isCreating}
             className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
               errors.name
@@ -120,12 +120,12 @@ function ModifierGroupForm() {
 
         <div>
           <label htmlFor="groupDesc" className="block text-sm font-medium text-slate-700 mb-1">
-            Description
+            Mô tả
           </label>
           <input
             type="text"
             id="groupDesc"
-            placeholder="e.g., Choose your preferred sweetness"
+            placeholder="Ví dụ: Chọn mức ngọt yêu thích"
             {...register("description")}
             disabled={isCreating}
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -135,7 +135,7 @@ function ModifierGroupForm() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="minSel" className="block text-sm font-medium text-slate-700 mb-1">
-              Min Selections
+              Số lựa chọn tối thiểu
             </label>
             <input
               type="number"
@@ -148,7 +148,7 @@ function ModifierGroupForm() {
           </div>
           <div>
             <label htmlFor="maxSel" className="block text-sm font-medium text-slate-700 mb-1">
-              Max Selections
+              Số lựa chọn tối đa
             </label>
             <input
               type="number"
@@ -164,7 +164,7 @@ function ModifierGroupForm() {
         <div className="pt-2">
           <div className="flex justify-between items-center mb-2">
             <label className="block text-sm font-semibold text-slate-800">
-              Modifier Options *
+              Các tùy chọn *
             </label>
             <button
               type="button"
@@ -172,7 +172,7 @@ function ModifierGroupForm() {
               disabled={isCreating}
               className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
             >
-              <PlusCircle size={14} /> Add Option
+              <PlusCircle size={14} /> Thêm tùy chọn
             </button>
           </div>
 
@@ -183,9 +183,9 @@ function ModifierGroupForm() {
                   <div className="flex-1">
                     <input
                       type="text"
-                      placeholder="Option (e.g. Boba)"
+                      placeholder="Tùy chọn (ví dụ: Trân châu)"
                       {...register(`modifiers.${index}.name`, {
-                        required: "Option name is required",
+                        required: "Tên tùy chọn là bắt buộc",
                       })}
                       disabled={isCreating}
                       className={`w-full rounded-lg border px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
@@ -203,10 +203,10 @@ function ModifierGroupForm() {
                   <div className="w-28">
                     <input
                       type="number"
-                      placeholder="Price (+VND)"
+                      placeholder="Giá cộng thêm (VNĐ)"
                       min={0}
                       {...register(`modifiers.${index}.priceAdjustment`, {
-                        min: { value: 0, message: "Price must be >= 0" },
+                        min: { value: 0, message: "Giá phải lớn hơn hoặc bằng 0" },
                       })}
                       disabled={isCreating}
                       className={`w-full rounded-lg border px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 transition-colors ${
@@ -225,13 +225,13 @@ function ModifierGroupForm() {
                     type="button"
                     onClick={() => {
                       if (fields.length <= 1) {
-                        toast.error("At least one option is required");
+                        toast.error("Cần có ít nhất một tùy chọn");
                         return;
                       }
                       remove(index);
                     }}
                     disabled={isCreating || fields.length === 1}
-                    title="Remove option"
+                    title="Xóa tùy chọn"
                     className="p-1.5 text-slate-400 hover:text-red-600 disabled:opacity-40 cursor-pointer self-start mt-0.5"
                   >
                     <Trash2 size={15} />
@@ -247,7 +247,7 @@ function ModifierGroupForm() {
           disabled={isCreating}
           className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors disabled:opacity-50 cursor-pointer mt-2"
         >
-          {isCreating ? <Spinner className="text-white" /> : "Save Modifier Group"}
+          {isCreating ? <Spinner className="text-white" /> : "Lưu nhóm tùy chọn"}
         </button>
       </form>
     </div>

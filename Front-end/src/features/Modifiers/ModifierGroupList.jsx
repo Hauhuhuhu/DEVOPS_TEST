@@ -23,7 +23,7 @@ function ModifierGroupList() {
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
           type="text"
-          placeholder="Search modifier groups..."
+          placeholder="Tìm kiếm nhóm tùy chọn..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-300 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -39,7 +39,7 @@ function ModifierGroupList() {
         ) : filteredGroups?.length === 0 ? (
           <div className="text-center py-12 text-slate-400">
             <SlidersHorizontal size={36} className="mx-auto mb-2 text-slate-300" />
-            <p className="text-sm">No modifier groups found</p>
+            <p className="text-sm">Không tìm thấy nhóm tùy chọn</p>
           </div>
         ) : (
           filteredGroups?.map((group) => (
@@ -57,10 +57,10 @@ function ModifierGroupList() {
                   )}
                   <div className="flex items-center gap-2 mt-1 mb-2">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
-                      Min: {group.minSelections}
+                      Tối thiểu: {group.minSelections}
                     </span>
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
-                      Max: {group.maxSelections}
+                      Tối đa: {group.maxSelections}
                     </span>
                   </div>
                 </div>
@@ -70,7 +70,7 @@ function ModifierGroupList() {
                   className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
                   onClick={() => setGroupToDelete(group)}
                   disabled={isDeleting}
-                  title="Delete group"
+                  title="Xóa nhóm"
                 >
                   <Trash2 size={15} />
                 </button>
@@ -79,7 +79,7 @@ function ModifierGroupList() {
               {/* Options */}
               <div className="mt-2 pt-2 border-t border-slate-100">
                 <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-1.5">
-                  Options:
+                  Tùy chọn:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {group.modifiers?.map((mod) => (
@@ -112,9 +112,9 @@ function ModifierGroupList() {
             });
           }
         }}
-        title="Delete Modifier Group"
+        title="Xóa nhóm tùy chọn"
         entityName={groupToDelete?.name || ""}
-        message="Are you sure you want to delete this modifier group? Modifiers associated with menu items will be detached."
+        message="Bạn có chắc muốn xóa nhóm tùy chọn này không? Các tùy chọn liên kết với mặt hàng sẽ bị gỡ."
         isLoading={isDeleting}
       />
     </div>

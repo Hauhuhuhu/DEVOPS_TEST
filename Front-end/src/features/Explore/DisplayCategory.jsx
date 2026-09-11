@@ -9,7 +9,7 @@ function DisplayCategory({ category, isSelected, onClick }) {
       }`}
     >
       <img
-        src={category.imgUrl || "https://placehold.co/40x40?text=Cat"}
+        src={category.imgUrl || "https://placehold.co/40x40?text=DM"}
         alt={category.name}
         className="w-10 h-10 rounded-lg object-cover border border-slate-200/80 flex-shrink-0"
       />
@@ -18,7 +18,7 @@ function DisplayCategory({ category, isSelected, onClick }) {
           {category.name}
         </h6>
         <p className={`text-[11px] ${isSelected ? "text-blue-700" : "text-slate-500"}`}>
-          {category.items || 0} Items
+          {category.items || 0} mặt hàng
         </p>
       </div>
       {isSelected && (

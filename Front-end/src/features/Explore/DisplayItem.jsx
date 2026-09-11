@@ -35,7 +35,7 @@ function DisplayItem({ addToCart, item }) {
       >
         <div className="flex items-center gap-3 min-w-0">
           <img
-            src={item.imgUrl || "https://placehold.co/60x60?text=Item"}
+            src={item.imgUrl || "https://placehold.co/60x60?text=MH"}
             alt={item.name}
             className="w-12 h-12 rounded-lg object-cover border border-slate-200 bg-slate-50 flex-shrink-0"
           />
@@ -68,7 +68,7 @@ function DisplayItem({ addToCart, item }) {
             e.stopPropagation();
             handleCardClick();
           }}
-          title={needsCustomization ? "Customize item" : "Add to cart"}
+          title={needsCustomization ? "Tùy chỉnh mặt hàng" : "Thêm vào giỏ hàng"}
         >
           <Plus size={16} />
         </button>

@@ -24,7 +24,7 @@ function UserItem({ user }) {
         className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
         onClick={() => setIsDeleteModalOpen(true)}
         disabled={isDeleting}
-        title="Delete user"
+        title="Xóa người dùng"
       >
         <Trash2 size={16} />
       </button>
@@ -37,9 +37,9 @@ function UserItem({ user }) {
             onSettled: () => setIsDeleteModalOpen(false),
           });
         }}
-        title="Delete User"
+        title="Xóa người dùng"
         entityName={user.name}
-        message="Are you sure you want to delete this user? They will immediately lose login access and system privileges."
+        message="Bạn có chắc muốn xóa người dùng này không? Người dùng sẽ mất quyền đăng nhập và quyền hệ thống ngay lập tức."
         isLoading={isDeleting}
       />
     </div>

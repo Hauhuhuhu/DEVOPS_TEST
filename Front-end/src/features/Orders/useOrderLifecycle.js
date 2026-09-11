@@ -23,11 +23,7 @@ export function useOrderLifecycle({ onCancelSuccess, onSwitchToCashSuccess } = {
       invalidateOrderRelatedQueries();
       onCancelSuccess?.(data, orderId);
     },
-    onError: (err) => {
-      toast.error(
-        err.response?.data?.message || err.message || "Lỗi khi hủy đơn hàng"
-      );
-    },
+    onError: () => toast.error("Không thể hủy đơn hàng"),
   });
 
   const switchToCashMutation = useMutation({
@@ -37,13 +33,7 @@ export function useOrderLifecycle({ onCancelSuccess, onSwitchToCashSuccess } = {
       invalidateOrderRelatedQueries();
       onSwitchToCashSuccess?.(data, orderId);
     },
-    onError: (err) => {
-      toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "Lỗi khi chuyển sang tiền mặt"
-      );
-    },
+    onError: () => toast.error("Không thể chuyển sang thanh toán tiền mặt"),
   });
 
   return {

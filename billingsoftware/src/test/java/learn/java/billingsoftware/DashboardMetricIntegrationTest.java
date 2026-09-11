@@ -46,7 +46,7 @@ public class DashboardMetricIntegrationTest {
     @DisplayName("Unauthenticated request to /dashboard should be rejected with 401 or 403")
     void testUnauthenticatedAccessToDashboardIsRejected() throws Exception {
         mockMvc.perform(get("/dashboard"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

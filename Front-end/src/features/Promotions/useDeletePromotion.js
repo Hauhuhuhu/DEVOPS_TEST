@@ -8,12 +8,12 @@ export function useDeletePromotion() {
   const { mutate: removePromotion, isPending: isDeleting } = useMutation({
     mutationFn: deletePromotion,
     onSuccess: async () => {
-      toast.success("Promotion successfully deleted");
+      toast.success("Xóa khuyến mãi thành công");
       await queryClient.invalidateQueries({ queryKey: ["promotions"] });
       await queryClient.invalidateQueries({ queryKey: ["active-promotions"] });
     },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || err.message || "Failed to delete promotion");
+    onError: () => {
+      toast.error("Không thể xóa khuyến mãi");
     },
   });
 

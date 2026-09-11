@@ -8,11 +8,11 @@ export function useDeleteItem() {
   const { isPending: isDeleting, mutate: deleteItem } = useMutation({
     mutationFn: deleteItemApi,
     onSuccess: async () => {
-      toast.success("Item successfully deleted");
+      toast.success("Xóa mặt hàng thành công");
       await queryClient.invalidateQueries({ queryKey: ["items"] });
       await queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
-    onError: (err) => toast.error(err.message),
+    onError: () => toast.error("Không thể xóa mặt hàng"),
   });
 
   return { isDeleting, deleteItem };

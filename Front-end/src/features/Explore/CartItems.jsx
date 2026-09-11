@@ -7,7 +7,7 @@ function CartItems({ cartItems, removeFromCart, updateQuantity }) {
       {cartItems.length === 0 ? (
         <div className="text-center py-8 text-slate-400">
           <ShoppingCart size={32} className="mx-auto mb-2 text-slate-300" />
-          <p className="text-xs">Your cart is empty</p>
+          <p className="text-xs">Giỏ hàng đang trống</p>
         </div>
       ) : (
         cartItems.map((item, index) => {
@@ -79,7 +79,7 @@ function CartItems({ cartItems, removeFromCart, updateQuantity }) {
                   type="button"
                   className="p-1 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
                   onClick={() => removeFromCart(id)}
-                  title="Remove item"
+                  title="Xóa mặt hàng"
                 >
                   <Trash2 size={14} />
                 </button>

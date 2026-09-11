@@ -8,11 +8,11 @@ export function useCreateCustomer() {
   const { mutate: addCustomer, isPending: isCreating } = useMutation({
     mutationFn: createCustomer,
     onSuccess: async () => {
-      toast.success("Customer successfully created");
+      toast.success("Tạo khách hàng thành công");
       await queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || err.message || "Failed to create customer");
+    onError: () => {
+      toast.error("Không thể tạo khách hàng");
     },
   });
 

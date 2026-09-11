@@ -8,11 +8,11 @@ export function useCreateItem() {
   const { mutate: createItem, isPending: isCreating } = useMutation({
     mutationFn: addItem,
     onSuccess: async () => {
-      toast.success("New item successfully created");
+      toast.success("Tạo mặt hàng thành công");
       await queryClient.invalidateQueries({ queryKey: ["items"] });
       await queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
-    onError: (err) => toast.error(err.message),
+    onError: () => toast.error("Không thể tạo mặt hàng"),
   });
 
   return { isCreating, createItem };

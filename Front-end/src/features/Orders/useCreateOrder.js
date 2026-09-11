@@ -12,10 +12,10 @@ export function useCreateOrder() {
   } = useMutation({
     mutationFn: createOrderApi,
     onSuccess: () => {
-      toast.success("New order successfully created");
+      toast.success("Tạo đơn hàng thành công");
       queryClient.invalidateQueries({ queryKey: ["orders"] });
     },
-    onError: (err) => toast.error(err.message),
+    onError: () => toast.error("Không thể tạo đơn hàng"),
   });
 
   return { isCreating, createOrder, orderData };

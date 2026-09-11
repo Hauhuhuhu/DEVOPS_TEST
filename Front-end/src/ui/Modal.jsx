@@ -49,7 +49,7 @@ function Window({ children, name }) {
           type="button"
           className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
           onClick={close}
-          aria-label="Close"
+          aria-label="Đóng"
         >
           <X size={18} />
         </button>

@@ -8,13 +8,13 @@ export function useDeleteCategory() {
   const { isPending: isDeleting, mutate: deleteCategory } = useMutation({
     mutationFn: deleteCategoryApi,
     onSuccess: () => {
-      toast.success("Category successfully deleted");
+      toast.success("Xóa danh mục thành công");
 
       queryClient.invalidateQueries({
         queryKey: ["categories"],
       });
     },
-    onError: (err) => toast.error(err.message),
+    onError: () => toast.error("Không thể xóa danh mục"),
   });
 
   return { isDeleting, deleteCategory };

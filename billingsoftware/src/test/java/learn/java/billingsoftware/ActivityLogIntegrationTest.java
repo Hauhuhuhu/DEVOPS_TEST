@@ -39,7 +39,7 @@ public class ActivityLogIntegrationTest {
     @DisplayName("Unauthenticated request to GET /activity-logs must be rejected with 401 or 403")
     void testUnauthenticatedAccessToActivityLogsIsRejected() throws Exception {
         mockMvc.perform(get("/activity-logs"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

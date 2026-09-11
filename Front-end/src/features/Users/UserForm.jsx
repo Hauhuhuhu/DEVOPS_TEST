@@ -55,21 +55,21 @@ function UserForm() {
         <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
           <UserPlus size={18} />
         </div>
-        <h2 className="text-base font-semibold text-slate-900">Add User</h2>
+        <h2 className="text-base font-semibold text-slate-900">Thêm người dùng</h2>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
         <div>
           <label htmlFor="userName" className="block text-sm font-medium text-slate-700 mb-1">
-            User Name *
+            Tên người dùng *
           </label>
           <input
             type="text"
             id="userName"
             autoComplete="off"
-            placeholder="Enter user name"
+            placeholder="Nhập tên người dùng"
             {...register("name", {
-              required: "User name is required",
+              required: "Tên người dùng là bắt buộc",
             })}
             disabled={isCreating}
             className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors ${
@@ -85,17 +85,17 @@ function UserForm() {
 
         <div>
           <label htmlFor="UserEmail" className="block text-sm font-medium text-slate-700 mb-1">
-            User Email *
+            Email người dùng *
           </label>
           <input
             type="email"
             id="UserEmail"
             placeholder="example@example.com"
             {...register("email", {
-              required: "User email is required",
+              required: "Email người dùng là bắt buộc",
               pattern: {
                 value: /^\S+@\S+$/i,
-                message: "Invalid email address",
+                message: "Địa chỉ email không hợp lệ",
               },
             })}
             disabled={isCreating}
@@ -112,14 +112,14 @@ function UserForm() {
 
         <div>
           <label htmlFor="UserPassword" className="block text-sm font-medium text-slate-700 mb-1">
-            Password *
+            Mật khẩu *
           </label>
           <input
             type="password"
             id="UserPassword"
-            placeholder="Enter password"
+            placeholder="Nhập mật khẩu"
             {...register("password", {
-              required: "Password is required",
+              required: "Mật khẩu là bắt buộc",
             })}
             disabled={isCreating}
             autoComplete="current-password"
@@ -136,12 +136,12 @@ function UserForm() {
 
         <div>
           <label htmlFor="userRole" className="block text-sm font-medium text-slate-700 mb-1">
-            Role *
+            Vai trò *
           </label>
           <select
             id="userRole"
             {...register("role", {
-              required: "Role is required",
+              required: "Vai trò là bắt buộc",
             })}
             disabled={isCreating}
             className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 transition-colors ${
@@ -150,8 +150,8 @@ function UserForm() {
                 : "border-slate-300 focus:ring-blue-500 focus:border-blue-500"
             }`}
           >
-            <option value="ROLE_USER">Staff (ROLE_USER)</option>
-            <option value="ROLE_ADMIN">Admin (ROLE_ADMIN)</option>
+            <option value="ROLE_USER">Nhân viên</option>
+            <option value="ROLE_ADMIN">Quản trị viên</option>
           </select>
           {errors.role && (
             <p className="text-xs text-red-600 mt-1">{errors.role.message}</p>
@@ -163,7 +163,7 @@ function UserForm() {
           disabled={isCreating}
           className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
         >
-          {isCreating ? <Spinner className="text-white" /> : "Submit User"}
+          {isCreating ? <Spinner className="text-white" /> : "Lưu người dùng"}
         </button>
       </form>
     </div>

@@ -3,6 +3,18 @@ import Spinner from "../ui/Spinner";
 import { formatCurrency } from "../utils/formatCurrency";
 import { Coins, ShoppingCart, History } from "lucide-react";
 
+const PAYMENT_METHOD_LABELS = {
+  CASH: "Tiền mặt",
+  PAYOS: "PayOS",
+  QR_CODE: "Mã QR",
+};
+
+const ORDER_STATUS_LABELS = {
+  COMPLETED: "Hoàn thành",
+  PENDING: "Chờ xử lý",
+  CANCELLED: "Đã hủy",
+};
+
 function Dashboard() {
   const { isLoading, dashboardData } = useDashboard();
 
@@ -31,7 +43,7 @@ function Dashboard() {
             <Coins size={28} />
           </div>
           <div>
-            <h3 className="text-sm font-medium text-slate-500">Today's Sales</h3>
+            <h3 className="text-sm font-medium text-slate-500">Doanh thu hôm nay</h3>
             <p className="text-2xl font-bold text-slate-900 mt-1">
               {formatCurrency(dashboardData.todaySales || 0)}
             </p>
@@ -43,7 +55,7 @@ function Dashboard() {
             <ShoppingCart size={28} />
           </div>
           <div>
-            <h3 className="text-sm font-medium text-slate-500">Today's Orders</h3>
+            <h3 className="text-sm font-medium text-slate-500">Đơn hàng hôm nay</h3>
             <p className="text-2xl font-bold text-slate-900 mt-1">
               {dashboardData.todayOrderCount ?? 0}
             </p>
@@ -55,7 +67,7 @@ function Dashboard() {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2">
           <History size={20} className="text-slate-500" />
-          <h3 className="text-lg font-semibold text-slate-900">Recent Orders</h3>
+          <h3 className="text-lg font-semibold text-slate-900">Đơn hàng gần đây</h3>
         </div>
 
         <div className="overflow-x-auto">
@@ -63,22 +75,22 @@ function Dashboard() {
             <thead className="bg-slate-50 sticky top-0">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Order Id
+                  Mã đơn hàng
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Customer
+                  Khách hàng
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Amount
+                  Số tiền
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Payment
+                  Thanh toán
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Status
+                  Trạng thái
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Date
+                  Ngày tạo
                 </th>
               </tr>
             </thead>
@@ -105,7 +117,7 @@ function Dashboard() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">
-                        {order.paymentMethod}
+                        {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod || "Chưa xác định"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -118,7 +130,7 @@ function Dashboard() {
                             : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {status}
+                        {ORDER_STATUS_LABELS[status] || status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
