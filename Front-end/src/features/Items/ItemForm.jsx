@@ -6,7 +6,15 @@ import Spinner from "../../ui/Spinner";
 import { useCategories } from "../Category/useCategories";
 import { useModifierGroups } from "../Modifiers/useModifierGroups";
 import { createDefaultVariant } from "../../utils/variantDefaults";
-import { PackagePlus, Image as ImageIcon, PlusCircle, Trash2, CheckSquare, Square, X } from "lucide-react";
+import {
+  PackagePlus,
+  Image as ImageIcon,
+  PlusCircle,
+  Trash2,
+  CheckSquare,
+  Square,
+  X,
+} from "lucide-react";
 
 const DEFAULT_PREVIEW = "https://placehold.co/60x60?text=Upload";
 
@@ -33,7 +41,10 @@ function VariantAttributes({ control, vIndex, register, disabled }) {
       </div>
       <div className="space-y-1.5">
         {fields.map((field, aIndex) => (
-          <div key={field.id} className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-1.5 items-center">
+          <div
+            key={field.id}
+            className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-1.5 items-center"
+          >
             <input
               type="text"
               placeholder="Tên (ví dụ: Kích thước)"
@@ -110,7 +121,7 @@ function ItemForm() {
     setSelectedModifierGroupIds((prev) =>
       prev.includes(groupId)
         ? prev.filter((id) => id !== groupId)
-        : [...prev, groupId]
+        : [...prev, groupId],
     );
   };
 
@@ -204,7 +215,8 @@ function ItemForm() {
       }
       return null;
     }
-    const message = getFirstMessage(errors) || "Vui lòng kiểm tra lại các trường bắt buộc";
+    const message =
+      getFirstMessage(errors) || "Vui lòng kiểm tra lại các trường bắt buộc";
     toast.error(message);
   }
 
@@ -225,10 +237,16 @@ function ItemForm() {
         <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
           <PackagePlus size={18} />
         </div>
-        <h2 className="text-base font-semibold text-slate-900">Thêm mặt hàng</h2>
+        <h2 className="text-base font-semibold text-slate-900">
+          Thêm mặt hàng
+        </h2>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="space-y-4">
+      <form
+        onSubmit={handleSubmit(onSubmit, onError)}
+        noValidate
+        className="space-y-4"
+      >
         {/* Image Upload Area */}
         <div className="text-center">
           <label
@@ -254,7 +272,9 @@ function ItemForm() {
               <span className="text-xs font-medium text-slate-600 mt-2">
                 Nhấn để tải hình ảnh lên
               </span>
-              <span className="text-[11px] text-slate-400">PNG, JPG tối đa 5MB</span>
+              <span className="text-[11px] text-slate-400">
+                PNG, JPG tối đa 5MB
+              </span>
             </div>
           </label>
           <input
@@ -271,7 +291,10 @@ function ItemForm() {
         </div>
 
         <div>
-          <label htmlFor="itemName" className="block text-sm font-medium text-slate-700 mb-1">
+          <label
+            htmlFor="itemName"
+            className="block text-sm font-medium text-slate-700 mb-1"
+          >
             Tên mặt hàng *
           </label>
           <input
@@ -292,7 +315,10 @@ function ItemForm() {
         </div>
 
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-1">
+          <label
+            htmlFor="category"
+            className="block text-sm font-medium text-slate-700 mb-1"
+          >
             Danh mục *
           </label>
           <select
@@ -319,12 +345,17 @@ function ItemForm() {
             )}
           </select>
           {errors.categoryId && (
-            <p className="text-xs text-red-600 mt-1">{errors.categoryId.message}</p>
+            <p className="text-xs text-red-600 mt-1">
+              {errors.categoryId.message}
+            </p>
           )}
         </div>
 
         <div>
-          <label htmlFor="itemDescription" className="block text-sm font-medium text-slate-700 mb-1">
+          <label
+            htmlFor="itemDescription"
+            className="block text-sm font-medium text-slate-700 mb-1"
+          >
             Mô tả mặt hàng *
           </label>
           <textarea
@@ -342,13 +373,15 @@ function ItemForm() {
             }`}
           />
           {errors.description && (
-            <p className="text-xs text-red-600 mt-1">{errors.description.message}</p>
+            <p className="text-xs text-red-600 mt-1">
+              {errors.description.message}
+            </p>
           )}
         </div>
 
         {/* Physical Variants Management */}
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-          <label className="relative inline-flex items-center cursor-pointer mb-2">
+          <label className="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
               id="hasVariantsSwitch"
@@ -358,13 +391,16 @@ function ItemForm() {
             />
             <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
             <span className="ml-2.5 text-xs font-semibold text-slate-800">
-              Nhiều biến thể vật lý (SKU, màu sắc, kích thước)
+              Nhiều biến thể vật lý (màu sắc, kích thước)
             </span>
           </label>
 
           {!hasVariants ? (
             <div className="mt-2">
-              <label htmlFor="price" className="block text-xs font-medium text-slate-700 mb-1">
+              <label
+                htmlFor="price"
+                className="block text-xs font-medium text-slate-700 mb-1"
+              >
                 Giá bán *
               </label>
               <input
@@ -387,7 +423,9 @@ function ItemForm() {
                 }`}
               />
               {errors.price && (
-                <p className="text-xs text-red-600 mt-1">{errors.price.message}</p>
+                <p className="text-xs text-red-600 mt-1">
+                  {errors.price.message}
+                </p>
               )}
             </div>
           ) : (
@@ -434,7 +472,9 @@ function ItemForm() {
                         type="text"
                         placeholder="SKU (ví dụ: TS-RED-M)"
                         {...register(`variants.${vIndex}.sku`, {
-                          required: hasVariants ? "Mã SKU của biến thể là bắt buộc" : false,
+                          required: hasVariants
+                            ? "Mã SKU của biến thể là bắt buộc"
+                            : false,
                         })}
                         disabled={isCreating}
                         className={`min-w-0 w-full rounded-md border px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 transition-colors ${
@@ -455,7 +495,9 @@ function ItemForm() {
                         placeholder="Giá cơ bản"
                         min={0}
                         {...register(`variants.${vIndex}.basePrice`, {
-                          required: hasVariants ? "Giá cơ bản là bắt buộc" : false,
+                          required: hasVariants
+                            ? "Giá cơ bản là bắt buộc"
+                            : false,
                           min: {
                             value: 0,
                             message: "Giá cơ bản phải là số không âm",
@@ -500,7 +542,9 @@ function ItemForm() {
           ) : (
             <div className="flex flex-wrap gap-1.5 mt-2">
               {modifierGroups?.map((group) => {
-                const isChecked = selectedModifierGroupIds.includes(group.groupId);
+                const isChecked = selectedModifierGroupIds.includes(
+                  group.groupId,
+                );
                 return (
                   <button
                     key={group.groupId}
@@ -517,7 +561,9 @@ function ItemForm() {
                     ) : (
                       <Square size={14} className="text-slate-400" />
                     )}
-                    <span>{group.name} ({group.modifiers?.length || 0})</span>
+                    <span>
+                      {group.name} ({group.modifiers?.length || 0})
+                    </span>
                   </button>
                 );
               })}

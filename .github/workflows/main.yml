@@ -33,27 +33,27 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/react-frontend:latest
 
-  deploy-to-aws:
-    name: Deploy to AWS Ubuntu Server
-    needs: build-and-push-docker-images # Chỉ chạy khi quá trình Build thành công
-    runs-on: ubuntu-latest
-    steps:
-      - name: Execute SSH Commands to Deploy
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.AWS_HOST }}
-          username: ${{ secrets.AWS_USERNAME }}
-          key: ${{ secrets.AWS_SSH_KEY }}
-          script: |
-            # Chuyển đến thư mục chứa file docker-compose.yml trên server AWS
-            # (Bạn cần tạo thư mục này và file cấu hình trước trên server)
-            cd /home/${{ secrets.AWS_USERNAME }}/my-project
-            
-            # Kéo (pull) image phiên bản mới nhất vừa build về server
-            docker compose pull
-            
-            # Khởi động lại các container. Cờ -d để chạy ngầm
-            docker compose up -d
-            
-            # (Tùy chọn) Xóa các Docker Image cũ, không còn sử dụng để tránh đầy ổ cứng
-            docker image prune -f
+  # deploy-to-aws:
+  #   name: Deploy to AWS Ubuntu Server
+  #   needs: build-and-push-docker-images # Chỉ chạy khi quá trình Build thành công
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Execute SSH Commands to Deploy
+  #       uses: appleboy/ssh-action@v1.0.3
+  #       with:
+  #         host: ${{ secrets.AWS_HOST }}
+  #         username: ${{ secrets.AWS_USERNAME }}
+  #         key: ${{ secrets.AWS_SSH_KEY }}
+  #         script: |
+  #           # Chuyển đến thư mục chứa file docker-compose.yml trên server AWS
+  #           # (Bạn cần tạo thư mục này và file cấu hình trước trên server)
+  #           cd /home/${{ secrets.AWS_USERNAME }}/my-project
+
+  #           # Kéo (pull) image phiên bản mới nhất vừa build về server
+  #           docker compose pull
+
+  #           # Khởi động lại các container. Cờ -d để chạy ngầm
+  #           docker compose up -d
+
+  #           # (Tùy chọn) Xóa các Docker Image cũ, không còn sử dụng để tránh đầy ổ cứng
+  #           docker image prune -f
