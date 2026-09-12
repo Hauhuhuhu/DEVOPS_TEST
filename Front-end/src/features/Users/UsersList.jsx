@@ -1,16 +1,35 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useUsers } from "./useUsers";
-import Spinner from "../../ui/Spinner";
+import { useDeleteUser } from "./useDeleteUser";
 import UserItem from "./UserItem";
+import ConfirmDeleteModal from "../../ui/ConfirmDeleteModal";
+import EditUserModal from "./EditUserModal";
+import Spinner from "../../ui/Spinner";
 import { Search, Users as UsersIcon } from "lucide-react";
 
 function UsersList() {
   const { isLoading, users } = useUsers();
+  const { isDeleting, deleteUser } = useDeleteUser();
   const [searchTerm, setSearchTerm] = useState("");
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [userToEdit, setUserToEdit] = useState(null);
 
-  const filteredUsers = users?.filter((user) =>
-    user?.name?.toLowerCase().trim().includes(searchTerm.toLowerCase()),
-  );
+  const filteredUsers = useMemo(() => {
+    if (!users) return [];
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return users;
+    return users.filter((user) =>
+      user?.name?.toLowerCase().trim().includes(term),
+    );
+  }, [users, searchTerm]);
+
+  const handleEdit = useCallback((user) => {
+    setUserToEdit(user);
+  }, []);
+
+  const handleDelete = useCallback((user) => {
+    setUserToDelete(user);
+  }, []);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -32,17 +51,46 @@ function UsersList() {
           <div className="flex justify-center items-center py-12">
             <Spinner size={32} className="text-blue-600" />
           </div>
-        ) : filteredUsers?.length === 0 ? (
+        ) : filteredUsers.length === 0 ? (
           <div className="text-center py-12 text-slate-400">
             <UsersIcon size={36} className="mx-auto mb-2 text-slate-300" />
             <p className="text-sm">Không tìm thấy người dùng</p>
           </div>
         ) : (
-          filteredUsers?.map((user, index) => (
-            <UserItem key={user.userId || index} user={user} />
+          filteredUsers.map((user, index) => (
+            <UserItem
+              key={user.userId || index}
+              user={user}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))
         )}
       </div>
+
+      {userToEdit && (
+        <EditUserModal
+          isOpen={Boolean(userToEdit)}
+          onClose={() => setUserToEdit(null)}
+          user={userToEdit}
+        />
+      )}
+
+      {userToDelete && (
+        <ConfirmDeleteModal
+          isOpen={Boolean(userToDelete)}
+          onClose={() => setUserToDelete(null)}
+          onConfirm={() => {
+            deleteUser(userToDelete.userId, {
+              onSettled: () => setUserToDelete(null),
+            });
+          }}
+          title="Xóa người dùng"
+          entityName={userToDelete.name}
+          message="Bạn có chắc muốn xóa người dùng này không? Người dùng sẽ mất quyền đăng nhập và quyền hệ thống ngay lập tức."
+          isLoading={isDeleting}
+        />
+      )}
     </div>
   );
 }

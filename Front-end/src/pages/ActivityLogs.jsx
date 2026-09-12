@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useDeferredValue } from "react";
+import { useDebounce } from "../hooks/useDebounce";
 import { useActivityLogs } from "../features/ActivityLogs/useActivityLogs";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import Spinner from "../ui/Spinner";
@@ -21,6 +22,8 @@ function ActivityLogs() {
   const [endDate, setEndDate] = useState("");
   const [actionFilter, setActionFilter] = useState("");
   const [userEmailFilter, setUserEmailFilter] = useState("");
+  const debouncedUserEmail = useDebounce(userEmailFilter, 300);
+  const deferredUserEmail = useDeferredValue(debouncedUserEmail);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
 
@@ -61,7 +64,7 @@ function ActivityLogs() {
   } = useActivityLogs({
     page,
     size: pageSize,
-    userEmail: userEmailFilter,
+    userEmail: deferredUserEmail,
     action: actionFilter,
     startDate,
     endDate,

@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 function DisplayCategory({ category, isSelected, onClick }) {
   return (
     <div
@@ -28,4 +30,5 @@ function DisplayCategory({ category, isSelected, onClick }) {
   );
 }
 
-export default DisplayCategory;
+export default memo(DisplayCategory);
+

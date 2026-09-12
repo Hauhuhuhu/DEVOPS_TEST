@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { formatCurrency } from "../../utils/formatCurrency";
 import POSItemModal from "./POSItemModal";
 import { Plus } from "lucide-react";
@@ -86,4 +86,4 @@ function DisplayItem({ addToCart, item }) {
   );
 }
 
-export default DisplayItem;
+export default memo(DisplayItem);

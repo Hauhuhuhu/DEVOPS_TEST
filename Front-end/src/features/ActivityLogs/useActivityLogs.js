@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getActivityLogs } from "../../services/ActivityLogService";
 
 export function useActivityLogs({
@@ -18,6 +18,7 @@ export function useActivityLogs({
   } = useQuery({
     queryKey: ["activityLogs", page, size, userEmail, action, startDate, endDate],
     queryFn: () => getActivityLogs({ page, size, userEmail, action, startDate, endDate }),
+    placeholderData: keepPreviousData,
   });
 
   const logs = data?.content || [];

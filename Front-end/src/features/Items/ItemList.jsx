@@ -1,16 +1,35 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Spinner from "../../ui/Spinner";
 import Item from "./Item";
 import { useItems } from "./useItems";
+import { useDeleteItem } from "./useDeleteItem";
+import ConfirmDeleteModal from "../../ui/ConfirmDeleteModal";
+import EditItemModal from "./EditItemModal";
 import { Search, PackageOpen } from "lucide-react";
 
 function ItemList() {
   const { items, isLoading } = useItems();
+  const { isDeleting, deleteItem } = useDeleteItem();
   const [searchTerm, setSearchTerm] = useState("");
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [itemToEdit, setItemToEdit] = useState(null);
 
-  const filteredItems = items?.filter((item) =>
-    item.name.toLowerCase().trim().includes(searchTerm.toLowerCase()),
-  );
+  const filteredItems = useMemo(() => {
+    if (!items) return [];
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return items;
+    return items.filter((item) =>
+      item.name.toLowerCase().trim().includes(term),
+    );
+  }, [items, searchTerm]);
+
+  const handleEdit = useCallback((item) => {
+    setItemToEdit(item);
+  }, []);
+
+  const handleDelete = useCallback((item) => {
+    setItemToDelete(item);
+  }, []);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -32,17 +51,46 @@ function ItemList() {
           <div className="flex justify-center items-center py-12">
             <Spinner size={32} className="text-blue-600" />
           </div>
-        ) : filteredItems?.length === 0 ? (
+        ) : filteredItems.length === 0 ? (
           <div className="text-center py-12 text-slate-400">
             <PackageOpen size={36} className="mx-auto mb-2 text-slate-300" />
             <p className="text-sm">Không tìm thấy mặt hàng</p>
           </div>
         ) : (
-          filteredItems?.map((item, index) => (
-            <Item key={item.itemId || index} item={item} />
+          filteredItems.map((item, index) => (
+            <Item
+              key={item.itemId || index}
+              item={item}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))
         )}
       </div>
+
+      {itemToEdit && (
+        <EditItemModal
+          isOpen={Boolean(itemToEdit)}
+          onClose={() => setItemToEdit(null)}
+          item={itemToEdit}
+        />
+      )}
+
+      {itemToDelete && (
+        <ConfirmDeleteModal
+          isOpen={Boolean(itemToDelete)}
+          onClose={() => setItemToDelete(null)}
+          onConfirm={() => {
+            deleteItem(itemToDelete.itemId, {
+              onSettled: () => setItemToDelete(null),
+            });
+          }}
+          title="Xóa mặt hàng"
+          entityName={itemToDelete.name}
+          message="Bạn có chắc muốn xóa mặt hàng này không? Tất cả biến thể, thuộc tính và liên kết tùy chọn đi kèm cũng sẽ bị xóa."
+          isLoading={isDeleting}
+        />
+      )}
     </div>
   );
 }

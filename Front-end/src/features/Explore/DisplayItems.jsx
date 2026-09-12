@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, memo } from "react";
 import Spinner from "../../ui/Spinner";
 import { useItems } from "../Items/useItems";
 import DisplayItem from "./DisplayItem";
@@ -9,16 +9,17 @@ function DisplayItems({ addToCart, selectedCategory }) {
   const { items, isLoading } = useItems();
   const [searchText, setSearchText] = useState("");
 
-  const filteredItems = items
-    ?.filter((item) => {
-      if (selectedCategory) {
-        return item.categoryId == selectedCategory;
-      }
-      return true;
-    })
-    .filter((item) =>
-      item.name.toLowerCase().includes(searchText.toLowerCase()),
-    );
+  const filteredItems = useMemo(() => {
+    if (!items) return [];
+    const searchLower = searchText.trim().toLowerCase();
+
+    return items.filter((item) => {
+      const matchesCategory = !selectedCategory || String(item.categoryId) === String(selectedCategory);
+      if (!matchesCategory) return false;
+
+      return !searchLower || item.name.toLowerCase().includes(searchLower);
+    });
+  }, [items, selectedCategory, searchText]);
 
   if (isLoading) {
     return (
@@ -53,4 +54,5 @@ function DisplayItems({ addToCart, selectedCategory }) {
   );
 }
 
-export default DisplayItems;
+export default memo(DisplayItems);
+

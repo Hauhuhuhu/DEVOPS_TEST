@@ -1,3 +1,4 @@
+import { useCallback, memo } from "react";
 import DisplayCategory from "./DisplayCategory";
 
 function DisplayCategories({
@@ -5,13 +6,9 @@ function DisplayCategories({
   setSelectedCategory,
   categories,
 }) {
-  function handleCategoryClick(categoryId) {
-    if (selectedCategory === categoryId) {
-      setSelectedCategory("");
-      return;
-    }
-    setSelectedCategory(categoryId);
-  }
+  const handleCategoryClick = useCallback((categoryId) => {
+    setSelectedCategory((prev) => (prev === categoryId ? "" : categoryId));
+  }, [setSelectedCategory]);
 
   return (
     <div className="flex items-center gap-3 overflow-x-auto pb-1">
@@ -28,4 +25,5 @@ function DisplayCategories({
   );
 }
 
-export default DisplayCategories;
+export default memo(DisplayCategories);
+
