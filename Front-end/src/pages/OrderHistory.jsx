@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useDeferredValue } from "react";
+import { useDebounce } from "../hooks/useDebounce";
 import { useOrders } from "../features/Orders/useOrders";
 import { useOrderLifecycle } from "../features/Orders/useOrderLifecycle";
 import Spinner from "../ui/Spinner";
@@ -31,7 +32,8 @@ const PAYMENT_METHOD_LABELS = {
 function OrderHistory() {
   // Filter & Pagination States
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  const deferredSearch = useDeferredValue(debouncedSearch);
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -56,20 +58,11 @@ function OrderHistory() {
     },
   });
 
-  // Debounce search query by 300ms and synchronize page reset
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-      setPage(0);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
   // Query paginated orders
   const result = useOrders({
     page,
     size: pageSize,
-    search: debouncedSearch,
+    search: deferredSearch,
     status: statusFilter,
   });
 
@@ -83,12 +76,12 @@ function OrderHistory() {
   // Handle Search Input Change
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
+    setPage(0);
   };
 
   // Handle Clear Search
   const handleClearSearch = () => {
     setSearchTerm("");
-    setDebouncedSearch("");
     setPage(0);
   };
 
@@ -101,7 +94,6 @@ function OrderHistory() {
   // Handle Reset All Filters
   const handleResetFilters = () => {
     setSearchTerm("");
-    setDebouncedSearch("");
     setStatusFilter("");
     setPage(0);
   };

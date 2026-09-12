@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useCategories } from "../../features/Category/useCategories";
 import { useActivePromotions } from "../../features/Promotions/useActivePromotions";
 import CartItems from "../../features/Explore/CartItems";
@@ -12,9 +12,27 @@ import { useCartItem } from "../../features/Explore/useCartItem";
 
 function Explore() {
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [customerName, setCustomerName] = useState("");
-  const [mobileNumber, setMobileNumber] = useState("");
-  const [customerId, setCustomerId] = useState(null);
+  const [customer, setCustomer] = useState({
+    customerId: null,
+    customerName: "",
+    mobileNumber: "",
+  });
+
+  const handleCustomerChange = useCallback((cust) => {
+    setCustomer((prev) => ({
+      ...prev,
+      ...cust,
+    }));
+  }, []);
+
+  const handleClearCustomer = useCallback(() => {
+    setCustomer({
+      customerId: null,
+      customerName: "",
+      mobileNumber: "",
+    });
+  }, []);
+
   const { categories, isLoading } = useCategories();
   const { activePromotions } = useActivePromotions();
   const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart } =
@@ -114,11 +132,8 @@ function Explore() {
         {/* Customer Form */}
         <div className="flex-shrink-0 border-b border-slate-200 pb-3 mb-2">
           <CustomerForm
-            customerName={customerName}
-            setCustomerName={setCustomerName}
-            mobileNumber={mobileNumber}
-            setMobileNumber={setMobileNumber}
-            setCustomerId={setCustomerId}
+            customer={customer}
+            onCustomerChange={handleCustomerChange}
           />
         </div>
 
@@ -134,12 +149,8 @@ function Explore() {
         {/* Cart Summary */}
         <div className="flex-shrink-0 border-t border-slate-200 pt-3 overflow-y-auto max-h-[50%]">
           <CartSummary
-            customerName={customerName}
-            setCustomerName={setCustomerName}
-            mobileNumber={mobileNumber}
-            setMobileNumber={setMobileNumber}
-            customerId={customerId}
-            setCustomerId={setCustomerId}
+            customer={customer}
+            onClearCustomer={handleClearCustomer}
             cartItems={cartItems}
             clearCart={clearCart}
           />

@@ -8,6 +8,22 @@ import {
   Percent, UserCircle, History, LogOut, Settings, Activity, Menu, X, ChevronDown
 } from "lucide-react";
 
+const ADMIN_LINKS = [
+  { to: "/items", icon: Package, label: "Mặt hàng" },
+  { to: "/categories", icon: Tags, label: "Danh mục" },
+  { to: "/modifiers", icon: SlidersHorizontal, label: "Tùy chọn" },
+  { to: "/users", icon: Users, label: "Người dùng" },
+  { to: "/promotions", icon: Percent, label: "Khuyến mãi" },
+  { to: "/customers", icon: UserCircle, label: "Khách hàng" },
+];
+
+const navLinkClass = ({ isActive }) =>
+  `flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+    isActive
+      ? "bg-blue-50 text-blue-700"
+      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+  }`;
+
 function Menubar() {
   const { logout } = useLogout();
   const { user, isAdmin } = useCurrentUser();
@@ -29,22 +45,6 @@ function Menubar() {
     setIsProfileOpen(false);
     setIsMobileMenuOpen(false);
   }
-
-  const navLinkClass = ({ isActive }) =>
-    `flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-      isActive
-        ? "bg-blue-50 text-blue-700"
-        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-    }`;
-
-  const adminLinks = [
-    { to: "/items", icon: Package, label: "Mặt hàng" },
-    { to: "/categories", icon: Tags, label: "Danh mục" },
-    { to: "/modifiers", icon: SlidersHorizontal, label: "Tùy chọn" },
-    { to: "/users", icon: Users, label: "Người dùng" },
-    { to: "/promotions", icon: Percent, label: "Khuyến mãi" },
-    { to: "/customers", icon: UserCircle, label: "Khách hàng" },
-  ];
 
   return (
     <nav ref={navRef} className="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
@@ -92,7 +92,7 @@ function Menubar() {
 
                   {isManageOpen && (
                     <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50">
-                      {adminLinks.map((link) => (
+                      {ADMIN_LINKS.map((link) => (
                         <NavLink
                           key={link.to}
                           to={link.to}
@@ -257,7 +257,7 @@ function Menubar() {
                 <div className="px-3 pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Quản lý
                 </div>
-                {adminLinks.map((link) => (
+                {ADMIN_LINKS.map((link) => (
                   <NavLink 
                     key={link.to} 
                     className={navLinkClass} 

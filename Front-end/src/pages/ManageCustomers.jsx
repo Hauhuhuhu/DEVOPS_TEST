@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useDeferredValue } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { useDebounce } from "../hooks/useDebounce";
 import { useCustomers } from "../features/Customers/useCustomers";
 import { useCreateCustomer } from "../features/Customers/useCreateCustomer";
 import { useUpdateCustomer } from "../features/Customers/useUpdateCustomer";
@@ -12,10 +13,12 @@ import { UserPlus, Search, X, Phone, Pencil, Trash2, Users, Check } from "lucide
 
 function ManageCustomers() {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedQuery = useDebounce(searchQuery, 300);
+  const deferredQuery = useDeferredValue(debouncedQuery);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [customerToDelete, setCustomerToDelete] = useState(null);
 
-  const { customers, isLoading } = useCustomers(searchQuery);
+  const { customers, isLoading, isFetching } = useCustomers(deferredQuery);
   const { isCreating, addCustomer } = useCreateCustomer();
   const { isUpdating, editCustomer } = useUpdateCustomer();
   const { isDeleting, removeCustomer } = useDeleteCustomer();
@@ -179,14 +182,18 @@ function ManageCustomers() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-slate-300 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
-            {searchQuery && (
+            {isFetching ? (
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                <Spinner size={14} className="text-blue-600" />
+              </div>
+            ) : searchQuery ? (
               <button
                 onClick={() => setSearchQuery("")}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
                 <X size={16} />
               </button>
-            )}
+            ) : null}
           </div>
 
           <span className="bg-blue-100 text-blue-700 rounded-full px-3 py-1 text-sm font-medium">
@@ -194,7 +201,7 @@ function ManageCustomers() {
           </span>
         </div>
 
-        {isLoading ? (
+        {isLoading && (!customers || customers.length === 0) ? (
           <div className="flex justify-center items-center flex-1">
             <Spinner size={32} className="text-blue-600" />
           </div>

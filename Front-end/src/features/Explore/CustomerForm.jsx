@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { fetchCustomerByPhone, createCustomer } from "../../services/CustomerService";
 import { formatCurrency } from "../../utils/formatCurrency";
 import toast from "react-hot-toast";
@@ -6,36 +6,65 @@ import Spinner from "../../ui/Spinner";
 import { Search, Star, UserPlus } from "lucide-react";
 
 function CustomerForm({
-  customerName,
-  setCustomerName,
-  mobileNumber,
-  setMobileNumber,
-  setCustomerId,
+  customer,
+  onCustomerChange,
 }) {
+  const currentName = customer?.customerName ?? "";
+  const currentPhone = customer?.mobileNumber ?? "";
+
+  const [phone, setPhone] = useState(currentPhone);
+  const [name, setName] = useState(currentName);
   const [isSearching, setIsSearching] = useState(false);
   const [customerInfo, setCustomerInfo] = useState(null);
   const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Sync from external when cleared or updated (e.g. cart clear)
+  const [prevCustomerSync, setPrevCustomerSync] = useState({ currentPhone, currentName });
+  if (prevCustomerSync.currentPhone !== currentPhone || prevCustomerSync.currentName !== currentName) {
+    setPrevCustomerSync({ currentPhone, currentName });
+    setPhone(currentPhone);
+    setName(currentName);
+    if (!currentPhone && !currentName) {
+      setCustomerInfo(null);
+      setIsNewCustomer(false);
+    }
+  }
+
+  const syncToParent = (updated) => {
+    if (onCustomerChange) {
+      onCustomerChange(updated);
+    }
+  };
+
   async function handlePhoneSearch(phoneToSearch) {
-    const phone = (phoneToSearch || mobileNumber).trim();
-    if (!phone || phone.length < 8) return;
+    const searchTarget = (phoneToSearch || phone).trim();
+    if (!searchTarget || searchTarget.length < 8) return;
 
     try {
       setIsSearching(true);
-      const data = await fetchCustomerByPhone(phone);
+      const data = await fetchCustomerByPhone(searchTarget);
       if (data) {
         setCustomerInfo(data);
-        setCustomerName(data.name);
-        if (setCustomerId) setCustomerId(data.customerId);
+        setName(data.name);
+        setPhone(data.phoneNumber);
         setIsNewCustomer(false);
+        syncToParent({
+          customerId: data.customerId,
+          customerName: data.name,
+          mobileNumber: data.phoneNumber,
+        });
         toast.success(`Đã tìm thấy khách hàng: ${data.name}`);
       }
     } catch (err) {
       if (err.response?.status === 404) {
         setCustomerInfo(null);
         setIsNewCustomer(true);
-        if (setCustomerId) setCustomerId(null);
+        syncToParent({
+          customerId: null,
+          customerName: name,
+          mobileNumber: searchTarget,
+        });
       }
     } finally {
       setIsSearching(false);
@@ -43,11 +72,11 @@ function CustomerForm({
   }
 
   async function handleQuickSaveCustomer() {
-    if (!customerName.trim()) {
+    if (!name.trim()) {
       toast.error("Vui lòng nhập tên khách hàng");
       return;
     }
-    if (!mobileNumber.trim()) {
+    if (!phone.trim()) {
       toast.error("Vui lòng nhập số điện thoại");
       return;
     }
@@ -55,12 +84,16 @@ function CustomerForm({
     try {
       setIsSaving(true);
       const newCustomer = await createCustomer({
-        name: customerName.trim(),
-        phoneNumber: mobileNumber.trim(),
+        name: name.trim(),
+        phoneNumber: phone.trim(),
       });
       setCustomerInfo(newCustomer);
-      if (setCustomerId) setCustomerId(newCustomer.customerId);
       setIsNewCustomer(false);
+      syncToParent({
+        customerId: newCustomer.customerId,
+        customerName: newCustomer.name,
+        mobileNumber: newCustomer.phoneNumber,
+      });
       toast.success("Đã lưu khách hàng mới vào CRM");
     } catch {
       toast.error("Không thể lưu khách hàng");
@@ -78,11 +111,18 @@ function CustomerForm({
             type="tel"
             id="mobileNumber"
             placeholder="Số điện thoại..."
-            value={mobileNumber}
+            value={phone}
             onChange={(e) => {
-              setMobileNumber(e.target.value);
+              setPhone(e.target.value);
               setCustomerInfo(null);
               setIsNewCustomer(false);
+            }}
+            onBlur={() => {
+              syncToParent({
+                customerId: customerInfo?.customerId || null,
+                customerName: name,
+                mobileNumber: phone,
+              });
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -95,7 +135,7 @@ function CustomerForm({
           <button
             type="button"
             onClick={() => handlePhoneSearch()}
-            disabled={isSearching || !mobileNumber.trim()}
+            disabled={isSearching || !phone.trim()}
             title="Tìm khách hàng"
             className="p-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-600 disabled:opacity-40 cursor-pointer"
           >
@@ -110,8 +150,27 @@ function CustomerForm({
           type="text"
           id="customerName"
           placeholder="Tên khách hàng..."
-          value={customerName}
-          onChange={(e) => setCustomerName(e.target.value)}
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+          }}
+          onBlur={() => {
+            syncToParent({
+              customerId: customerInfo?.customerId || null,
+              customerName: name,
+              mobileNumber: phone,
+            });
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              syncToParent({
+                customerId: customerInfo?.customerId || null,
+                customerName: name,
+                mobileNumber: phone,
+              });
+            }
+          }}
           className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         />
       </div>
@@ -141,7 +200,7 @@ function CustomerForm({
           <button
             type="button"
             onClick={handleQuickSaveCustomer}
-            disabled={isSaving || !customerName.trim()}
+            disabled={isSaving || !name.trim()}
             className="inline-flex items-center gap-1 px-2 py-0.8 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-medium transition-colors disabled:opacity-50 cursor-pointer"
           >
             <UserPlus size={12} />
@@ -153,4 +212,5 @@ function CustomerForm({
   );
 }
 
-export default CustomerForm;
+export default memo(CustomerForm);
+

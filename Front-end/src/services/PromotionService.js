@@ -35,8 +35,8 @@ export const deletePromotion = async (promotionId) => {
   return response.data;
 };
 
-export const evaluatePromotion = async (data) => {
-  const response = await api.post("/promotions/evaluate", data);
+export const evaluatePromotion = async (data, config = {}) => {
+  const response = await api.post("/promotions/evaluate", data, config);
   return response.data;
 };
 

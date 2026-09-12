@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 export function useCartItem() {
   const [cartItems, setCartItems] = useState([]);
 
-  function addToCart(item) {
+  const addToCart = useCallback((item) => {
     const cartItemId =
       item.cartItemId ||
       `${item.itemId}_${item.variantId || "default"}_${(item.selectedModifiers || [])
@@ -32,18 +32,18 @@ export function useCartItem() {
         return [...prevItems, itemToAdd];
       }
     });
-  }
+  }, []);
 
-  function removeFromCart(cartItemId) {
+  const removeFromCart = useCallback((cartItemId) => {
     setCartItems((prevItems) =>
       prevItems.filter(
         (cartItem) =>
           cartItem.cartItemId !== cartItemId && cartItem.itemId !== cartItemId
       )
     );
-  }
+  }, []);
 
-  function updateQuantity(cartItemId, newQuantity) {
+  const updateQuantity = useCallback((cartItemId, newQuantity) => {
     if (newQuantity <= 0) {
       removeFromCart(cartItemId);
       return;
@@ -56,12 +56,11 @@ export function useCartItem() {
           : cartItem
       )
     );
-  }
+  }, [removeFromCart]);
 
-  function clearCart() {
+  const clearCart = useCallback(() => {
     setCartItems([]);
-  }
-
+  }, []);
 
   return { cartItems, addToCart, removeFromCart, updateQuantity, clearCart };
 }

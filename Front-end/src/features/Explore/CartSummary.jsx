@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCreateOrder } from "../Orders/useCreateOrder";
 import PaymentQRCode from "../Payment/PaymentQRCode";
@@ -6,78 +6,54 @@ import ReceiptPopup from "./ReceiptPopup";
 import toast from "react-hot-toast";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { evaluatePromotion } from "../../services/PromotionService";
+import {
+  usePromotionEvaluation,
+  formatCartItems,
+} from "../Promotions/usePromotionEvaluation";
 import { getPromotionErrorMessage } from "../../utils/promotionErrorMessages";
 import { Tag, Banknote, CreditCard, X } from "lucide-react";
 
 function CartSummary({
-  customerName,
-  setCustomerName,
-  mobileNumber,
-  setMobileNumber,
-  customerId,
-  setCustomerId,
+  customer,
+  onClearCustomer,
   cartItems,
   clearCart,
 }) {
   const queryClient = useQueryClient();
   const { isCreating, createOrder, orderData } = useCreateOrder();
 
+  const customerName = customer?.customerName || "";
+  const mobileNumber = customer?.mobileNumber || "";
+  const customerId = customer?.customerId || null;
+
   const [showModal, setShowModal] = useState(false);
   const [completedCashOrder, setCompletedCashOrder] = useState(null);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState("");
-  const [isEvaluating, setIsEvaluating] = useState(false);
-  const [evaluation, setEvaluation] = useState(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
-  const rawTotal = cartItems.reduce(
-    (total, item) => total + (item.price || item.basePrice || 0) * item.quantity,
+  const rawTotal = (cartItems || []).reduce(
+    (total, item) =>
+      total + (item.price || item.basePrice || 0) * item.quantity,
     0,
   );
 
-  // Evaluate promotions whenever cart items or applied coupon changes
-  useEffect(() => {
-    if (!cartItems || cartItems.length === 0) {
-      return;
-    }
+  const {
+    evaluation,
+    isFetching: isEvaluatingPromo,
+    error: promoError,
+    cartSignature,
+  } = usePromotionEvaluation({
+    cartItems,
+    couponCode: appliedCoupon,
+  });
 
-    let isMounted = true;
-    const formattedCartItems = cartItems.map((item) => ({
-      itemId: item.itemId,
-      variantId: item.variantId || null,
-      name: item.name,
-      basePrice: item.basePrice || item.price,
-      price: item.price,
-      quantity: item.quantity,
-      selectedModifiers: item.selectedModifiers || [],
-    }));
+  const isEvaluating = isApplyingCoupon || isEvaluatingPromo;
 
-    evaluatePromotion({
-      couponCode: appliedCoupon || undefined,
-      cartItems: formattedCartItems,
-    })
-      .then((data) => {
-        if (isMounted) {
-          setEvaluation(data);
-        }
-      })
-      .catch((err) => {
-        if (isMounted) {
-          if (appliedCoupon) {
-            toast.error(getPromotionErrorMessage(err));
-            setAppliedCoupon("");
-            evaluatePromotion({ cartItems: formattedCartItems })
-              .then((fallback) => {
-                if (isMounted) setEvaluation(fallback);
-              })
-              .catch(() => {});
-          }
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [cartItems, appliedCoupon]);
+  // Clear applied coupon if query evaluation produced an error
+  if (promoError && appliedCoupon) {
+    setAppliedCoupon("");
+  }
 
   const handleApplyCoupon = async () => {
     const code = couponInput.trim().toUpperCase();
@@ -90,29 +66,24 @@ function CartSummary({
       return;
     }
 
-    const formattedCartItems = cartItems.map((item) => ({
-      itemId: item.itemId,
-      variantId: item.variantId || null,
-      name: item.name,
-      basePrice: item.basePrice || item.price,
-      price: item.price,
-      quantity: item.quantity,
-      selectedModifiers: item.selectedModifiers || [],
-    }));
+    const formattedCartItems = formatCartItems(cartItems);
 
-    setIsEvaluating(true);
+    setIsApplyingCoupon(true);
     try {
       const res = await evaluatePromotion({
         couponCode: code,
         cartItems: formattedCartItems,
       });
+      queryClient.setQueryData(
+        ["promotion-evaluation", cartSignature, code],
+        res,
+      );
       setAppliedCoupon(code);
-      setEvaluation(res);
       toast.success("Áp dụng mã giảm giá thành công");
     } catch (err) {
       toast.error(getPromotionErrorMessage(err));
     } finally {
-      setIsEvaluating(false);
+      setIsApplyingCoupon(false);
     }
   };
 
@@ -122,23 +93,17 @@ function CartSummary({
     toast.success("Đã gỡ mã giảm giá");
   };
 
-  // Calculations
-  const activeEvaluation = cartItems?.length > 0 ? evaluation : null;
-  const subtotal = activeEvaluation ? activeEvaluation.subtotal : rawTotal;
-  const discountAmount = activeEvaluation ? activeEvaluation.discountAmount : 0;
-  const tax = activeEvaluation ? activeEvaluation.tax : rawTotal * 0.1;
-  const grandTotal = activeEvaluation ? activeEvaluation.grandTotal : rawTotal + tax;
+  // Direct arithmetic expressions per Vercel Best Practices rerender-simple-expression-in-memo
+  const hasCartItems = Boolean(cartItems && cartItems.length > 0);
+  const subtotal = !hasCartItems ? 0 : (evaluation ? evaluation.subtotal : rawTotal);
+  const discountAmount = !hasCartItems ? 0 : (evaluation ? evaluation.discountAmount : 0);
+  const tax = !hasCartItems ? 0 : (evaluation ? evaluation.tax : rawTotal * 0.1);
+  const grandTotal = !hasCartItems ? 0 : (evaluation ? evaluation.grandTotal : rawTotal + tax);
+
+  const activeEvaluation = evaluation;
 
   function onCreateOrder(paymentMode) {
-    const formattedCartItems = cartItems.map((item) => ({
-      itemId: item.itemId,
-      variantId: item.variantId || null,
-      name: item.name,
-      basePrice: item.basePrice || item.price,
-      price: item.price,
-      quantity: item.quantity,
-      selectedModifiers: item.selectedModifiers || [],
-    }));
+    const formattedCartItems = formatCartItems(cartItems);
 
     const dataForm = {
       customerId: customerId || null,
@@ -176,12 +141,11 @@ function CartSummary({
   }
 
   function handleClearCart() {
-    setCustomerName("");
-    setMobileNumber("");
-    if (setCustomerId) setCustomerId(null);
+    if (onClearCustomer) {
+      onClearCustomer();
+    }
     setCouponInput("");
     setAppliedCoupon("");
-    setEvaluation(null);
     clearCart();
   }
 

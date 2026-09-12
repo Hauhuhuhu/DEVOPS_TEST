@@ -1,16 +1,35 @@
+import { useState, useMemo, useCallback } from "react";
 import { useCategories } from "./useCategories";
-import { useState } from "react";
+import { useDeleteCategory } from "./useDeleteCategory";
 import CategoryListItem from "./CategoryListItem";
+import ConfirmDeleteModal from "../../ui/ConfirmDeleteModal";
+import EditCategoryModal from "./EditCategoryModal";
 import Spinner from "../../ui/Spinner";
 import { Search } from "lucide-react";
 
 function CategoryList() {
   const { categories, isLoading } = useCategories();
+  const { isDeleting, deleteCategory } = useDeleteCategory();
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [categoryToEdit, setCategoryToEdit] = useState(null);
 
-  const filteredCategories = categories?.filter((category) =>
-    category.name.toLowerCase().trim().includes(searchTerm.toLowerCase()),
-  );
+  const filteredCategories = useMemo(() => {
+    if (!categories) return [];
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return categories;
+    return categories.filter((category) =>
+      category.name.toLowerCase().trim().includes(term),
+    );
+  }, [categories, searchTerm]);
+
+  const handleEdit = useCallback((category) => {
+    setCategoryToEdit(category);
+  }, []);
+
+  const handleDelete = useCallback((category) => {
+    setCategoryToDelete(category);
+  }, []);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -32,16 +51,45 @@ function CategoryList() {
           <div className="flex justify-center items-center py-12">
             <Spinner size={32} className="text-blue-600" />
           </div>
-        ) : filteredCategories?.length === 0 ? (
+        ) : filteredCategories.length === 0 ? (
           <div className="text-center py-12 text-sm text-slate-400">
             Không tìm thấy danh mục
           </div>
         ) : (
-          filteredCategories?.map((category, index) => (
-            <CategoryListItem key={category.categoryId || index} category={category} />
+          filteredCategories.map((category, index) => (
+            <CategoryListItem
+              key={category.categoryId || index}
+              category={category}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))
         )}
       </div>
+
+      {categoryToEdit && (
+        <EditCategoryModal
+          isOpen={Boolean(categoryToEdit)}
+          onClose={() => setCategoryToEdit(null)}
+          category={categoryToEdit}
+        />
+      )}
+
+      {categoryToDelete && (
+        <ConfirmDeleteModal
+          isOpen={Boolean(categoryToDelete)}
+          onClose={() => setCategoryToDelete(null)}
+          onConfirm={() => {
+            deleteCategory(categoryToDelete.categoryId, {
+              onSettled: () => setCategoryToDelete(null),
+            });
+          }}
+          title="Xóa danh mục"
+          entityName={categoryToDelete.name}
+          message="Bạn có chắc muốn xóa danh mục này không? Các mặt hàng thuộc danh mục sẽ không còn được nhóm tại đây."
+          isLoading={isDeleting}
+        />
+      )}
     </div>
   );
 }

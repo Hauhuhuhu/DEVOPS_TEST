@@ -1,15 +1,9 @@
-import { useState } from "react";
-import ConfirmDeleteModal from "../../ui/ConfirmDeleteModal";
+import { useState, memo } from "react";
 import { formatCurrency } from "../../utils/formatCurrency";
-import { useDeleteItem } from "./useDeleteItem";
 import StockOperationModal from "../Inventory/StockOperationModal";
-import EditItemModal from "./EditItemModal";
 import { ChevronDown, ChevronUp, Trash2, Package, Edit3 } from "lucide-react";
 
-function Item({ item }) {
-  const { isDeleting, deleteItem } = useDeleteItem();
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+function Item({ item, onEdit, onDelete }) {
   const [showDetails, setShowDetails] = useState(false);
   const [selectedVariantForStock, setSelectedVariantForStock] = useState(null);
 
@@ -61,16 +55,15 @@ function Item({ item }) {
           <button
             type="button"
             className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-            onClick={() => setIsEditModalOpen(true)}
+            onClick={() => onEdit?.(item)}
             title="Chỉnh sửa mặt hàng"
           >
             <Edit3 size={16} />
           </button>
           <button
             type="button"
-            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
-            onClick={() => setIsDeleteModalOpen(true)}
-            disabled={isDeleting}
+            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+            onClick={() => onDelete?.(item)}
             title="Xóa mặt hàng"
           >
             <Trash2 size={16} />
@@ -187,30 +180,8 @@ function Item({ item }) {
           onClose={() => setSelectedVariantForStock(null)}
         />
       )}
-
-      {isEditModalOpen && (
-        <EditItemModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          item={item}
-        />
-      )}
-
-      <ConfirmDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={() => {
-          deleteItem(item.itemId, {
-            onSettled: () => setIsDeleteModalOpen(false),
-          });
-        }}
-        title="Xóa mặt hàng"
-        entityName={item.name}
-        message="Bạn có chắc muốn xóa mặt hàng này không? Tất cả biến thể, thuộc tính và liên kết tùy chọn đi kèm cũng sẽ bị xóa."
-        isLoading={isDeleting}
-      />
     </div>
   );
 }
 
-export default Item;
+export default memo(Item);
